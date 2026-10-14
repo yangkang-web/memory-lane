@@ -1,87 +1,101 @@
-# Memory Lane
+# Westbridge Academy · Interactive Campus
 
-把用户与不同角色的聊天经历，变成可以探索、重温和收藏的三维回忆空间。
+A locally hosted, walkable 3D school on the `学校` branch. The campus uses an American academic architectural style: red brick, white limestone trim, slate pitched roofs, a clock-tower cupola, and a columned entrance. The active interface and all in-scene signs are in English.
 
-Memory Lane turns shared stories into walkable memories. The current prototype is a local, single-world experience; connected character worlds are planned for the hackathon version.
+All campus models are original procedural geometry built with Three.js. No paid APIs or external asset services are needed.
 
-## 项目提案
+## Explore
 
-从用户与不同角色的聊天记录中提取重要时刻，生成可探索的 3D 场景和回忆物件。用户沿路前行，在熟悉的对话、角色语音和背景音乐中重温共同经历，收藏珍贵瞬间。多个角色的世界在交界处交错相连，用户可以直接从一个世界走进另一个世界。
+- Westbridge Hall: three exterior floors, a clock tower, a four-column portico and automatic entrance doors.
+- A continuous ground-floor hallway connecting Rooms 101–104.
+- Four classrooms deepened by five meters, each with 16 individual desks in four front-facing rows, a central aisle and a clear rear passage to the hallway.
+- Detailed oak desktops and wooden chair seats, rounded edges, metal frames, under-desk trays, notebooks and backpacks; clean warm-white plaster walls, off-white wainscoting, noticeboards, outlets, radiators and acoustic ceilings with suspended linear lights.
+- A front teaching wall and green chalkboard with English lettering, a teacher's desk, a projector and rear storage in each classroom.
+- A framed reproduction of Vincent van Gogh’s *Sunflowers* (1888, National Gallery, London) hangs on each classroom’s solid side wall. The public-domain image is bundled locally; provenance is recorded in `ASSET-LICENSES.md`.
+- Rear cabinets have oak panels and rounded shelf edges, a recessed plinth, framed lower doors with metal pulls and hinges, shelf supports and subject labels. Open cubbies hold titled books with separate covers and page blocks, bookends, a woven storage basket and lidded archive boxes. The doors and storage props are static visual details.
+- Fine plaster pores and subtle trowel relief give white walls a clean surface texture, with minimal pigment variation and restrained wear. Classroom floors use warm mineral tiles with small aggregate, recessed 90 cm joints and varied polish; color, relief and roughness share the same physical scale.
+- Aligned window openings with deep reveals, projecting sills and layered door casings; soft window light, furniture contact shading and restrained wall scuffs. Daylight and sunset adjust the indoor lighting as well as the campus.
+- A bright spring palette: warm ivory plaster, honey-colored wooden furniture and pale curtains. Soft sky and floor bounce keep the room airy, with a blue sky, procedural clouds and cherry blossoms outside.
+- Rooms 101 and 104 occupy the exterior wings, with three tall divided side windows, gathered sheer curtains and cherry trees outside. Rooms 102 and 103 retain two front windows and three clerestory panes. Glass highlights and diagonal window light illuminate desks, floors and teaching walls.
+- Directional warm window light and cooler, restrained fill reveal the furniture and surface textures. Honey-brown wood has grain, varnish and light wear; steel frames have bent tubes, screw heads and shared baked window reflections. Curtains include a fine weave, with sash tracks, latches, sill plants and stacked books nearby.
+- Cherry trees have asymmetric spreading boughs, visible tapered branches and open sky between flowering sprays. Small five-petal blossoms follow fine twigs, with soft ivory-pink petals, stamens, buds and occasional emerging leaves; curved trunks retain shallow cherry-bark relief and root flares. Window-side trees are staggered in distance and scale. Sparse petals drift and tumble outside the windows and scatter beneath each tree; reduced-motion preferences disable falling petals. Original flower-spray and petal textures are generated locally and shared across instanced meshes. The branching and canopy spacing were studied from [Will Granda’s Cherry Blossom Tree](https://www.willgranda.com/projects/XJ1gqw?album_id=6019978); no model or texture assets were imported. A distant illustrated panorama adds hills and rooflines. The teaching area includes chalk wipe marks, English notices with curled corners, loose chalk and a glass flower vase.
+- Teacher laptops have individual keycaps, legends, trackpads, hinges, ports, webcams and readable English lesson screens. Books have titled covers and spines, layered page edges, bookmarks and curved open pages. Teacher pedestals have separate drawer fronts and pulls, with a partly open stationery drawer; student book trays have rolled lips, rivets and stored folders. These small props are modeled details, not interactive computer or drawer controls.
+- Sheer curtains have heavier sewn edges and curved ties. A small fixed-step cloth simulation applies gravity, damped wind and stretch/bend constraints while pinning the top edge and tie. Motion runs only in the occupied exterior classroom; reduced-motion preferences keep a static drape. Sill clearance uses bounded displacement rather than full scene or cloth self-collision.
+- Oak Library, the dining hall, the quad, picnic tables and planted walks.
+- A running track, soccer pitch, basketball court and bleachers.
+- Daylight and sunset lighting, an orbit camera and first-person walking.
 
-以上是产品目标，当前已实现的范围见下表。
+## Run locally
 
-| 能力 | 当前状态 |
-| --- | --- |
-| 单世界、三个回忆节点 | 已实现：六点以后 / After Six |
-| 自动漫游、暂停与自由探索 | 已实现 |
-| 原文查看、收藏与本地保存重访 | 已实现 |
-| 本地环境音效 | 已实现，使用 Web Audio 合成 |
-| 真实聊天导入与自动提取 | 计划中 |
-| 多世界交界与连续行走 | 计划中 |
-| 角色语音与背景音乐 | 计划中 |
-
-当前样例改编自 Lewis Carroll《Alice’s Adventures in Wonderland》第七章“A Mad Tea-Party”，**是文学改编样例，非真实用户聊天**。三个节点为“陌生人的座位”“被困在六点”“没有结束的茶会”。节点与场景目前由人工编排，不是任意聊天自动生成系统。
-
-![单世界原型预览，截图保留早期项目名称](evidence/preview.png)
-
-## 本地启动
-
-需要 Node.js 22.12+ 与 npm；已在 Node.js 25.9.0 上验证。浏览器需要支持 WebGL2。
+Use Node.js 22.12+ (Node.js 24 recommended) and a browser with WebGL 2.
 
 ```sh
-git clone https://github.com/yangkang-web/memory-lane.git
-cd memory-lane
 npm ci
+npm run dev
+```
+
+Open http://127.0.0.1:4317/ . The server listens only on the local machine.
+
+For the built version:
+
+```sh
 npm run build
 npm start
 ```
 
-打开 http://127.0.0.1:4317/ 。服务在后台运行，仅监听本机。
+## Campus student
 
-macOS 也可以双击 `打开 Memory Lane.command`。首次启动需要下载 npm 依赖；完成安装后，Demo 运行时不调用模型 API 或其他付费服务。
+Use **Meet student** in the top bar, or open `http://127.0.0.1:4317/?student=1`, to inspect Alex, an original procedural student with a green uniform and a backpack. **Stand**, **Walk**, and **Wave** switch between a resting pose, a short looping walk on the entrance path, and a greeting. The inspection camera follows the student and supports orbit and zoom. Overview or Escape returns to the campus.
 
-开发模式：`npm run dev`，同样使用 4317 端口。不要同时运行开发服务和后台服务。后台服务 PID 在 `.server.pid` 中；停止前应确认它仍对应本项目的 `scripts/server.mjs`。
+`src/student.js` attaches rigid mesh parts to a named bone hierarchy and animates shoulder, elbow, hip, knee, and ankle rotations locally. This is a simple articulated character, without smooth skin deformation, imported motion clips, or cloth physics. Its fixed path does not provide general navigation or dynamic collision avoidance. Reduced-motion preferences start the character standing; explicit action buttons can start motion. No external assets or services are used.
 
-## 操作
+## Controls
 
-- “进入回忆”开始导览，行走约 64 秒，加上阅读约 90 秒；节点阅读时间由用户控制。
-- WASD 移动；↑↓ 前后走，←→ 转向；按住画面拖动环顾。移动会接管导览。
-- E 打开附近回忆；Esc 关闭回忆或暂停。
-- 章节按钮可重访节点；“查看当时的对话”展示原文与演示译文。
-- 收藏、访问进度、声音和画面设置保存在当前浏览器，不提供云端同步。
+- Overview: drag to orbit, scroll to zoom, right-drag to pan.
+- Destination buttons focus on the hall, library, athletics field or quad.
+- Main gate, Main hallway and Room 101 enter their corresponding walking viewpoints. Window view opens a lower classroom viewpoint, with a narrower lens on desktop; movement and dragging remain available.
+- Walking: WASD or arrow keys to move; drag to look. Touchscreens also have directional buttons.
+- Doors open on approach and close when you move away.
+- Escape, Overview or Reset returns to the initial campus view.
+- Labels toggles overview markers; walking hides these markers automatically.
+- Daylight / Sunset changes the lighting.
 
-当前验收面向电脑浏览器；触屏自由移动尚未完成验收。
+The outdoor campus, hallway and four ground-floor classrooms are connected. Upper floors are exterior models only. Walls, doors and furniture have collision boundaries.
 
-## 开发与检查
+## Source files
 
-```sh
-npm test
-npm run build
-```
+- `src/school.js`: campus geometry, camera, lighting, movement and collision checks.
+- `src/campus-architecture.js`: pitched roofs, cupola, brick piers, stone trim, portico and entrance gate.
+- `src/school-interior.js`: ground-floor shell, doors and interior destinations.
+- `src/classroom.js`: classroom row layout, detailed furniture, wall finishes and teaching equipment.
+- `src/classroom-props.js`: shared laptop, book, drawer and book-tray geometry and original English textures.
+- `src/classroom-cabinet.js`: detailed rear storage cabinets, hardware, books, boxes and shared label/fabric textures.
+- `src/classroom-floor.js`: shared procedural mineral-tile color, relief and roughness maps.
+- `src/classroom-wood.js`: oak grain, varnish wear and roughness textures.
+- `src/classroom-reflections.js`: a small original room baked once for window-shaped environment highlights on wood, steel and glass.
+- `src/classroom-floor-reflection.js`: one live 512 × 512 reflection for the occupied classroom, softly blurred and blended with the mineral floor.
+- `src/chalk-writing.js`: original single-stroke English lettering without reliance on installed fonts.
+- `src/wall-materials.js`: seamless plaster and painted wall textures with color, bump and roughness maps, projected at a consistent physical scale.
+- `src/classroom-surface-detail.js`: shared contact-shadow, corner-shading and localized wear decals.
+- `src/spring-window-details.js`: pleated curtains, window accessories and window-side cherry trees.
+- `src/cherry-blossoms.js`: shared blossom/petal textures, curved cherry branches, buds, fallen petals and nearby falling-petal animation.
+- `src/curtain-physics.js`: fixed-step curtain motion, anchored hooks/ties and bounded sill clearance.
+- `src/spring-sky.js`: shared procedural daylight and sunset sky panoramas.
+- `src/main.js`: English interface and interaction flows.
+- `src/style.css`: responsive interface styling.
 
-存档测试覆盖默认值、异常数据、保存重访与存储失败反馈，并校验英文引用在附带章节中存在。单世界原型经过独立 Agent 实际浏览器体验与问题复验。
+Static geometry is normalized and merged by material to reduce draw calls. No remote assets are fetched while exploring the built campus.
 
-- `src/story.js`：故事、回忆节点、原文和路线参数。
-- `src/scene.js`：Three.js 场景、镜头、移动与碰撞。
-- `src/main.js`：页面与体验流程。
-- `src/storage.js`：经 Zod 校验的本地存档。
-- `src/audio.js`：本地环境音效。
-- `public/assets/`：随项目提供的素材与原文。
-- `scripts/`：独立本地启动与静态服务。
+Side-window classrooms use one local parallel sun with real window-frame shadows and three soft rectangular window fills. The interior classrooms retain three shared tall-window/clerestory projections. Only the occupied classroom enables its floor reflection, preventing recursive reflection passes. Furniture contact shadows and wall-edge shading remain lightweight static decals; this is not a full global-illumination simulation.
 
-历史存档键和服务健康标识保留 `memory-realm`，兼容早期本地 Demo；产品名称为 Memory Lane。
+The reference refinement pass also reduces desk tops to 32 mm and chair seats to 24 mm, adds pointed hexagonal pencils, varies book and chair placement, softens regular wood grain, varies blossom clusters and distant rooflines, and gives each sheer curtain a distinct bounded wind strength. White plaster is retained. Window view uses a lower rear-of-room viewpoint for comparison with the reference image.
 
-## 下一阶段
+## Verification
 
-- 导入同一用户与两个角色的真实聊天，提取带原文出处的回忆。
-- 构建两个各有 2–3 个节点的世界，以及一个可双向走过的交界。
-- 增加与物件相关的轻交互，评估本地语音合成。
-- 保留导览、自由探索、收藏和重访，用真实用户体验验证故事辨识度。
+`npm run build` validates the active campus entry point. `npm test` includes curtain stability, anchor, clearance and frame-rate checks alongside the earlier prototype's storage and literary source tests. The campus is separately checked in a browser, including independent review of desktop and narrow layouts, automatic doors and indoor walking routes.
 
-源码公开；真实聊天、密钥、运行日志、本地存档及内部评审记录不随仓库发布。导入数据请放在被忽略的 `imports/` 或 `private/` 中。
+## Original prototype and licensing
 
-## 许可与内容来源
+The repository's earlier Memory Lane prototype adapts Chapter VII, “A Mad Tea-Party,” from Lewis Carroll's *Alice's Adventures in Wonderland*. It is a literary adaptation, not actual user chat history. Its story, original scene, storage tests and licensed source material remain in the repository but are not loaded by the current campus entry point.
 
-原创代码为 [MIT](LICENSE)。第三方模型、依赖和文学文本分别保留其许可，见 [素材来源与许可](ASSET-LICENSES.md)。
-
-场景中的花园、道路、灯光和部分物件摆放是视觉演绎，中文为演示译文。原文与 Project Gutenberg 许可附在 `public/assets/`。
+Original code is [MIT licensed](LICENSE). Retained third-party models and texts are documented in [ASSET-LICENSES.md](ASSET-LICENSES.md).

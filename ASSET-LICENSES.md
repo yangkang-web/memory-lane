@@ -19,6 +19,15 @@ Full dependency licenses are present in their packages under node_modules.
 - Delivery mirror: https://github.com/badestrand/threejs/tree/master/models/quaternius-ultimate-stylized-nature
 - The official Google Drive copy returned a quota exceeded page during preparation. The CC0 model and mask were obtained from the public mirror and bundled locally. The bark material is adapted in code. Original leaf cards are replaced with original procedural volume crowns, derived from the model’s branch layout, to avoid noisy silhouettes.
 
+## Classroom painting
+
+- Artist: Vincent van Gogh (1853–1890).
+- Work: *Sunflowers / Vase with Fifteen Sunflowers*, August 1888, oil on canvas; National Gallery, London, NG3863.
+- Source: https://commons.wikimedia.org/wiki/File:Vincent_van_Gogh_-_Sunflowers_(1888,_National_Gallery_London).jpg
+- Public-domain artwork and faithful reproduction (PD-Art / Public Domain Mark 1.0, as identified by Wikimedia Commons).
+- Local file: `public/assets/art/van-gogh-sunflowers-1888.jpg` (1920 × 2441 Wikimedia thumbnail, uncropped).
+- Bundled locally and displayed at its original image aspect ratio; no remote requests are needed while exploring the campus.
+
 ## Text
 
 - Author: Lewis Carroll (1832–1898).
