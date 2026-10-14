@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+.server.pid
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.local/
+private/
+imports/
+saves/
+evidence/*
+!evidence/preview.png
