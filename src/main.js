@@ -23,7 +23,7 @@ app.innerHTML=`
   <header class="topbar">
     <button id="home" class="brand" aria-label="返回回忆入口">${icons.leaf}<span>回忆之路<small>MEMORY LANE</small></span></button>
     <span class="world-label">CHAPTER VII <i></i> 六点以后的花园</span>
-    <div class="top-actions"><button id="source" class="text-button">故事出处</button><button id="sound" class="icon-button" aria-label="关闭环境声音">${icons.sound}</button><button id="settings" class="icon-button" aria-label="画面与操作设置"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 17h16M9 4v6m6 4v6"/></svg></button></div>
+    <div class="top-actions"><a href="/apocalypse" class="text-button">场景地图</a><button id="source" class="text-button">故事出处</button><button id="sound" class="icon-button" aria-label="关闭环境声音">${icons.sound}</button><button id="settings" class="icon-button" aria-label="画面与操作设置"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 17h16M9 4v6m6 4v6"/></svg></button></div>
   </header>
   <section id="welcome" class="welcome" aria-labelledby="welcome-title">
     <div class="eyebrow"><span></span> A PLACE THE STORY LEFT BEHIND</div>

@@ -9,7 +9,8 @@ const server = http.createServer(async (req, res) => {
     if (!['GET','HEAD'].includes(req.method)) {res.writeHead(405);res.end();return;}
     const url = new URL(req.url, 'http://127.0.0.1');
     if(url.pathname === '/health'){res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({project:'memory-realm',status:'ready'}));return;}
-    const path = resolve(root, '.' + decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname));
+    const isPage = ['/', '/apocalypse', '/apocalypse/'].includes(url.pathname);
+    const path = resolve(root, '.' + decodeURIComponent(isPage ? '/index.html' : url.pathname));
     if(path !== root && !path.startsWith(root + sep)){res.writeHead(403);res.end();return;}
     const info = await stat(path);
     if(!info.isFile()){res.writeHead(404);res.end();return;}
