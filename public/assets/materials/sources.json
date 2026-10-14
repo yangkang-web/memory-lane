@@ -1,0 +1,74 @@
+[
+  {
+    "asset": "asphalt_02",
+    "kind": "diff",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_diff_1k.jpg",
+    "file": "asphalt_02_diff.jpg"
+  },
+  {
+    "asset": "asphalt_02",
+    "kind": "nor_gl",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_nor_gl_1k.jpg",
+    "file": "asphalt_02_nor_gl.jpg"
+  },
+  {
+    "asset": "asphalt_02",
+    "kind": "rough",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_rough_1k.jpg",
+    "file": "asphalt_02_rough.jpg"
+  },
+  {
+    "asset": "bark_brown_02",
+    "kind": "diff",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/bark_brown_02/bark_brown_02_diff_1k.jpg",
+    "file": "bark_brown_02_diff.jpg"
+  },
+  {
+    "asset": "bark_brown_02",
+    "kind": "nor_gl",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/bark_brown_02/bark_brown_02_nor_gl_1k.jpg",
+    "file": "bark_brown_02_nor_gl.jpg"
+  },
+  {
+    "asset": "bark_brown_02",
+    "kind": "rough",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/bark_brown_02/bark_brown_02_rough_1k.jpg",
+    "file": "bark_brown_02_rough.jpg"
+  },
+  {
+    "asset": "brick_wall_001",
+    "kind": "diff",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/brick_wall_001/brick_wall_001_diffuse_1k.jpg",
+    "file": "brick_wall_001_diff.jpg"
+  },
+  {
+    "asset": "brick_wall_001",
+    "kind": "nor_gl",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/brick_wall_001/brick_wall_001_nor_gl_1k.jpg",
+    "file": "brick_wall_001_nor_gl.jpg"
+  },
+  {
+    "asset": "brick_wall_001",
+    "kind": "rough",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/brick_wall_001/brick_wall_001_rough_1k.jpg",
+    "file": "brick_wall_001_rough.jpg"
+  },
+  {
+    "asset": "concrete_wall_007",
+    "kind": "diff",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_wall_007/concrete_wall_007_diff_1k.jpg",
+    "file": "concrete_wall_007_diff.jpg"
+  },
+  {
+    "asset": "concrete_wall_007",
+    "kind": "nor_gl",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_wall_007/concrete_wall_007_nor_gl_1k.jpg",
+    "file": "concrete_wall_007_nor_gl.jpg"
+  },
+  {
+    "asset": "concrete_wall_007",
+    "kind": "rough",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_wall_007/concrete_wall_007_rough_1k.jpg",
+    "file": "concrete_wall_007_rough.jpg"
+  }
+]

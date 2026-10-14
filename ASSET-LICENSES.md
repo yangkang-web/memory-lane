@@ -31,6 +31,44 @@ Full dependency licenses are present in their packages under node_modules.
 
 No stock music, generated image services, paid models, paid APIs, or commercial asset packs were used.
 
+## Downtown scene study
+
+- The independent `/map` scene uses original procedural buildings, vehicles, street furniture, vegetation, house interiors and canvas textures, generated locally in the scene modules. The PBR maps and hero-street models listed below are the exceptions to the procedural assets.
+- Its overgrown, abandoned downtown mood was requested with reference to The Last of Us Part II. It does not reproduce the game's map or use extracted game assets, logos, dialogue or characters.
+- The planar puddle reflection uses Three.js Reflector (MIT). This fictional scene is not actual user history.
+
+### Street surface materials
+
+- Poly Haven: [Asphalt 02](https://polyhaven.com/a/asphalt_02) and [Bark Brown 02](https://polyhaven.com/a/bark_brown_02), both by Rob Tuytel.
+- License: [CC0](https://polyhaven.com/license), permitting redistribution and commercial use.
+- Building materials: [Brick Wall 001](https://polyhaven.com/a/brick_wall_001), photography by Dimitrios Savva and processing by Rob Tuytel; [Concrete Wall 007](https://polyhaven.com/a/concrete_wall_007), photography by Charlotte Baglioni, processing by Dario Barresi and tiling by Rico Cilliers. Both are CC0.
+- Bundled in `public/assets/materials/`: the 1K JPEG diffuse, OpenGL normal and roughness maps for each of the four materials. Original download URLs are recorded in `sources.json`.
+- Downloaded 2026-10-14 through the public asset API. All twelve maps are served locally at runtime; no external service or paid API is required. Scene tint, texture scale and normal strength are adjusted in code.
+- Vehicle rust, cracked windows, leaf textures, grass geometry and other street details are original procedural work. No extracted game assets are used.
+
 ## Recording tools
 
 The local development dependency @ffmpeg-installer/ffmpeg provides FFmpeg for browser recordings. It is a development tool and is not loaded or called by the demo. Its packaged licensing information is retained under node_modules.
+
+## Painting inside the abandoned house
+
+- Artist: Vincent van Gogh (1853–1890).
+- Work: *Sunflowers*, August 1888; National Gallery, London, NG3863.
+- Local file: `public/assets/art/sunflowers-1888.jpg`, 960 × 1221 JPEG, a faithful reproduction downloaded from the Commons thumbnail service. The image is not AI-generated or repainted.
+- Source and public-domain notice: https://commons.wikimedia.org/wiki/File:Vincent_van_Gogh_-_Sunflowers_(1888,_National_Gallery_London).jpg
+- Source museum catalogue: https://www.nationalgallery.org.uk/paintings/vincent-van-gogh-sunflowers
+- Commons marks the work and faithful reproduction PD-Art / Public Domain Mark 1.0. The downloaded image itself is unmodified; its frame, lighting and surrounding wall are original scene geometry. Fading, stains, varnish cracks and edge abrasions are fictional procedural material effects, not the actual condition of the museum painting.
+- Downloaded 2026-10-14. The fictional room displays a reproduction; it does not represent the museum's actual setting or provenance of the physical painting.
+
+### Hero street models (2026-10-14)
+
+Locally bundled Poly Haven assets, all [CC0](https://polyhaven.com/license):
+
+- [Tree Small 02](https://polyhaven.com/a/tree_small_02), Rico Cilliers. Bark, branch and foliage maps at 2K. Original 2,062,487-triangle glTF was reduced offline with meshoptimizer to 154,118 triangles; the optimized buffer is 9.2 MB. No runtime decoder or service is needed.
+- [Fern 02](https://polyhaven.com/a/fern_02), Rob Tuytel (scanning), Rico Cilliers (modeling). Four mesh variants and 2K maps, including the separate alpha mask.
+- [Nettle Plant](https://polyhaven.com/a/nettle_plant), Rob Tuytel (photography), Rico Cilliers (modeling). Six mesh variants with 2K maps and alpha mask.
+- [Dead Tree Trunk](https://polyhaven.com/a/dead_tree_trunk), Rob Tuytel. Scanned mesh with 2K maps.
+
+Download URLs and original checksums are in `public/assets/models/sources.json`; tree geometry was subsequently optimized, so its bundled checksum differs from the original. Models are placed, scaled and lit for this fictional scene. The printworks facade, fire escape, vehicle damage, open doors and contact-occlusion shader are original authored work. They are not extracted from The Last of Us Part II.
+
+Offline optimization utility: `scripts/art/optimize-tree.mjs`; meshoptimizer by Arseny Kapoulkine, MIT, installed only in a temporary authoring directory. To rebuild, obtain the original source glTF/buffer from the manifest and pass the path to `meshopt_simplifier.js`. The delivered runtime assets are already optimized.
