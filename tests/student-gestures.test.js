@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import {speechPose,mouthShapes} from '../src/school/student-gestures.js';
+import {speechPose,mouthShapes} from '../src/student-gestures.js';
 import {studentRig} from './helpers/student-rig.js';
-import {characters} from '../src/school/characters.js';
+import {characters} from '../src/characters.js';
 
 test('silent syllables cover five mouth shapes with bounded weights and closed pauses',()=>{
   const seen=new Set();let pauses=0;

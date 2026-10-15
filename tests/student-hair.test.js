@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as T from 'three';
-import {applyCombedBackHair} from '../src/school/student-hair.js';
+import {applyCombedBackHair} from '../src/student-hair.js';
 
 test('rear hair refit preserves the fringe, rig, atlas and original shared buffers',()=>{
   const bytes=readFileSync(new URL('../public/assets/characters/sakurada-fumiriya.vrm',import.meta.url));

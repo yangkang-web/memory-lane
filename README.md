@@ -72,7 +72,7 @@ Fumiriya wears a Natsume-inspired summer outfit: a soft white short-sleeved coll
 
 **Stand**, **Walk**, **Run**, **Sit**, and **Wave** preview the humanoid in the campus. Walking and running start with locally bundled Quaternius CC0 full-body animation curves, including the legs and toes. Airborne legs retain the authored pose through the middle of each step; the step boundaries adapt to planned contacts along the curved route. Two-bone IK handles limb proportions, planted support feet and shoe clearance after sampling. Walking uses about 113 steps per minute at cruising speed, counter-swinging arms and a separate turning weight. The ankle and toe joints articulate heel strike and push-off. The head and chest anticipate the next route segment, hands stay loosely curled with slight wrist follow-through, and stopping finishes the airborne step before settling into a subtly asymmetric stance with authored idle movement. Standing starts include a brief 140 ms weight transfer before translation. Walking uses a taller supporting posture with a nearly upright chest; the source chest/neck pitch is reduced while preserving its counter-rotation. Shorter steps and lower swing clearance are paired with a proportionally lower travel speed. Walking foot tracks are narrower and scale to leg length (roughly 17–18 cm between ankle centers on Fumiriya), including the airborne leg; planted-foot turning clearance remains enforced. The hand arc is centered beside the thigh, with a softer elbow and eased direction changes; acceleration and braking add a small torso response. Stops preserve the final step's stagger instead of resetting both feet to a display pose. Finger curl and wrist follow-through vary gently with the arm swing. Acceleration, stopping and turning blend without resetting the character's facing direction. Sit approaches the entrance chair, steps back, lowers onto its seat and rests both palms on the thighs; choosing another action first completes a smooth rise. The status label reports transitions. Patrol routes use rounded inside corners with forward steering, preserving continuous walking speed instead of stopping to pivot at each waypoint. Turns preserve a minimum leg clearance, knees use a stable hinge plane, wrists have a bounded range, and departure rejoins the route in front of the chair. This combines adapted authored animation with procedural contact correction on the flat entrance path; it is not motion capture or general terrain navigation. Reduced-motion preferences hold static poses and stop locomotion, blinking and hair simulation. The camera follows the character and supports orbit and zoom. Overview or Escape returns to the campus.
 
-`@pixiv/three-vrm` preserves the rigs, facial morphs and spring bones. All character surfaces use the same standard/physical lighting response as the campus: skin, hair and eyes receive the shared sun and sky fill, with no MToon backlight, matcap or self-emission. Clothing uses fine mipmapped weave normals, varied roughness and restrained sheen; shoes use a smoother finish. Shino retains her original color/alpha atlases, while Fumiriya’s shirt and trousers use the summer palette from `src/school/student-outfit.js`. Original normal maps and transparent facial detail are retained. Expanded outline passes are replaced, and alpha-to-coverage softens cutout edges in the antialiased renderer. All surfaces receive scene shadows; facial decals do not cast opaque card shadows, and the scalp cap uses an alpha-tested depth material. The shared sun uses a 4096 px shadow map with a smaller normal offset to keep shadows attached while avoiding stripes on clothing. Two small foot-following contact patches supplement the campus sun shadow and fade with foot lift; they assume the preview's flat path. The shirt combines sculpted drape with material shading, rather than a garment physics simulation. Source, embedded permissions and checksum are recorded in `ASSET-LICENSES.md`.
+`@pixiv/three-vrm` preserves the rigs, facial morphs and spring bones. All character surfaces use the same standard/physical lighting response as the campus: skin, hair and eyes receive the shared sun and sky fill, with no MToon backlight, matcap or self-emission. Clothing uses fine mipmapped weave normals, varied roughness and restrained sheen; shoes use a smoother finish. Shino retains her original color/alpha atlases, while Fumiriya’s shirt and trousers use the summer palette from `src/student-outfit.js`. Original normal maps and transparent facial detail are retained. Expanded outline passes are replaced, and alpha-to-coverage softens cutout edges in the antialiased renderer. All surfaces receive scene shadows; facial decals do not cast opaque card shadows, and the scalp cap uses an alpha-tested depth material. The shared sun uses a 4096 px shadow map with a smaller normal offset to keep shadows attached while avoiding stripes on clothing. Two small foot-following contact patches supplement the campus sun shadow and fade with foot lift; they assume the preview's flat path. The shirt combines sculpted drape with material shading, rather than a garment physics simulation. Source, embedded permissions and checksum are recorded in `ASSET-LICENSES.md`.
 
 ## Controls
 
@@ -89,28 +89,26 @@ The outdoor campus, hallway and four ground-floor classrooms are connected. Uppe
 
 ## Source files
 
-School-specific code, styles and voice/animation data live in `src/school/`. The shared application entry and routes remain in `src/entry.js` and `src/routes.js`; the school URL remains `/school`.
-
-- `src/school/school.js`: campus geometry, camera, lighting, movement and collision checks.
-- `src/school/campus-architecture.js`: pitched roofs, cupola, brick piers, stone trim, portico and entrance gate.
-- `src/school/school-interior.js`: ground-floor shell, doors and interior destinations.
-- `src/school/classroom.js`: classroom row layout, detailed furniture, wall finishes and teaching equipment.
-- `src/school/classroom-props.js`: shared laptop, book, drawer and book-tray geometry and original English textures.
-- `src/school/classroom-cabinet.js`: detailed rear storage cabinets, hardware, books, boxes and shared label/fabric textures.
-- `src/school/classroom-floor.js`: shared procedural mineral-tile color, relief and roughness maps.
-- `src/school/classroom-wood.js`: oak grain, varnish wear and roughness textures.
-- `src/school/classroom-reflections.js`: a small original room baked once for window-shaped environment highlights on wood, steel and glass.
-- `src/school/classroom-floor-reflection.js`: one live 512 × 512 reflection for the occupied classroom, softly blurred and blended with the mineral floor.
-- `src/school/chalk-writing.js`: original single-stroke English lettering without reliance on installed fonts.
-- `src/school/wall-materials.js`: seamless plaster and painted wall textures with color, bump and roughness maps, projected at a consistent physical scale.
-- `src/school/classroom-surface-detail.js`: shared contact-shadow, corner-shading and localized wear decals.
-- `src/school/spring-window-details.js`: pleated curtains, window accessories and window-side cherry trees.
-- `src/school/cherry-blossoms.js`: shared blossom/petal textures, curved cherry branches, buds, fallen petals and nearby falling-petal animation.
-- `src/school/curtain-physics.js`: fixed-step curtain motion, anchored hooks/ties and bounded sill clearance.
-- `src/school/spring-sky.js`: shared procedural daylight and sunset sky panoramas.
-- `src/school/characters.js`: the two character identities, local assets, heights, chairs and routes.
-- `src/school/main.js`: English interface, character selector and interaction flows.
-- `src/school/style.css`: responsive interface styling.
+- `src/school.js`: campus geometry, camera, lighting, movement and collision checks.
+- `src/campus-architecture.js`: pitched roofs, cupola, brick piers, stone trim, portico and entrance gate.
+- `src/school-interior.js`: ground-floor shell, doors and interior destinations.
+- `src/classroom.js`: classroom row layout, detailed furniture, wall finishes and teaching equipment.
+- `src/classroom-props.js`: shared laptop, book, drawer and book-tray geometry and original English textures.
+- `src/classroom-cabinet.js`: detailed rear storage cabinets, hardware, books, boxes and shared label/fabric textures.
+- `src/classroom-floor.js`: shared procedural mineral-tile color, relief and roughness maps.
+- `src/classroom-wood.js`: oak grain, varnish wear and roughness textures.
+- `src/classroom-reflections.js`: a small original room baked once for window-shaped environment highlights on wood, steel and glass.
+- `src/classroom-floor-reflection.js`: one live 512 × 512 reflection for the occupied classroom, softly blurred and blended with the mineral floor.
+- `src/chalk-writing.js`: original single-stroke English lettering without reliance on installed fonts.
+- `src/wall-materials.js`: seamless plaster and painted wall textures with color, bump and roughness maps, projected at a consistent physical scale.
+- `src/classroom-surface-detail.js`: shared contact-shadow, corner-shading and localized wear decals.
+- `src/spring-window-details.js`: pleated curtains, window accessories and window-side cherry trees.
+- `src/cherry-blossoms.js`: shared blossom/petal textures, curved cherry branches, buds, fallen petals and nearby falling-petal animation.
+- `src/curtain-physics.js`: fixed-step curtain motion, anchored hooks/ties and bounded sill clearance.
+- `src/spring-sky.js`: shared procedural daylight and sunset sky panoramas.
+- `src/characters.js`: the two character identities, local assets, heights, chairs and routes.
+- `src/main.js`: English interface, character selector and interaction flows.
+- `src/style.css`: responsive interface styling.
 
 Static geometry is normalized and merged by material to reduce draw calls. No remote assets are fetched while exploring the built campus.
 

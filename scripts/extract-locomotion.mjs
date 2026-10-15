@@ -50,5 +50,5 @@ for(const [name,source] of [['walk','Walk_Loop'],['jog','Jog_Fwd_Loop'],['idle',
  frames[frames.length-1]=structuredClone(frames[0]);
  result.clips[name]={duration,frames};
 }
-fs.writeFileSync(new URL('../src/school/data/student-locomotion.json',import.meta.url),JSON.stringify(result));
+fs.writeFileSync(new URL('../src/data/student-locomotion.json',import.meta.url),JSON.stringify(result));
 console.log(Object.fromEntries(Object.entries(result.clips).map(([k,v])=>[k,{duration:v.duration,frames:v.frames.length,feet:v.frames.filter((_,i)=>i%10===0).map(f=>f.feet)}])));

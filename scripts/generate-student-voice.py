@@ -59,5 +59,5 @@ metadata = {'text': text, 'language': 'en-US', 'languageLabel': 'English',
             'credit': 'Kokoro · Puck', 'voice': voice, 'speed': speed,
             'duration': len(audio) / rate,
             'modelSha256': hashlib.sha256(Path(args.model).read_bytes()).hexdigest(), 'cues': cues}
-(root / 'src/school/data/fumiriya-voice.json').write_text(json.dumps(metadata, indent=2) + '\n')
+(root / 'src/data/fumiriya-voice.json').write_text(json.dumps(metadata, indent=2) + '\n')
 print(f'Generated {len(audio)/rate:.2f}s of English speech with {len(cues)} timed vowel cues.')

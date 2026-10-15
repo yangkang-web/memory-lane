@@ -23,7 +23,7 @@ if(route.redirect){
 }else if(route.experience==='school'){
  document.title='Westbridge Academy · Interactive Campus';
  document.querySelector('meta[name="description"]').content='Explore Westbridge Academy: a walkable 3D campus with sunny classrooms and a first-person sunflower story.';
- import('./school/main.js');
+ import('./main.js');
 }else{
  import('./scene-home.js').then(({mountSceneHome})=>mountSceneHome(route.experience==='not-found'));
 }
