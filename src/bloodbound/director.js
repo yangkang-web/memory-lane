@@ -302,7 +302,8 @@ if (vMapUv.x > 0.74 && vMapUv.y > 0.84 && diffuseColor.r > diffuseColor.g * 1.45
     headMaterial.customProgramCacheKey = () => 'bloodbound-lucien-mouth';
     headMaterial.needsUpdate = true;
   }
-  // The irises are the dark of the eye texture; they take the red, the whites do not.
+  // Only the irises take the thirst, two discs in the eye texture: their own grain kept, turned a dark wine, with no
+  // glow, so the change reads in the close shots without the eyes lighting up.
   const thirst = { value: 0 };
   const eyeMaterial = lucien.root.getObjectByName('Lucien_Eyes')?.material;
   if (eyeMaterial) {
@@ -311,10 +312,11 @@ if (vMapUv.x > 0.74 && vMapUv.y > 0.84 && diffuseColor.r > diffuseColor.g * 1.45
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <common>', '#include <common>\nuniform float thirst;')
         .replace('#include <map_fragment>', `#include <map_fragment>
-float iris = 1.0 - smoothstep(0.32, 0.6, dot(diffuseColor.rgb, vec3(0.3, 0.5, 0.2)));
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.5, 0.012, 0.02), iris * thirst);`)
-        .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += vec3(0.55, 0.015, 0.02) * iris * thirst;');
+float iris = max(smoothstep(0.112, 0.1, distance(vMapUv, vec2(0.705, 0.296))), smoothstep(0.112, 0.1, distance(vMapUv, vec2(0.291, 0.701))));
+float grain = dot(diffuseColor.rgb, vec3(0.3, 0.5, 0.2));
+diffuseColor.rgb = mix(diffuseColor.rgb, grain * vec3(0.62, 0.16, 0.16), iris * thirst * 0.8);`);
     };
+    eyeMaterial.customProgramCacheKey = () => 'bloodbound-lucien-irises';
     eyeMaterial.needsUpdate = true;
   }
   const mouthMorphs = lidMeshes.map(mesh => ['jawOpen', 'mouthPart', 'upperLipRaise'].map(name => mesh.morphTargetDictionary[name]));
@@ -1145,8 +1147,12 @@ diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.5, 0.012, 0.02), iris * thirst);
         if (p.z < 1 && Math.abs(p.x) < 0.8 && p.y > -0.75 && p.y < 0.8) rite.looked += dt;
       }
     }
-    hunter.update(dt);
-    lucien.update(dt);
+    // Held still while paused: the mixer only rewrites a bone when its clip value changes, so with no time passing the
+    // procedural layers would stack on last frame's pose and twist him further every frame.
+    if (dt > 0) {
+      hunter.update(dt);
+      lucien.update(dt);
+    }
     // The blood runs off your hand into the glass, and the glass fills.
     const pouring = rite?.kind === 'gift' && rite.time > GIFT.pour && rite.time < GIFT.full - 0.25;
     pendant.pour(pouring ? arms.drip(dripAt) : null, dt);

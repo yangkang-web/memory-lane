@@ -35,3 +35,4 @@
 /* The next chapter's card comes out of the light beyond the door rather than cutting to it. */
 .handoff-panel:not([hidden]){animation:handoff-in 2.4s ease both}
 @keyframes handoff-in{from{opacity:0}to{opacity:1}}
+.sequence-mode .memory-stage[data-state=ready] .film-shade{opacity:.2}

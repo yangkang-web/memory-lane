@@ -17,7 +17,16 @@ export function createLastCompanion({world,camera,render,onStart,onExit,onComple
   panel.innerHTML=`<div class="narrative-shade" aria-hidden="true"></div><div class="narrative-injury" aria-hidden="true"></div><div class="narrative-title"><small>回忆之路</small><h2>最后一次并肩</h2></div><div class="narrative-subtitles" aria-live="off"><b></b><p></p></div><div class="narrative-controls"><button data-command="pause">暂停</button><label>章节 <select aria-label="选择剧情章节">${CHAPTERS.map((c,i)=>`<option value="${c.start}">${i+1}. ${c.title}</option>`).join('')}</select></label><input type="range" min="0" max="${DURATION}" step="0.05" value="0" aria-label="剧情播放进度"><output>00:00 / 01:00</output><button data-command="sound" aria-pressed="false">静音</button><button data-command="exit">返回漫游</button></div><div class="narrative-ending" hidden><p>……听得到吗？</p><small>没有回答。</small><button data-command="replay">从头重看</button><button data-command="exit">返回漫游</button></div>`;
   document.querySelector('#app').append(panel);const $=s=>panel.querySelector(s),title=$('.narrative-title'),subtitle=$('.narrative-subtitles'),range=$('input'),select=$('select'),output=$('output'),shade=$('.narrative-shade');
   let active=false,paused=false,ended=false,t=0,baseTime=0,baseClock=0,frame=0,audio=null,lastState=editStateAt(0),lastTick=0,oldFov=camera.fov,lastCityHidden=false;
-  const lookObject=new T.Object3D();
+  const lookObject=new T.Object3D(),termBox=new T.Box3(),corner=new T.Vector3();let subtitleLift=15;
+  // Subtitles sit where Bloodbound's do, low and centred; while the handheld terminal fills that spot they rise just
+  // above its top edge instead of being read over its screen.
+  function placeSubtitle(blackout){
+    let goal=15;const term=sets.items.terminal;let shown=!subtitle.hidden&&term.visible&&blackout<.5;term.traverseAncestors(o=>{if(!o.visible)shown=false;});
+    if(shown){termBox.setFromObject(term);let minX=1,maxX=-1,maxY=-1,front=false;
+      for(let i=0;i<8;i++){corner.set(i&1?termBox.max.x:termBox.min.x,i&2?termBox.max.y:termBox.min.y,i&4?termBox.max.z:termBox.min.z).project(camera);if(corner.z<1){front=true;minX=Math.min(minX,corner.x);maxX=Math.max(maxX,corner.x);maxY=Math.max(maxY,corner.y);}}
+      if(front&&minX<.4&&maxX>-.4&&maxY>-.75)goal=Math.min(60,Math.max(15,(maxY+1)*50+3));}
+    subtitleLift+=(goal-subtitleLift)*(Math.abs(goal-subtitleLift)>20?1:.25);subtitle.style.bottom=`${subtitleLift.toFixed(2)}%`;
+  }
   function restoreCity(){for(const {o,visible}of city)o.visible=visible;lastCityHidden=false;}
   function hideCity(hidden){if(hidden===lastCityHidden)return;for(const {o,visible}of city)o.visible=hidden?false:visible;lastCityHidden=hidden;}
   function showFrame(){const s=editStateAt(t);lastState=s;hideCity(s.storeOnly);world.home.root.visible=false;world.home.cinematicLot.visible=false;stagedHome.visible=true;sets.root.visible=true;sets.update(s,camera);world.setSinkhole(t>=14.45);world.setStoryExit(s.t>=390);world.water.setCollapse(smooth(t,14.45,14.6));if(stagedDoor)stagedDoor.rotation.y=-Math.PI/2-smooth(t,3,4.8)*Math.PI*.44;
@@ -28,9 +37,9 @@ export function createLastCompanion({world,camera,render,onStart,onExit,onComple
     camera.fov=64+smooth(t,12,13)*6*(1-smooth(t,15,16))+smooth(t,38,40)*5*(1-smooth(t,51,53));camera.updateProjectionMatrix();camera.updateMatrixWorld(true);cast.update(s);
     title.style.opacity=String(1-smooth(t,2,3));shade.style.opacity=String(s.blackout);
     $('.narrative-injury').style.opacity=String(s.injured&&s.t<474?(s.t>=338?.17:.08)+Math.sin(t*3)*.025:0);
-    subtitle.querySelector('b').textContent=s.line?.[2]||'';subtitle.querySelector('p').textContent=s.line?.[3]||'';
+    const said=s.line?.[3]||'';if(subtitle.dataset.said!==said){subtitle.dataset.said=said;subtitle.querySelector('b').textContent=s.line?.[2]||'';subtitle.querySelector('p').textContent=said;subtitle.hidden=!said;subtitle.classList.remove('is-new');void subtitle.offsetWidth;subtitle.classList.add('is-new');}
     range.value=String(t);select.value=String(CHAPTERS[s.editChapter].start);output.textContent=`${String(Math.floor(t/60)).padStart(2,'0')}:${String(Math.floor(t%60)).padStart(2,'0')} / 01:00`;
-    audio?.update(s,speed);render();
+    placeSubtitle(s.blackout);audio?.update(s,speed);render();
   }
   function tick(now){if(!active||paused||ended)return;const before=t;t=clamp(baseTime+(now-baseClock)/1000,baseTime,DURATION);for(const [at,cue]of CUES)if(at>before&&at<=t)audio?.cue(cue);lastTick=now;showFrame();if(t>=DURATION){ended=true;onComplete();$('.narrative-ending').hidden=false;$('[data-command="pause"]').disabled=true;}else frame=requestAnimationFrame(tick);}
   async function start(at=0,hold=false){if(!active){onStart();oldFov=camera.fov;$('[data-command="sound"]').textContent='静音';$('[data-command="sound"]').setAttribute('aria-pressed','false');audio=createCompanionAudio({strict:inSequence});audio.ready.catch(error=>{console.warn('Story voice unavailable; subtitles remain available',error);});}active=true;paused=hold;ended=false;if(hold)audio?.pause();else await audio?.resume();panel.hidden=false;$('.narrative-ending').hidden=true;$('[data-command="pause"]').disabled=false;$('[data-command="pause"]').textContent='暂停';sets.root.visible=true;cast.actors.root.visible=true;seek(at);if(hold)await audio.ready;}

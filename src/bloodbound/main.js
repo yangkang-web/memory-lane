@@ -668,14 +668,18 @@ async function init() {
       const close = lucien.group.visible && ['intimacy', 'gift', 'wear'].includes(flow.segment);
       cinematic.render(close ? 'face' : 'scene', close ? Math.max(0.5, lucien.distanceTo(player.pose.x, player.pose.z)) : 4);
     } else {
-      // Title screen: the empty nave from the doorway, breathing slightly.
-      camera.position.set(Math.sin(now * .00007) * .08, 1.6, START.z + 0.4);
-      camera.rotation.set(-0.04, Math.sin(now * .00005) * .03, 0, 'YXZ');
+      // Title screen: the empty nave from the doorway, breathing slightly. In the journey there is no title screen; the
+      // memory waits on the first frame of its walk, so the transition reveals the shot that then plays on.
+      if (inSequence) player.setPose(START);
+      else {
+        camera.position.set(Math.sin(now * .00007) * .08, 1.6, START.z + 0.4);
+        camera.rotation.set(-0.04, Math.sin(now * .00005) * .03, 0, 'YXZ');
+      }
       chapel.update(now / 1000);
       atmosphere.update(now / 1000);
       fade.value += (fade.target - fade.value) * (1 - Math.exp(-dt * 7));
       $('.fade').style.opacity = String(fade.value);
-      cinematic.render('scene', 4.5);
+      cinematic.render('scene', inSequence ? 4 : 4.5);
     }
     frames++;
     if (now - fpsStart > 2000) {
@@ -721,6 +725,8 @@ async function init() {
     getKeepsake: () => pendant.group,
     getContext: () => ({ renderer, scene, camera, chapter: chapterGroup, keepsake: pendant.group }),
   });
+  // The journey has had its gesture already; waking the audio now keeps start() from waiting on it after the transition.
+  if(inSequence)sound.unlock().catch(()=>{});
   if(inSequence)installSequence({ready:audioComplete?Promise.resolve():Promise.reject(new Error('吸血鬼音频未就绪')),start:()=>start(),pause,resume,capture:()=>snapshot(renderer.domElement,()=>cinematic.render('scene',4)),dispose:()=>disposeScene()});
   event('ready', { memoryId: 'bloodbound', segments: SEGMENTS.map(s => s.id) });
   addEventListener('pagehide', disposeScene, { once: true });
