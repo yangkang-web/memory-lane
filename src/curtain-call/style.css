@@ -59,23 +59,35 @@ button { font: inherit; color: inherit; }
   transition: opacity .55s ease, transform .7s cubic-bezier(.2, .7, .2, 1), filter .55s ease;
 }
 .cc-line.on { opacity: 1; transform: none; filter: none; }
+.cc-line .zh, .cc-line .en { text-wrap: balance; }
 .cc-line .zh { font-family: var(--serif); font-size: clamp(19px, 2.3vw, 27px); letter-spacing: 0.12em; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.85), 0 0 2px rgba(0, 0, 0, 0.9); }
 .cc-line .en { font-family: var(--latin); font-style: italic; font-size: clamp(13px, 1.25vw, 16px); letter-spacing: 0.04em; color: rgba(246, 237, 228, 0.7); text-shadow: 0 1px 10px rgba(0, 0, 0, 0.9); }
 
-/* —— Memory labels —— */
+/* —— "Thank you for watching", over the closed curtain —— */
+.cc-title { position: absolute; left: 0; right: 0; top: 34%; display: grid; justify-items: center; gap: 12px; text-align: center; opacity: 0; pointer-events: none; }
+.cc-title .zh { font-family: var(--serif); font-size: clamp(34px, 5vw, 60px); letter-spacing: 0.4em; text-indent: 0.4em; color: #f3d79c; text-shadow: 0 0 32px rgba(240, 200, 130, 0.6), 0 2px 18px rgba(0, 0, 0, 0.8); }
+.cc-title .en { font-family: var(--latin); font-style: italic; font-size: clamp(14px, 1.5vw, 19px); letter-spacing: 0.22em; color: rgba(240, 214, 160, 0.85); }
+
+/* —— Keepsake labels —— */
 .cc-labels { position: absolute; inset: 0; pointer-events: none; }
 .cc-label {
-  position: absolute; left: 0; top: 0; opacity: 0; white-space: nowrap; padding: 3px 11px; border-radius: 999px;
+  position: absolute; left: 0; top: 0; opacity: 0; white-space: nowrap; padding: 3px 11px; border-radius: 10px;
+  display: grid; justify-items: center; text-align: center;
   font-family: var(--serif); font-size: 13px; letter-spacing: 0.18em; color: #fff7ee;
   background: color-mix(in srgb, var(--tint) 18%, rgba(10, 6, 12, 0.45)); border: 1px solid color-mix(in srgb, var(--tint) 55%, transparent);
   box-shadow: 0 0 18px color-mix(in srgb, var(--tint) 30%, transparent); backdrop-filter: blur(3px);
 }
 
+.cc-label small { font-family: var(--latin); font-style: italic; font-size: 11px; letter-spacing: 0.04em; opacity: 0.75; }
+
 /* —— End card —— */
 .cc-end { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; text-align: center; opacity: 0; pointer-events: none; padding: 24px; }
 .cc-end.is-live { pointer-events: auto; }
-.cc-end h2 { margin: 0; font-family: var(--latin); font-weight: 400; font-size: clamp(44px, 7vw, 92px); letter-spacing: 0.32em; text-indent: 0.32em; line-height: 1.05; color: #fff3e4; text-shadow: 0 0 30px rgba(255, 170, 120, 0.35), 0 4px 30px rgba(0, 0, 0, 0.6); }
-.cc-thanks { margin: 18px 0 34px; font-family: var(--serif); font-size: clamp(16px, 1.7vw, 20px); letter-spacing: 0.3em; text-indent: 0.3em; color: var(--muted); }
+.cc-end h2 { margin: 0 0 22px; font-family: var(--latin); font-weight: 400; font-size: clamp(52px, 8vw, 108px); letter-spacing: 0.16em; text-indent: 0.16em; line-height: 1.05; color: #fff3e4; text-shadow: 0 0 30px rgba(255, 170, 120, 0.35), 0 4px 30px rgba(0, 0, 0, 0.6); }
+.cc-thanks { margin: 0 0 14px; display: grid; gap: 4px; }
+.cc-thanks .zh { font-family: var(--serif); font-size: clamp(16px, 1.8vw, 21px); letter-spacing: 0.22em; text-indent: 0.22em; color: rgba(246, 237, 228, 0.86); text-shadow: 0 2px 16px rgba(0, 0, 0, 0.8); }
+.cc-thanks .en { font-family: var(--latin); font-style: italic; font-size: clamp(13px, 1.2vw, 15px); letter-spacing: 0.04em; color: var(--muted); }
+.cc-end .cc-replay-big { margin-top: 22px; }
 .cc-end .cc-provenance { margin-top: 30px; max-width: 46em; padding: 10px 18px; border-radius: 12px; background: rgba(5, 3, 7, 0.55); backdrop-filter: blur(6px); }
 
 /* —— Controls —— */
@@ -111,18 +123,22 @@ button { font: inherit; color: inherit; }
   .cc-time { display: none; }
   .cc-subtitles { bottom: 92px; }
   .cc-label { font-size: 11px; letter-spacing: 0.1em; }
+  .cc-label small { font-size: 9px; }
 }
 @media (max-height: 520px) {
   .cc-subtitles { bottom: 64px; height: 64px; }
   .cc-subtitles::before { bottom: -64px; height: 168px; }
   .cc-line { gap: 2px; }
-  .cc-line .zh { font-size: 17px; }
-  .cc-line .en { font-size: 12px; }
+  .cc-line .zh { font-size: 15px; }
+  .cc-line .en { font-size: 11px; }
   .cc-controls { bottom: 10px; padding: 4px 12px; }
   .cc-end { padding: 12px 24px 64px; }
-  .cc-end h2 { font-size: 40px; }
-  .cc-end .cc-kicker { margin-bottom: 8px; }
-  .cc-thanks { margin: 8px 0 14px; font-size: 14px; }
+  .cc-end h2 { font-size: 40px; margin-bottom: 8px; }
+  .cc-thanks { margin-bottom: 6px; gap: 1px; }
+  .cc-thanks .zh { font-size: 14px; }
+  .cc-thanks .en { font-size: 11px; }
+  .cc-end .cc-replay-big { margin-top: 8px; }
+  .cc-title { top: 26%; gap: 6px; }
   .cc-button { padding: 10px 28px; font-size: 15px; }
   .cc-end .cc-provenance { margin-top: 12px; font-size: 11px; line-height: 1.55; }
   .cc-intro .cc-sub { margin: 8px 0 22px; }

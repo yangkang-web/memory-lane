@@ -87,8 +87,9 @@ addEventListener('message',event=>{
 addEventListener('keydown',event=>{if(event.code==='Escape'){event.preventDefault();void(paused?resume():pause());}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)void pause();});
 button.onclick=start;
-// Loading both first scenes before the gesture avoids a long break after the necklace close-up.
-Promise.all([load(0),load(1)]).then(()=>{if(failed)return;reveal(slots.get(0));state('ready');status.textContent='首页弹窗 → 回忆小屋 → 三段故事 → 星光舞台';button.disabled=false;button.textContent='播放年度回忆演示';}).catch(fail);
+// Every scene loads before the gesture. The worlds share one main thread, and loading one stalls it for seconds, which
+// would freeze whichever memory is playing; scenes waiting their turn draw only a few frames a second (sequence-bridge.js).
+Promise.all(JOURNEY.map((_,i)=>load(i))).then(()=>{if(failed)return;reveal(slots.get(0));state('ready');status.textContent='首页弹窗 → 回忆小屋 → 三段故事 → 星光舞台';button.disabled=false;button.textContent='播放年度回忆演示';}).catch(fail);
 frame=requestAnimationFrame(tick);
 function dispose(){sound.dispose();disposed=true;cancelAnimationFrame(frame);for(const slot of slots.values()){slot.api?.dispose?.();slot.iframe.remove();}effects.dispose();fracture.dispose();}
 addEventListener('pagehide',dispose,{once:true});if(import.meta.hot)import.meta.hot.dispose(dispose);

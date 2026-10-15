@@ -287,11 +287,15 @@ function compose(context) {
     air.gain.gain.linearRampToValueAtTime(0, 2.6);
   }
 
-  // 2.5 s: the follow spot. A thump, then a harp glissando as the curtain stirs.
+  // 2.5 s: the follow spot. A thump, a harp glissando, two soft bumps on the seam and the face popping through.
   kick(at(4), 0.75);
   hiss(at(4), 0.06, 'bandpass', 1400, 0.16, 0, 1.4, 0.5);
   [62, 66, 69, 74, 78, 81, 86, 90, 93].forEach((midi, i) => pluck(midi, at(4) + 0.08 + i * 0.045, 0.6 + i * 0.03, -0.6 + i * 0.15));
-  swish(2.9, 2.2, 1);
+  for (const time of [2.78, 2.99]) hiss(time, 0.12, 'lowpass', 320, 0.12, 0, 0.6, 0.3);
+  swish(3.1, 0.5, 0.35);
+  boing(3.36, 240, 520);
+  // 5 s: the curtain parts.
+  swish(4.95, 2.1, 1);
 
   for (const [beat, beats, notes, root] of CHORDS) {
     const start = at(beat), duration = beats * BEAT;
@@ -306,8 +310,9 @@ function compose(context) {
     const chord = CHORDS.findLast(([b]) => b <= beat)[2];
     celesta(chord[Math.floor(beat * 2) % chord.length] + 12, at(beat), 0.5, 0.22, Math.sin(beat) * 0.5);
   }
-  // Footsteps down to the mark.
-  [6.95, 7.3, 7.65, 8.0, 8.28].forEach((time, i) => step(time, i % 2 ? 0.15 : -0.15));
+  // Two steps back onto the mark, and a chime for the idea it once was.
+  [5.75, 6.05, 6.38].forEach((time, i) => step(time, i % 2 ? -0.15 : 0.15));
+  [86, 91, 95].forEach((midi, i) => celesta(midi, 6.3 + i * 0.07, 0.5, 0.5, 0.3));
 
   // 15 s: the dance.
   for (let b = 24; b < 28; b++) kick(at(b), 0.8);

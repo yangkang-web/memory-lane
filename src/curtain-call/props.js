@@ -1,8 +1,10 @@
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { hash } from './tracks.js';
 
-// Things Emochi performs with: the question mark from the reference model, the heart it becomes, five memory orbs
-// (one keepsake from each world of Memory Lane) and the confetti and sparkle that close the show.
+// Things Emochi performs with: the question mark from the reference model, the heart it becomes, five orbs (one
+// keepsake for each kind of work that made it) and the confetti and sparkle that close the show.
 
 function glowTexture() {
   const canvas = document.createElement('canvas');
@@ -45,82 +47,144 @@ function heartGeometry() {
   return geometry;
 }
 
-// Keepsakes, each about 0.3 units across and centred, for the inside of an orb.
-function sunflower() {
+// Keepsakes, each about 0.3 units across and centred, for the inside of an orb: the nights, the edits, the retries,
+// the takes and the hard parts that made Emochi.
+const glowing = (color, strength) => new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(strength), toneMapped: false });
+
+/** A desk lamp left on late at night. */
+function deskLamp() {
   const group = new THREE.Group();
-  const petal = new THREE.MeshStandardMaterial({ color: '#ffc21a', roughness: 0.5, emissive: '#7a4800', emissiveIntensity: 0.6 });
-  const centre = new THREE.Mesh(new THREE.SphereGeometry(0.075, 24, 12), new THREE.MeshStandardMaterial({ color: '#4a2a10', roughness: 0.9 }));
-  centre.scale.z = 0.45;
-  group.add(centre);
-  const geometry = new THREE.SphereGeometry(1, 16, 10);
-  for (let ring = 0; ring < 2; ring++) for (let i = 0; i < 13; i++) {
-    const a = (i / 13) * Math.PI * 2 + ring * 0.24;
-    const mesh = new THREE.Mesh(geometry, petal);
-    mesh.scale.set(0.034, 0.075, 0.012);
-    mesh.position.set(Math.cos(a) * 0.12, Math.sin(a) * 0.12, -0.01 - ring * 0.01);
-    mesh.rotation.z = a - Math.PI / 2;
+  const metal = new THREE.MeshStandardMaterial({ color: '#2f3a56', metalness: 0.6, roughness: 0.35 });
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.085, 0.022, 32), metal);
+  base.position.set(-0.04, -0.12, 0);
+  group.add(base);
+  const arm = (from, to) => {
+    const length = from.distanceTo(to);
+    const mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.009, length, 10), metal);
+    mesh.position.copy(from).add(to).multiplyScalar(0.5);
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), to.clone().sub(from).normalize());
     group.add(mesh);
-  }
+    const joint = new THREE.Mesh(new THREE.SphereGeometry(0.016, 12, 8), metal);
+    joint.position.copy(to);
+    group.add(joint);
+  };
+  const foot = new THREE.Vector3(-0.04, -0.11, 0), elbow = new THREE.Vector3(-0.08, 0.04, 0), head = new THREE.Vector3(0.04, 0.12, 0);
+  arm(foot, elbow);
+  arm(elbow, head);
+  const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.07, 0.08, 32, 1, true), new THREE.MeshStandardMaterial({ color: '#3d4a6e', metalness: 0.5, roughness: 0.3, side: THREE.DoubleSide }));
+  const hood = new THREE.Group();
+  hood.position.copy(head);
+  hood.rotation.z = -0.75;
+  shade.position.y = -0.035;
+  hood.add(shade);
+  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.026, 16, 12), glowing('#ffe2a0', 3));
+  bulb.position.y = -0.06;
+  hood.add(bulb);
+  const pool = glowSprite('#ffd27a', 0.22);
+  pool.position.y = -0.09;
+  hood.add(pool);
+  group.add(hood);
   return group;
 }
-function paperBoat() {
-  const p = [
-    [-0.2, 0.0, 0], [0.2, 0.0, 0], [0.13, -0.08, 0.05], [-0.13, -0.08, 0.05], [0.13, -0.08, -0.05], [-0.13, -0.08, -0.05],
-    [0, 0.16, 0],
-  ];
-  const faces = [[0, 3, 2], [0, 2, 1], [0, 1, 4], [0, 4, 5], [3, 5, 4], [3, 4, 2], [0, 5, 3], [1, 2, 4], [0, 1, 6]];
-  const positions = [];
-  for (const face of faces) for (const k of face) positions.push(...p[k]);
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+
+/** A pencil, sharpened down and rubbed out more than once. */
+function pencil() {
+  const group = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.024, 0.24, 6), new THREE.MeshStandardMaterial({ color: '#ffc928', roughness: 0.45, emissive: '#6a4200', emissiveIntensity: 0.4, flatShading: true }));
+  group.add(body);
+  const wood = new THREE.Mesh(new THREE.ConeGeometry(0.024, 0.06, 6), new THREE.MeshStandardMaterial({ color: '#e8c08a', roughness: 0.8, flatShading: true }));
+  wood.position.y = -0.15;
+  wood.rotation.x = Math.PI;
+  group.add(wood);
+  const lead = new THREE.Mesh(new THREE.ConeGeometry(0.008, 0.02, 8), new THREE.MeshStandardMaterial({ color: '#2a2a30', roughness: 0.4, metalness: 0.4 }));
+  lead.position.y = -0.172;
+  lead.rotation.x = Math.PI;
+  group.add(lead);
+  const ferrule = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.026, 0.03, 16), new THREE.MeshStandardMaterial({ color: '#d8dce6', metalness: 1, roughness: 0.3 }));
+  ferrule.position.y = 0.135;
+  group.add(ferrule);
+  const eraser = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.024, 0.03, 16), new THREE.MeshStandardMaterial({ color: '#ff8fa6', roughness: 0.7 }));
+  eraser.position.y = 0.163;
+  group.add(eraser);
+  group.rotation.z = -0.7;
+  return group;
+}
+
+/** A sheet balled up after another try. */
+function paperBall() {
+  const geometry = mergeVertices(new THREE.IcosahedronGeometry(0.12, 3));
+  const position = geometry.attributes.position, point = new THREE.Vector3();
+  for (let i = 0; i < position.count; i++) {
+    point.fromBufferAttribute(position, i);
+    point.multiplyScalar(0.8 + 0.32 * hash(i * 0.37 + 2));
+    position.setXYZ(i, point.x, point.y, point.z);
+  }
   geometry.computeVertexNormals();
-  return new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: '#eef6ff', roughness: 0.7, side: THREE.DoubleSide, emissive: '#3b6a9a', emissiveIntensity: 0.35, flatShading: true }));
+  return new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: '#f4f1ea', roughness: 0.85, emissive: '#55506a', emissiveIntensity: 0.3, flatShading: true }));
 }
-function flame() {
-  const points = [];
-  for (let i = 0; i <= 24; i++) {
-    const t = i / 24;
-    points.push(new THREE.Vector2(Math.sin(Math.PI * t) ** 0.9 * 0.08 * (1 - t * 0.55), -0.1 + t * 0.26));
-  }
+
+/** A clapperboard, for every "one more take". */
+function clapperboard() {
   const group = new THREE.Group();
-  const outer = new THREE.Mesh(new THREE.LatheGeometry(points, 32), new THREE.MeshBasicMaterial({ color: new THREE.Color('#ff8a2a').multiplyScalar(2.2), toneMapped: false, transparent: true, opacity: 0.9 }));
-  const inner = new THREE.Mesh(new THREE.LatheGeometry(points, 24), new THREE.MeshBasicMaterial({ color: new THREE.Color('#fff0b0').multiplyScalar(2.6), toneMapped: false }));
-  inner.scale.setScalar(0.55);
-  inner.position.y = -0.04;
-  group.add(outer, inner);
+  const slate = new THREE.MeshStandardMaterial({ color: '#1d1b22', roughness: 0.55 });
+  const chalk = new THREE.MeshStandardMaterial({ color: '#f2efe8', roughness: 0.6, emissive: '#3a3a3a', emissiveIntensity: 0.4 });
+  const board = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.17, 0.016), slate);
+  board.position.y = -0.04;
+  group.add(board);
+  for (const [y, width] of [[0.0, 0.2], [-0.045, 0.14], [-0.09, 0.17]]) {
+    const line = new THREE.Mesh(new THREE.BoxGeometry(width, 0.008, 0.004), chalk);
+    line.position.set(-0.11 + width / 2 + 0.01, y, 0.009);
+    group.add(line);
+  }
+  const stick = (open) => {
+    const hinge = new THREE.Group();
+    hinge.position.set(-0.13, open ? 0.06 : 0.045, 0);
+    hinge.rotation.z = open ? 0.38 : 0;
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.03, 0.016), slate);
+    bar.position.x = 0.13;
+    hinge.add(bar);
+    for (let k = 0; k < 5; k++) {
+      const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.034, 0.004), chalk);
+      stripe.position.set(0.025 + k * 0.05, 0, 0.009);
+      stripe.rotation.z = 0.6;
+      hinge.add(stripe);
+    }
+    group.add(hinge);
+  };
+  stick(false);
+  stick(true);
   return group;
 }
-// The little house from the year's memory, its window and open door lit from within.
-function house() {
+
+/** A few steps up, a little flag on the top one: the hard parts, climbed together. */
+function steps() {
   const group = new THREE.Group();
-  const wall = new THREE.MeshStandardMaterial({ color: '#efe6ff', roughness: 0.55, emissive: '#4a3a6e', emissiveIntensity: 0.3 });
-  const roof = new THREE.MeshStandardMaterial({ color: '#8f6fd0', roughness: 0.4, emissive: '#3a2370', emissiveIntensity: 0.45, flatShading: true });
-  const light = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffd89a').multiplyScalar(2.2), toneMapped: false });
-  const body = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.14, 0.16), wall);
-  body.position.y = -0.03;
-  const top = new THREE.Mesh(new THREE.ConeGeometry(0.165, 0.11, 4), roof);
-  top.position.y = 0.095;
-  top.rotation.y = Math.PI / 4;
-  const door = new THREE.Mesh(new THREE.PlaneGeometry(0.05, 0.08), light);
-  door.position.set(-0.04, -0.06, 0.081);
-  const window = new THREE.Mesh(new THREE.PlaneGeometry(0.045, 0.04), light);
-  window.position.set(0.05, -0.015, 0.081);
-  const chimney = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.06, 0.03), wall);
-  chimney.position.set(0.06, 0.12, -0.02);
-  group.add(body, top, door, window, chimney);
-  group.rotation.set(0.25, -0.45, 0);
+  const stone = new THREE.MeshStandardMaterial({ color: '#cfe9d6', roughness: 0.5, emissive: '#2c5a3a', emissiveIntensity: 0.35 });
+  for (let k = 0; k < 4; k++) {
+    const height = 0.05 + k * 0.05;
+    const block = new THREE.Mesh(new RoundedBoxGeometry(0.065, height, 0.12, 2, 0.01), stone);
+    block.position.set(-0.1 + k * 0.066, -0.13 + height / 2, 0);
+    group.add(block);
+  }
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.11, 8), new THREE.MeshStandardMaterial({ color: '#e0b964', metalness: 1, roughness: 0.3 }));
+  pole.position.set(0.1, 0.125, 0);
+  group.add(pole);
+  const flag = new THREE.Mesh(new THREE.PlaneGeometry(0.05, 0.034), new THREE.MeshStandardMaterial({ color: '#ff6b8a', side: THREE.DoubleSide, emissive: '#a01838', emissiveIntensity: 0.6 }));
+  flag.position.set(0.127, 0.16, 0);
+  group.add(flag);
+  group.rotation.y = -0.5;
   return group;
 }
 
 export const MEMORIES = [
-  { key: 'school', title: '向日葵教室', color: '#ffc75a', make: sunflower },
-  { key: 'seaside', title: '海边小屋', color: '#7cc8ff', make: paperBoat },
-  { key: 'companion', title: '「我在」', color: '#ff9a4a', make: flame },
-  { key: 'chapel', title: '月下教堂', color: '#ff4f6e', make: null },
-  { key: 'house', title: '回忆小屋', color: '#d8b2ff', make: house },
+  { key: 'nights', title: '一个个夜晚', en: 'Late nights', color: '#ffd27a', make: deskLamp },
+  { key: 'edits', title: '改了又改', en: 'Rewrites', color: '#7cc8ff', make: pencil },
+  { key: 'tries', title: '试了又试', en: 'Retries', color: '#c9a8ff', make: paperBall },
+  { key: 'takes', title: '「再来一次」', en: '“One more take”', color: '#ff7a96', make: clapperboard },
+  { key: 'hard', title: '难关', en: 'Hurdles', color: '#8ee6a8', make: steps },
 ];
 
-export function createProps({ questionMark, pendant }) {
+export function createProps({ questionMark }) {
   const group = new THREE.Group();
 
   // The question mark keeps the reference's polished silver.
@@ -142,7 +206,7 @@ export function createProps({ questionMark, pendant }) {
   heart.add(heartGlow);
   group.add(heart);
 
-  // Memory orbs: glass bubbles with a keepsake turning inside and a soft halo of their world's colour.
+  // Orbs: glass bubbles with a keepsake turning inside and a soft halo of its own colour.
   const glass = new THREE.MeshPhysicalMaterial({
     color: '#ffffff', roughness: 0.04, transmission: 1, thickness: 0.35, ior: 1.32, iridescence: 0.6, iridescenceIOR: 1.3,
     clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.5, transparent: true, opacity: 1, specularIntensity: 1,
@@ -152,27 +216,7 @@ export function createProps({ questionMark, pendant }) {
     const orb = new THREE.Group();
     const shell = new THREE.Mesh(bubble, glass);
     orb.add(shell);
-    let keepsake;
-    if (memory.make) keepsake = memory.make();
-    else {
-      keepsake = pendant.clone(true);
-      // The pendant from BLOODBOUND without its chain or crystal shell (the orb is already the glass).
-      keepsake.traverse(object => {
-        if (/Chain|Crystal|Bail/.test(object.name)) object.visible = false;
-        if (object.isMesh && /Blood/.test(object.material?.name ?? '')) {
-          object.material = object.material.clone();
-          object.material.emissive.set('#ff1838');
-          object.material.emissiveIntensity = 0.9;
-        }
-      });
-      keepsake.updateMatrixWorld(true);
-      const box = new THREE.Box3();
-      keepsake.traverseVisible(object => { if (object.isMesh) box.expandByObject(object); });
-      const size = box.getSize(new THREE.Vector3()), centre = box.getCenter(new THREE.Vector3());
-      const fit = 0.3 / Math.max(size.x, size.y, size.z, 1e-6);
-      keepsake.scale.multiplyScalar(fit);
-      keepsake.position.copy(centre.sub(keepsake.position).multiplyScalar(-fit));
-    }
+    const keepsake = memory.make();
     const holder = new THREE.Group();
     holder.add(keepsake);
     holder.scale.setScalar(3.2);

@@ -5,49 +5,52 @@ import { clamp, mix, smooth, smoother, easeOutBack, easeOutCubic, easeInCubic, w
 
 // The running order of the curtain call. 96 BPM, twelve bars of 2.5 s; every beat below lands on the score in music.js.
 //
-//  0.0  House dark. A single seat's view of a closed curtain.
-//  2.5  Follow spot hits the curtain; it parts and Emochi is found mid-thought, the question mark hanging over it.
-//  5.0  It notices us, ponders once more, then walks down to its mark.
-//  8.1  One memory from each world of Memory Lane drifts in and Emochi greets each one.
-// 15.0  A little dance; the memories circle it.
-// 17.5  The question mark comes down into its hands, the memories pour into it and it turns into a heart.
+//  0.0  House dark, curtain closed, "thank you for watching" over it: the show seems to be over.
+//  2.5  Follow spot hits the seam; something bumps it from behind, then Emochi pokes its face through, mittens holding
+//       the gap, and looks around before it dares to speak.
+//  5.0  The curtain parts. Emochi steps back to its mark; the question mark appears over it, the idea it once was.
+//  8.1  Five keepsakes of the work that made it drift in, and Emochi greets each one.
+// 15.0  A little dance; the keepsakes circle it.
+// 17.5  The question mark comes down into its hands, the keepsakes pour into it and it turns into a heart.
 // 19.1  A hug, a lift, a release. 21.25 the heart bursts into confetti and the house warms up.
-// 22.6  A deep bow, a goodbye wave, the curtain closes. 28.2 title card.
+// 22.6  A deep bow, its name, a goodbye wave, the curtain closes. 28.2 title card.
 
 export const DURATION = 30;
 export const BEAT = 60 / 96;
 export const SCALE = 0.66;
-const HOME = 0.78, START = -0.4;
+const HOME = 0.78, START = 1.1;
 const TAU = Math.PI * 2;
 
 export const ORB_TIMES = [8.125, 9.375, 10.625, 11.875, 13.125];
-const SLOTS = [[-1.5, 1.3, 0.58], [-0.86, 1.86, 0.36], [0, 2.32, 0.22], [0.86, 1.86, 0.36], [1.5, 1.3, 0.58]];
+const SLOTS = [[-1.5, 1.3, 0.58], [-0.86, 1.86, 0.36], [0, 2.36, 0.5], [0.86, 1.86, 0.36], [1.5, 1.3, 0.58]];
 const FROM = [[-6.2, 3.2, 0.6], [-4.2, 6.4, -1.8], [0, 7.4, -2.6], [4.2, 6.4, -1.8], [6.2, 3.2, 0.6]];
 const MERGE = [18.25, 18.35, 18.45, 18.55, 18.65];
 const BURST = 21.25;
 
 export const SUBTITLES = [
-  { start: 3.0, end: 5.5, zh: '欢迎回到最后一幕。', en: 'Welcome back to the final act.' },
-  { start: 5.8, end: 8.0, zh: '我一直在想——回忆到底是什么？', en: 'I keep wondering — what is a memory, really?' },
-  { start: 8.2, end: 10.3, zh: '是向日葵教室里的阳光，是海边小屋的风，', en: 'Sunlight in the sunflower classroom, wind at the seaside cottage,' },
-  { start: 10.5, end: 12.6, zh: '是废墟里那句「我在」，是月下教堂的誓言，', en: 'an “I’m here” among the ruins, a vow in the moonlit chapel,' },
-  { start: 12.8, end: 15.2, zh: '还有那间装满故事的回忆小屋。', en: 'and the little house that keeps all these stories.' },
-  { start: 17.6, end: 20.1, zh: '原来答案，一直都在这里。', en: 'So the answer was right here all along.' },
-  { start: 20.3, end: 22.5, zh: '谢谢你，陪我走完这一程。', en: 'Thank you for walking all this way with me.' },
-  { start: 22.8, end: 25.3, zh: '这些回忆会发光，是因为有你在。', en: 'These memories glow because you were there.' },
-  { start: 25.6, end: 28.0, zh: '下一段回忆，我们再见。', en: 'See you in the next memory.' },
+  { start: 2.75, end: 5.1, zh: '等等……我还有几句话，想跟你们说。', en: 'Wait… there’s something I want to tell you.' },
+  { start: 5.3, end: 8.2, zh: '你们还记得吗？那时候，我还只是一个想法。', en: 'Do you remember? Back then, I was only an idea.' },
+  { start: 8.4, end: 11.4, zh: '是你们熬过的一个个夜晚，是改了又改、试了又试的日日夜夜，', en: 'All the late nights you stayed up, every rewrite, every retry,' },
+  { start: 11.6, end: 14.4, zh: '让我一点一点，变成了今天的样子。', en: 'shaped me, bit by bit, into who I am today.' },
+  { start: 14.6, end: 17.4, zh: '也有终于成功时，忍不住喊大家来看一眼的开心。', en: 'And the joy when it finally worked, and you just had to call everyone over.' },
+  { start: 17.55, end: 19.6, zh: '这里面，有你们每一个人的努力。', en: 'There’s a piece of every one of you in here.' },
+  { start: 19.75, end: 21.6, zh: '这些，我一个人都做不到。', en: 'I could never have done any of this alone.' },
+  { start: 21.8, end: 24.4, zh: '谢谢你们，把我带到了今天。', en: 'Thank you for bringing me this far.' },
+  { start: 24.6, end: 26.4, zh: '我是 Emochi。', en: 'I’m Emochi.' },
+  { start: 26.55, end: 28.15, zh: '接下来的故事，我们还要一起写。', en: 'The rest of the story, we’ll write together.' },
 ];
 export const END_CARD = 28.2;
 
-const BLINKS = [1.3, 4.2, 6.2, 9.7, 12.4, 14.5, 17.1, 23.0, 25.9, 27.4];
+const BLINKS = [3.62, 4.38, 6.05, 9.7, 12.4, 14.5, 17.1, 23.0, 25.9, 27.4];
 const HOPS = [{ time: 15.0, length: 0.5, height: 0.2 }, { time: 16.25, length: 0.56, height: 0.27 }, { time: 21.42, length: 0.44, height: 0.15 }];
 const SPIN = { time: 16.25, length: 0.56 };
 
 // Walking down to the mark: each plant is [time, z], the foot leaving STEP seconds before it lands.
 const STEP = 0.34;
-const PLANTS = [
-  [[7.3, 0.2], [8.0, HOME]],
-  [[6.95, -0.1], [7.65, 0.5], [8.28, HOME]],
+// Here it is two small steps back from the seam, still facing the house.
+export const PLANTS = [
+  [[6.05, HOME]],
+  [[5.75, 0.93], [6.38, HOME]],
 ];
 const FOOT = { x: 0.3 * SCALE, splay: 0.16 };
 
@@ -99,22 +102,24 @@ function orbOrbit(i, time, radius, out) {
 
 const camera = {
   position: track([
-    [0, [0, 1.25, 11.8], 'hold'], [2.5, [0, 1.38, 10.4]], [5.0, [0.35, 1.42, 7.7]], [6.6, [-0.45, 1.25, 6.6]],
+    [0, [0, 1.3, 11.8], 'hold'], [2.5, [0, 1.3, 10.2]], [4.3, [0.12, 1.3, 7.6]], [5.4, [0.3, 1.36, 7.4]], [6.8, [-0.3, 1.32, 7.3]],
     [8.0, [0, 1.32, 6.25]], [10.6, [0.55, 1.55, 6.55]], [13.1, [-0.45, 1.48, 6.9]], [15.0, [0, 1.12, 7.5]],
     [17.4, [1.15, 1.42, 6.6]], [18.8, [0.25, 1.18, 4.75]], [20.4, [0, 1.25, 5.3]], [21.25, [0, 1.42, 6.9]],
-    [22.6, [0, 1.38, 7.6]], [25.2, [0, 1.42, 8.3]], [28.2, [0, 1.5, 9.6]], [30, [0, 1.52, 9.9], 'hold'],
+    [22.6, [0.5, 1.3, 7.5]], [23.8, [1.3, 1.12, 7.3]], [25.2, [0.2, 1.42, 8.3]], [28.2, [0, 1.5, 9.6]], [30, [0, 1.52, 9.9], 'hold'],
   ]),
   target: track([
-    [0, [0, 2.3, 0.8], 'hold'], [2.5, [0, 2.15, 1.4]], [5.0, [0, 1.3, -0.3]], [6.6, [0, 1.0, -0.1]],
+    [0, [0, 2.15, 1.4], 'hold'], [2.5, [0, 1.75, 1.45]], [4.3, [0, 1.28, 1.4]], [5.4, [0, 1.3, 1.15]], [6.8, [0, 1.38, 0.75]],
     [8.0, [0, 1.25, 0.6]], [10.6, [0, 1.62, 0.5]], [13.1, [0, 1.6, 0.4]], [15.0, [0, 1.25, 0.6]],
     [17.4, [0, 1.25, 0.7]], [18.8, [0, 0.98, 0.95]], [20.4, [0, 1.45, 0.95]], [21.25, [0, 1.85, 0.7]],
     [22.6, [0, 1.35, 0.6]], [25.2, [0, 1.3, 0.6]], [28.2, [0, 2.2, 1.2]], [30, [0, 2.2, 1.2], 'hold'],
   ]),
-  fov: track([[0, 36, 'hold'], [5, 34], [8, 33], [15, 36], [18.8, 30], [21.25, 37], [25.2, 35], [30, 36, 'hold']]),
+  fov: track([[0, 36, 'hold'], [4.3, 32], [5.6, 34], [8, 33], [15, 36], [18.8, 30], [21.25, 37], [25.2, 35], [30, 36, 'hold']]),
 };
 
 const PALE = '#ffe8cc';
+const MARK_AT = 6.3;
 const flashes = [
+  { time: MARK_AT, origin: [0.5, 1.9, HOME + 0.1], radius: 0.4, count: 22 },
   ...ORB_TIMES.map((time, i) => ({ time, origin: SLOTS[i], radius: 0.42, count: 26 })),
   ...MERGE.map(time => ({ time, origin: [0, (EMOCHI.PELVIS + 0.45) * SCALE, HOME + 0.86 * SCALE], radius: 0.3, count: 14 })),
   { time: 18.72, origin: [0, (EMOCHI.PELVIS + 0.5) * SCALE, HOME + 0.9 * SCALE], radius: 1.35, count: 130 },
@@ -129,7 +134,7 @@ export function createShow() {
   const place = { x: 0, y: 0, z: START, yaw: 0, scale: SCALE, feet: [{ x: 0, y: 0, z: 0, yaw: 0, pitch: 0 }, { x: 0, y: 0, z: 0, yaw: 0, pitch: 0 }] };
   const light = name => ({ intensity: 0, target: [0, 0, 0], beam: 0, color: null, name });
   const stage = {
-    time: 0, curtain: { top: 0, bottom: 0, motion: 0 }, house: 0.3, foot: 0, festoons: 0,
+    time: 0, curtain: { top: 0, bottom: 0, motion: 0, push: 0, peek: 0 }, house: 0.3, foot: 0, festoons: 0,
     cyc: { glow: 0, top: '#090616', bottom: '#2a0f22' },
     lights: { follow: light('follow'), rimL: light('rimL'), rimR: light('rimR'), moverL: light('moverL'), moverR: light('moverR'), wash: { intensity: 0 } },
   };
@@ -143,9 +148,9 @@ export function createShow() {
     flashes,
   };
   const view = { position: new THREE.Vector3(), target: new THREE.Vector3(), fov: 36, exposure: 1 };
-  const frame = { time: 0, pose, place, stage, props, camera: view, labels: [0, 0, 0, 0, 0], subtitle: -1, endCard: 0 };
+  const frame = { time: 0, pose, place, stage, props, camera: view, labels: [0, 0, 0, 0, 0], subtitle: -1, title: 0, endCard: 0 };
   const orbWorld = SLOTS.map(() => new THREE.Vector3());
-  const tmp = new THREE.Vector3(), held = new THREE.Vector3(), lifted = new THREE.Vector3(), released = new THREE.Vector3(0, 1.78, 1.14);
+  const tmp = new THREE.Vector3(), idea = new THREE.Vector3(), held = new THREE.Vector3(), lifted = new THREE.Vector3(), released = new THREE.Vector3(0, 1.78, 1.14);
 
   function setHand(i, target, w) { if (w > 0) for (let j = 0; j < 3; j++) pose.hands[i][j] = mix(pose.hands[i][j], target[j], w); }
   function toward(w, spec) {
@@ -203,29 +208,39 @@ export function createShow() {
     pose.squash += 0.012 * breath;
     pose.bob += 0.006 * breath;
 
-    // Thinking, as the reference model is posed: chin on one mitten, the other scratching its head.
-    const think = 1 - window01(t, 4.95, 5.55);
-    const scratch = Math.sin(t * 15) * 0.035 * (pulse(t, 0.9, 1.1, 2.0, 2.2) + pulse(t, 3.3, 3.5, 4.3, 4.5));
-    toward(think, {
-      hands: [[-0.2, 0.73, 0.58], [0.72 + scratch, 1.6 + scratch * 0.5, 0.12]],
-      roll: 0.22 + 0.04 * Math.sin(t * 1.2), twist: 0.08 + 0.05 * Math.sin(t * 0.9), lean: 0.03, look: [0.35, 0.55], smile: -0.2,
-    });
-    // It notices the audience, a little startled, then ponders once more.
-    const notice = pulse(t, 4.95, 5.35, 5.75, 6.1);
-    const startle = pulse(t, 5.0, 5.12, 5.3, 5.7);
-    toward(notice, { hands: [[-0.98, 0.42, 0.34], [0.98, 0.42, 0.34]], look: [0, 0.12], smile: 0.6, roll: -0.04, lean: -0.04 });
-    pose.open += 0.6 * startle;
-    pose.squash += 0.07 * startle;
-    const ponder = pulse(t, 5.75, 6.1, 6.5, 6.85);
-    toward(ponder, { hands: [[-0.22, 0.74, 0.58], null], look: [-0.4, 0.5], smile: 0.05, roll: -0.12 });
+    // Behind the curtain: two bumps against the seam, then the face comes through and both mittens hold the gap.
+    const peek = window01(t, 3.08, 3.42);
+    const grip = pulse(t, 3.06, 3.3, 4.78, 5.15);
+    const fidget = 0.03 * Math.sin(t * 9) * pulse(t, 3.45, 3.6, 3.85, 4.0);
+    toward(grip, { hands: [[-0.8, 1.06 + fidget, 0.64], [0.8, 1.06 - fidget, 0.64]], lean: 0.2, smile: 0.25, blush: 0.3, look: [0, 0.08] });
+    // It hesitates: a startled look at the house, a glance either way, then a shy little nod.
+    const glance = 0.45 * (pulse(t, 3.62, 3.75, 3.9, 4.02) - pulse(t, 3.98, 4.1, 4.24, 4.36));
+    pose.look[0] += glance * grip;
+    pose.twist += 0.3 * glance * grip;
+    const startle = pulse(t, 3.38, 3.46, 3.56, 3.85);
+    pose.open += 0.55 * startle;
+    pose.squash += 0.06 * startle;
+    const nod = pulse(t, 4.45, 4.56, 4.62, 4.82);
+    pose.lean += 0.1 * nod;
+    pose.smile += 0.45 * window01(t, 4.4, 4.7) * grip;
+    // Let go as the curtain parts, mittens together, still a little shy.
+    const shy = pulse(t, 4.85, 5.2, 5.5, 5.8);
+    toward(shy, { hands: [[-0.24, 0.44, 0.66], [0.24, 0.44, 0.66]], look: [0, 0.14], smile: 0.6, blush: 0.5, roll: 0.06 * Math.sin(t * 3) });
 
-    // Walk down to the spike mark.
+    // Two steps back onto the spike mark.
     const feet = PLANTS.map(plants => footAlong(plants, t));
-    const walking = pulse(t, 6.55, 6.75, 8.1, 8.4);
-    const swing = Math.sin(TAU * (t - 6.6) / (2 * STEP + 0.01));
-    toward(walking, { hands: [[-1.04, 0.26, 0.12 + 0.3 * swing], [1.04, 0.26, 0.12 - 0.3 * swing]], lean: 0.07, look: [0, 0.1], smile: 0.5 });
-    pose.bob += walking * (-0.03 + 0.05 * Math.max(feet[0].lift, feet[1].lift));
-    pose.roll += 0.05 * swing * walking;
+    const walking = pulse(t, 5.4, 5.55, 6.3, 6.5);
+    const swing = Math.sin(TAU * (t - 5.41) / (2 * STEP + 0.01));
+    toward(walking, { hands: [[-1.04, 0.3, 0.12 - 0.18 * swing], [1.04, 0.3, 0.12 + 0.18 * swing]], lean: -0.03, look: [0, 0.12], smile: 0.55 });
+    pose.bob += walking * (-0.02 + 0.04 * Math.max(feet[0].lift, feet[1].lift));
+    pose.roll += 0.04 * swing * walking;
+
+    // The question mark appears over it: back then, it was only an idea. It looks up and shows us.
+    const wonder = pulse(t, 6.2, 6.5, 7.45, 7.85);
+    idea.set(place.x + 0.5, 1.9, HOME + 0.1);
+    toward(wonder, { hands: [[-0.3, 0.55, 0.62], reach(1, idea, 0.62)], look: [0.4, 0.75], smile: 0.75, roll: -0.08, twist: 0.12 });
+    pose.open += 0.35 * pulse(t, MARK_AT, MARK_AT + 0.1, MARK_AT + 0.25, MARK_AT + 0.5);
+    toward(pulse(t, 7.05, 7.3, 7.45, 7.75), { look: [0, 0.12], happy: 0.6, blush: 0.4 });
 
     // Greeting each memory as it lands: look, lean in, point with the nearer hand (both hands for the one overhead).
     for (let i = 0; i < SLOTS.length; i++) {
@@ -236,7 +251,9 @@ export function createShow() {
       toBody(orbWorld[i], scratchB);
       const lx = clamp(scratchB.x / 2.2, -1, 1);
       const delight = pulse(t, land, land + 0.1, land + 0.4, land + 0.7);
-      const hands = i === 2 ? [reach(0, orbWorld[i], 0.7), reach(1, orbWorld[i], 0.7)]
+      // Overhead the mittens stay in front of the body, or the pebble hides them.
+      const up = h => { h[2] = Math.max(h[2], 0.42); return h; };
+      const hands = i === 2 ? [up(reach(0, orbWorld[i], 0.7)), up(reach(1, orbWorld[i], 0.7))]
         : i < 2 ? [reach(0, orbWorld[i]), [1.0, 0.3, 0.3]] : [[-1.0, 0.3, 0.3], reach(1, orbWorld[i])];
       toward(w, { hands, look: [lx, clamp((scratchB.y - 1.2) / 1.1, -0.3, 1)], twist: 0.22 * lx, smile: 0.85, lean: -0.03 });
       pose.happy = Math.max(pose.happy, 0.85 * delight);
@@ -282,9 +299,9 @@ export function createShow() {
     const bowing = pulse(t, 22.5, 22.8, 24.9, 25.3);
     const bow = window01(t, 22.65, 23.45) * (1 - window01(t, 24.35, 25.1));
     toward(bowing, { hands: [[-0.36, 0.6, 0.55], [1.06, 0.52, 0.46]], smile: 0.8, look: [0, -0.1], blush: 0.3 });
-    pose.lean = mix(pose.lean, 0.85, bow);
+    pose.lean = mix(pose.lean, 0.62, bow);
     pose.happy = Math.max(pose.happy, 0.8 * bow);
-    pose.bob -= 0.04 * bow;
+    pose.bob -= 0.07 * bow;
 
     // Goodbye wave.
     const waving = pulse(t, 25.2, 25.6, 27.6, 28.0);
@@ -300,7 +317,10 @@ export function createShow() {
     pose.bob -= 0.05 * jump.crouch;
     place.y = jump.lift;
     place.yaw = TAU * smoother((t - SPIN.time) / SPIN.length);
-    const walkingDone = t >= 8.4;
+    const walkingDone = t >= 6.45;
+    // Before the peek it waits a little further back, clear of the cloth.
+    const back = 0.12 * (1 - peek);
+    if (!walkingDone) for (const foot of feet) foot.z -= back;
     place.z = walkingDone ? HOME : (feet[0].z + feet[1].z) / 2;
     place.x = 0;
     const c = Math.cos(place.yaw), s = Math.sin(place.yaw);
@@ -308,7 +328,6 @@ export function createShow() {
       const foot = place.feet[i];
       let lx = side * FOOT.x, lz = 0, y = jump.lift, pitch = 0;
       if (!walkingDone) { lz = feet[i].z - place.z; y += feet[i].lift * 0.09; pitch = -0.35 * Math.sin(TAU * feet[i].phase) * (feet[i].lift > 0 ? 1 : 0); }
-      if (i === 1) { y += 0.05 * think; pitch += 0.45 * think; lz -= 0.05 * think; }
       pitch -= 0.25 * Math.sin(Math.PI * clamp((t - HOPS[0].time) / HOPS[0].length)) + 0.25 * Math.sin(Math.PI * clamp((t - HOPS[1].time) / HOPS[1].length));
       foot.x = place.x + lx * c + lz * s;
       foot.z = place.z - lx * s + lz * c;
@@ -318,24 +337,26 @@ export function createShow() {
     }
 
     // —— Stage ——
-    const opening = window01(t, 2.9, 4.65), openingLow = window01(t, 3.12, 4.95);
+    const opening = window01(t, 4.95, 6.6), openingLow = window01(t, 5.15, 6.9);
     const closing = window01(t, 26.0, 28.0), closingLow = window01(t, 26.2, 28.2);
     stage.curtain.top = opening * (1 - closing);
     stage.curtain.bottom = openingLow * (1 - closingLow);
-    stage.curtain.motion = pulse(t, 2.9, 3.4, 4.4, 5.3) + pulse(t, 26.0, 26.5, 27.7, 28.6);
+    stage.curtain.motion = 0.25 * pulse(t, 2.7, 2.85, 3.1, 3.5) + pulse(t, 4.95, 5.4, 6.3, 7.1) + pulse(t, 26.0, 26.5, 27.7, 28.6);
+    stage.curtain.push = 0.8 * pulse(t, 2.72, 2.8, 2.84, 2.98) + pulse(t, 2.93, 3.0, 3.05, 3.2);
+    stage.curtain.peek = peek * (1 - window01(t, 5.5, 6.4)) * (1 + 0.04 * fidget / 0.03);
     stage.house = mix(0.32, 0.08, window01(t, 0.4, 2.4)) + 0.1 * window01(t, 21.2, 22.5) + 0.12 * window01(t, 28.2, 29.5);
 
     const hit = window01(t, 2.42, 2.56, smooth);
-    const onEmochi = window01(t, 3.3, 4.8) * (1 - window01(t, 26.2, 28.0));
+    const onEmochi = window01(t, 4.9, 6.4) * (1 - window01(t, 26.2, 28.0));
     const follow = stage.lights.follow;
     follow.intensity = 300 * hit * (1 - 0.3 * pulse(t, 14.8, 15.1, 17.3, 17.8)) * (1 - 0.25 * window01(t, 21.25, 22.4));
-    follow.beam = hit * mix(0.13, 0.045, onEmochi) * (1 - 0.4 * window01(t, 21.25, 22.4));
+    follow.beam = hit * mix(0.1, 0.045, onEmochi) * (1 - 0.4 * window01(t, 21.25, 22.4));
     follow.target[0] = mix(0, place.x, onEmochi);
-    follow.target[1] = mix(1.6, 0.85 + place.y, onEmochi);
+    follow.target[1] = mix(1.2, 0.85 + place.y, onEmochi);
     follow.target[2] = mix(STAGE.curtainZ, place.z, onEmochi);
     follow.color = PALE;
 
-    const rims = window01(t, 4.4, 5.6) * (1 - 0.6 * window01(t, 26.0, 28.0));
+    const rims = window01(t, 5.0, 6.2) * (1 - 0.6 * window01(t, 26.0, 28.0));
     const rimBoost = 1 + 0.3 * pulse(t, 15, 15.3, 17.2, 17.6) + 0.35 * pulse(t, 21.2, 21.4, 22.6, 24);
     for (const [name, side] of [['rimL', -1], ['rimR', 1]]) {
       const l = stage.lights[name];
@@ -352,9 +373,9 @@ export function createShow() {
       l.target.splice(0, 3, side * 0.4 + 1.9 * Math.sin(phase), 0, HOME - 0.2 + 0.9 * Math.cos(phase * 0.7));
     }
     stage.lights.wash.intensity = 165 * window01(t, BURST, BURST + 0.6) * (1 - 0.55 * window01(t, 26.4, 28.4));
-    stage.foot = 0.32 * window01(t, 4.4, 5.8) + 0.4 * pulse(t, BURST, BURST + 0.3, 24.5, 26.5) - 0.18 * window01(t, 26.6, 28.4);
-    stage.festoons = 0.32 * window01(t, 4.8, 7.5) + 0.68 * window01(t, BURST, BURST + 1.2);
-    stage.cyc.glow = 0.35 * window01(t, 4.4, 6) + 0.25 * pulse(t, 18.6, 19.0, 20.5, 21.2) + 0.35 * window01(t, BURST, BURST + 0.8) - 0.25 * window01(t, 26.2, 28.4);
+    stage.foot = 0.32 * window01(t, 5.0, 6.4) + 0.4 * pulse(t, BURST, BURST + 0.3, 24.5, 26.5) - 0.18 * window01(t, 26.6, 28.4);
+    stage.festoons = 0.32 * window01(t, 5.2, 7.8) + 0.68 * window01(t, BURST, BURST + 1.2);
+    stage.cyc.glow = 0.35 * window01(t, 5.0, 6.6) + 0.25 * pulse(t, 18.6, 19.0, 20.5, 21.2) + 0.35 * window01(t, BURST, BURST + 0.8) - 0.25 * window01(t, 26.2, 28.4);
     stage.cyc.bottom = t < BURST ? '#2a0f22' : '#46182c';
 
     // —— Camera ——
@@ -365,6 +386,7 @@ export function createShow() {
 
     // —— Text ——
     frame.subtitle = SUBTITLES.findIndex(line => t >= line.start && t < line.end);
+    frame.title = pulse(t, 0.45, 1.2, 2.55, 3.0);
     frame.endCard = window01(t, END_CARD, END_CARD + 1.1);
     return frame;
   }
@@ -374,12 +396,15 @@ export function createShow() {
     // Question mark: hangs beside its head, bounces through the dance, comes down to the mitten and turns.
     const mark = props.mark;
     mark.position.set(place.x + 0.5, 1.9 + place.y + 0.05 * Math.sin(t * 1.6), place.z + 0.1);
+    const clear = pulse(t, 11.4, 12.2, 14.5, 15.1);
+    mark.position.x -= 0.12 * clear;
+    mark.position.y += 0.55 * clear;
     mark.position.y += 0.08 * Math.abs(Math.sin(Math.PI * (t - 15) / BEAT)) * pulse(t, 14.8, 15, 17.2, 17.5);
     // Down beside the head first, then in to the mittens at chest height, so it never crosses the face.
     rig.bodyPoint(0, 0.4, 0.86, held);
     const down = smoother(window01(t, 17.45, 18.2, t => t)), inward = smoother(window01(t, 17.85, 18.45, t => t));
     mark.position.set(mix(mark.position.x, held.x, inward), mix(mark.position.y, held.y, down), mix(mark.position.z, held.z, down));
-    mark.scale = 0.44 * window01(t, 2.6, 3.4) * (1 - easeInCubic(window01(t, 18.55, 18.82, t => t)) * 0.999);
+    mark.scale = 0.44 * easeOutBack(window01(t, MARK_AT - 0.12, MARK_AT + 0.3, t => t), 2.2) * (1 - easeInCubic(window01(t, 18.55, 18.82, t => t)) * 0.999);
     mark.spin = 0.35 * Math.sin(t * 0.7) - 0.25 + TAU * smooth(window01(t, 16.25, 16.81, t => t)) + 16 * easeInCubic(window01(t, 18.1, 18.82, t => t));
 
     orbs(t);

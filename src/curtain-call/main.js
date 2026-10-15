@@ -22,23 +22,23 @@ const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const app = document.querySelector('#app');
 app.innerHTML = `
   <div class="cc-stage" aria-hidden="true"></div>
-  <div class="cc-labels" aria-hidden="true">${MEMORIES.map(m => `<span class="cc-label" style="--tint:${m.color}">${m.title}</span>`).join('')}</div>
+  <div class="cc-labels" aria-hidden="true">${MEMORIES.map(m => `<span class="cc-label" style="--tint:${m.color}">${m.title}<small>${m.en}</small></span>`).join('')}</div>
+  <div class="cc-title" aria-hidden="true"><span class="zh">谢谢观看</span><span class="en">Thank you for watching</span></div>
   <div class="cc-subtitles" aria-live="polite">${SUBTITLES.map(s => `<p class="cc-line"><span class="zh">${s.zh}</span><span class="en">${s.en}</span></p>`).join('')}</div>
   <section class="cc-end" aria-hidden="true" inert>
-    <p class="cc-kicker">谢幕 · Curtain Call</p>
-    <h2>MEMORY LANE</h2>
-    <p class="cc-thanks">谢谢你走过这条回忆小径</p>
+    <h2>Emochi</h2>
+    <p class="cc-thanks"><span class="zh">我们一起拼过的时光，有了模样。</span><span class="en">Everything we fought through together has taken shape.</span></p>
+    <p class="cc-thanks"><span class="zh">我们一起期待的未来，正在开始。</span><span class="en">The future we’ve been hoping for is just beginning.</span></p>
     <button class="cc-button cc-replay-big" type="button">再看一次</button>
-    <p class="cc-provenance">回忆片段取自 Memory Lane 的演示样本世界，并非真实用户的聊天记录。<br>Emochi 形象依据 white-character.blend 重建，问号取自该模型；血心吊坠复用 BLOODBOUND 资源；音乐与音效均为本地实时合成。</p>
   </section>
   <section class="cc-intro">
     <div class="cc-intro-inner">
-      <p class="cc-kicker">Memory Lane · 终章</p>
+      <p class="cc-kicker">Emochi · 终章</p>
       <h1>谢幕</h1>
       <p class="cc-sub">Curtain Call</p>
       <button class="cc-button cc-start" type="button" disabled><span class="cc-start-label">正在搭建舞台</span><span class="cc-meter"><i></i></span></button>
-      <p class="cc-hint">约 30 秒 · 建议打开声音 · 空格暂停，← → 快退快进</p>
-      <p class="cc-provenance">演示内容：回忆取自 Memory Lane 的演示样本世界，并非真实用户历史。</p>
+      <p class="cc-hint">约 30 秒 · 建议打开声音 · 空格暂停，← → 快退快进<br>About 30 s · sound on · Space to pause, ← → to skip</p>
+      <p class="cc-provenance">Emochi 依据 white-character.blend 重建；音乐为本地合成。</p>
     </div>
   </section>
   <nav class="cc-controls" aria-label="播放控制">
@@ -134,13 +134,13 @@ function resize() {
 }
 function updateFov() {
   // Keep the stage's width in view on narrow screens by widening the vertical field.
-  const minAspect = camera.aspect < 1 ? 1.0 : 1.5;
+  const minAspect = camera.aspect < 1 ? 0.82 : 1.5;
   let fov = baseFov;
   if (camera.aspect < minAspect) fov = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(baseFov) / 2) * minAspect / camera.aspect));
   camera.fov = Math.min(fov, 75);
   // On short landscape screens the captions sit over the body: shift the picture up to clear them.
   const width = window.innerWidth, height = window.innerHeight;
-  if (height < 520 && camera.aspect > 1) camera.setViewOffset(width, height, 0, height * 0.14, width, height);
+  if (height < 520 && camera.aspect > 1) camera.setViewOffset(width, height, 0, height * 0.2, width, height);
   else camera.clearViewOffset();
   camera.updateProjectionMatrix();
 }
@@ -165,18 +165,17 @@ const loadModel = url => loader.loadAsync(url).then(gltf => { step(0.25); return
 let props = null, player = null, score = null;
 
 async function load() {
-  const [questionMark, pendant, buffer] = await Promise.all([
+  const [questionMark, buffer] = await Promise.all([
     loadModel('/assets/curtain-call/question-mark.glb'),
-    loadModel('/assets/bloodbound/blood-heart-pendant.glb'),
     renderScore().catch(() => null).then(result => { step(0.3); return result; }),
   ]);
   score = buffer;
-  props = createProps({ questionMark, pendant });
+  props = createProps({ questionMark });
   scene.add(props.group);
   resize();
   // Compile and warm up every look of the show now, so nothing stalls the first time it appears.
   await renderer.compileAsync(scene, camera).catch(() => {});
-  for (const t of [3.6, 10.6, 15.8, 18.4, 19.4, 21.6, 28.5]) drawAt(t);
+  for (const t of [3.6, 6.4, 10.6, 15.8, 18.4, 19.4, 21.6, 28.5]) drawAt(t);
   // Opening an audio device blocks for a few hundred milliseconds; pay that behind the loading bar. The context starts
   // suspended and the first click resumes it.
   ensurePlayer();
@@ -262,6 +261,7 @@ function react(frame) {
 const labels = [...app.querySelectorAll('.cc-label')];
 const lines = [...app.querySelectorAll('.cc-line')];
 const endCard = $('.cc-end');
+const titleCard = $('.cc-title');
 const projected = new THREE.Vector3();
 let currentLine = -2;
 let endedAt = 0;
@@ -307,6 +307,7 @@ function drawAt(t, wall = 0) {
     lines[frame.subtitle]?.classList.add('on');
     currentLine = frame.subtitle;
   }
+  titleCard.style.opacity = frame.title.toFixed(3);
   endCard.style.opacity = frame.endCard.toFixed(3);
   const live = frame.endCard > 0.5;
   if (live !== endCard.classList.contains('is-live')) {

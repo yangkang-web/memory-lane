@@ -70,8 +70,10 @@ function floorMaterial() {
 
 // The drape: a plane laid out from its outer edge, gathered towards it as it opens. The bottom lags the top while it
 // moves and the pleats deepen as the cloth bunches. Normals come from neighbouring points of the same surface.
+// uPush bulges the seam towards the house (someone behind it); uPeek pulls both inner edges apart around uPeekY, as
+// two mittens holding the gap open for a face.
 const DRAPE_GLSL = /* glsl */ `
-uniform float uOpenTop, uOpenBottom, uTime, uMotion;
+uniform float uOpenTop, uOpenBottom, uTime, uMotion, uPush, uPeek, uPeekY;
 uniform vec2 uSize;
 uniform float uOuter;
 varying float vFold;
@@ -87,7 +89,12 @@ vec3 drape(vec2 uv) {
   z += uMotion * 0.16 * sin(theta * 0.5 - uTime * 7.0 + uv.y * 3.0) * (1.0 - uv.y);
   z += 0.012 * sin(uTime * 0.7 + uv.x * 9.0 + uv.y * 4.0);
   z += 0.05 * (1.0 - smoothstep(0.0, 0.06, uv.y));
-  return vec3(uOuter + along * gather, uv.y * uSize.y, z);
+  float height = uv.y * uSize.y;
+  float seam = smoothstep(0.8, 1.0, uv.x);
+  z += uPush * 0.2 * exp(-pow((height - uPeekY) / 0.5, 2.0)) * seam * seam;
+  float held = uPeek * exp(-pow((height - uPeekY) / 0.78, 2.0)) * seam;
+  z += 0.09 * held;
+  return vec3(uOuter + along * gather - 0.74 * held * seam, height, z);
 }
 `;
 
@@ -476,6 +483,7 @@ export function createStage(renderer) {
   // Main traveller curtain: the right half is the left half mirrored, so both gather towards their own side.
   const curtainUniforms = {
     uOpenTop: { value: 0 }, uOpenBottom: { value: 0 }, uTime: { value: 0 }, uMotion: { value: 0 },
+    uPush: { value: 0 }, uPeek: { value: 0 }, uPeekY: { value: 1.22 },
     uSize: { value: new THREE.Vector2(5.3, 5.9) }, uOuter: { value: -5.08 },
   };
   const drape = curtainMaterial(curtainUniforms);
@@ -550,6 +558,8 @@ export function createStage(renderer) {
     curtainUniforms.uOpenTop.value = state.curtain.top;
     curtainUniforms.uOpenBottom.value = state.curtain.bottom;
     curtainUniforms.uMotion.value = state.curtain.motion;
+    curtainUniforms.uPush.value = state.curtain.push;
+    curtainUniforms.uPeek.value = state.curtain.peek;
     curtainUniforms.uTime.value = state.time;
     hemi.intensity = state.house;
     for (const [i, name] of beamOrder.entries()) {

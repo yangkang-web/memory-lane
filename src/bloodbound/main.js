@@ -212,10 +212,10 @@ async function init() {
     chapel.openEnd(runTime, length);
     sound.play('door-open', 0, 0, 'effects', .6);
   };
-  // Inside the journey the memory is one minute from the blade to the door. When he has said his last line you turn
-  // from him, cross the nave and push the doors to the passage open with both hands, into the light the next memory
-  // grows from (see journey-effects.js), and the minute is up.
-  const SEQUENCE_SECONDS = 60;
+  // Inside the journey the memory plays whole, from the walk down the nave to the door. When he has said his last line
+  // you turn from him, cross the nave and push the doors to the passage open with both hands, into the light the next
+  // memory grows from (see journey-effects.js).
+  const OUTRO_SECONDS = 5.4;
   let sequenceStart = 0, outro = null;
   const smooth = u => { const k = Math.min(1, Math.max(0, u)); return k * k * (3 - 2 * k); };
   const wrap = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
@@ -225,9 +225,9 @@ async function init() {
     // Far enough back that the arch stays in frame on the approach; the step in comes with the push.
     const stand = new THREE.Vector3(doorX - .8, 0, doorZ);
     const path = new THREE.CatmullRomCurve3([new THREE.Vector3(x, 0, z), new THREE.Vector3(stand.x - 1.2, 0, doorZ + (z - doorZ) * .2), stand], false, 'centripetal');
-    outro = { time: 0, length: THREE.MathUtils.clamp(SEQUENCE_SECONDS - (runTime - sequenceStart), 4.2, 5.4), path, yaw, pitch, pushed: false, sent: false };
+    outro = { time: 0, length: OUTRO_SECONDS, path, yaw, pitch, pushed: false, sent: false };
   }
-  // Seconds below are on a 4.8 s clock, stretched to whatever is left of the minute.
+  // Seconds below are on a 4.8 s clock, stretched to the outro's length.
   function steerOutro(dt) {
     const o = outro;
     o.time += dt;
@@ -263,6 +263,7 @@ async function init() {
   let flash = 0;
   let shake = 0;
   let pixelRatio = Math.min(devicePixelRatio, 1.5, Math.sqrt(2200000 / (innerWidth * innerHeight)));
+  let fullRatio = pixelRatio, stalled = false;
   const finishDetail = () => ({ memoryId: 'bloodbound', keepsakeId: 'blood-heart-pendant', completed: true, exit: chapel.group.userData.exit, dialogueSource: 'BLOODBOUND — The Night You Were Mine, 2026-10-14' });
   const event = (name, detail = {}) => dispatchEvent(new CustomEvent(`memorylane:${name}`, { detail }));
 
@@ -534,7 +535,7 @@ async function init() {
     if (externalHandoff) return;
     camera.aspect = innerWidth / innerHeight;
     camera.updateProjectionMatrix();
-    pixelRatio = Math.min(devicePixelRatio, 1.5, Math.sqrt(2200000 / (innerWidth * innerHeight)));
+    pixelRatio = fullRatio = Math.min(devicePixelRatio, 1.5, Math.sqrt(2200000 / (innerWidth * innerHeight)));
     renderer.setPixelRatio(pixelRatio);
     renderer.setSize(innerWidth, innerHeight);
     cinematic.resize();
@@ -587,6 +588,7 @@ async function init() {
     const elapsedFrame = Math.max(0,(now - (lastFrame || now)) / 1000);
     const dt = Math.min(elapsedFrame, 0.1);
     lastFrame = now;
+    if (elapsedFrame > 0.25) stalled = true;
     if (exitAnimation) {
       // An even walk along the path, easing in and out, the view turning from where you looked to the way ahead; then
       // both hands on the end door, which swings slowly away, and the step through into the warm light beyond it.
@@ -630,11 +632,8 @@ async function init() {
       $('.flash').style.opacity = String(flash);
       cinematic.render('scene', 4);
     } else if (launched) {
-      // In the journey the minute keeps to the wall clock: a stall (the next memory loading alongside) is caught up in
-      // short steps, drawn once, rather than lost.
-      const steps = inSequence && state === 'playing' ? Math.min(40, Math.ceil(elapsedFrame / 0.1)) : 1;
-      const step = steps > 1 ? elapsedFrame / steps : dt;
-      for (let i = 0; i < steps; i++) {
+      const step = dt;
+      {
         if (state === 'playing') {
           runTime += step;
           flow.update(step);
@@ -647,7 +646,6 @@ async function init() {
           if (walkingOut && leaveAt && runTime > leaveAt) { leaveAt = 0; exit(); }
         }
         player.update(state === 'playing' ? step : 0);
-        if (i < steps - 1) director.animate(step, camera);
       }
       if (shake > 0.01 && !reducedMotion) {
         camera.rotation.x += (Math.random() - 0.5) * 0.035 * shake;
@@ -684,10 +682,18 @@ async function init() {
       const measured = Math.round(frames * 1000 / (now - fpsStart));
       stage.dataset.fps = String(measured);
       $('#performance-label').textContent = `${measured} FPS`;
-      if (launched && state === 'playing' && measured < 35 && pixelRatio > .85) {
-        pixelRatio = Math.max(.85, pixelRatio * .88);
+      // In the journey a single stall (another memory loading) or the first seconds do not count against the
+      // resolution, it never drops below 1, and it climbs back once the frame rate recovers.
+      const floor = inSequence ? Math.min(1, fullRatio) : .85;
+      const judged = !inSequence || (!stalled && runTime - sequenceStart > 5);
+      if (launched && state === 'playing' && judged && measured < 35 && pixelRatio > floor) {
+        pixelRatio = Math.max(floor, pixelRatio * .88);
+        renderer.setPixelRatio(pixelRatio); renderer.setSize(innerWidth, innerHeight); cinematic.resize();
+      } else if (inSequence && launched && judged && measured > 52 && pixelRatio < fullRatio) {
+        pixelRatio = Math.min(fullRatio, pixelRatio / .88);
         renderer.setPixelRatio(pixelRatio); renderer.setSize(innerWidth, innerHeight); cinematic.resize();
       }
+      stalled = false;
       frames = 0; fpsStart = now;
     }
   }
@@ -715,7 +721,7 @@ async function init() {
     getKeepsake: () => pendant.group,
     getContext: () => ({ renderer, scene, camera, chapter: chapterGroup, keepsake: pendant.group }),
   });
-  if(inSequence)installSequence({ready:audioComplete?Promise.resolve():Promise.reject(new Error('吸血鬼音频未就绪')),start:()=>start('danger'),pause,resume,capture:()=>snapshot(renderer.domElement,()=>cinematic.render('scene',4)),dispose:()=>disposeScene()});
+  if(inSequence)installSequence({ready:audioComplete?Promise.resolve():Promise.reject(new Error('吸血鬼音频未就绪')),start:()=>start(),pause,resume,capture:()=>snapshot(renderer.domElement,()=>cinematic.render('scene',4)),dispose:()=>disposeScene()});
   event('ready', { memoryId: 'bloodbound', segments: SEGMENTS.map(s => s.id) });
   addEventListener('pagehide', disposeScene, { once: true });
   console.info('BLOODBOUND ready', { audioComplete, triangles: renderer.info.render.triangles });

@@ -173,7 +173,7 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
     if (a[1] === 'nape' && b[1] === 'nape') pose.p.addScaledVector(up, Math.sin(time * 19 + s) * 0.004).addScaledVector(F.pr, Math.sin(time * 13) * 0.004);
     if (a[1] === 'offer' && b[1] === 'offer') pose.p.y += Math.sin(time * 1.3) * 0.006;
     const into = rite.kind === 'gift' ? ramp(time, 0, 1.0) : side === 'left' ? ramp(time, 0.2, 1.0) : 1;
-    return { pose, weight: into * (1 - ramp(time, rite.release, 1.2)) };
+    return { pose, weight: into * (1 - ramp(time, Math.min(rite.release, rite.back ?? Infinity), 1.2)) };
   }
   // Puts his pinch on `pose.p`, the elbow out to the side and down; a couple of passes take up the hand's length.
   function hold(side, pose, weight) {
@@ -220,7 +220,7 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
   // about the point the estimate assumes and his head tilts after it, so `correct` takes up what is left.
   function riteLean(correct = false) {
     if (rite.kind !== 'wear') return;
-    const t = rite.time, out = 1 - ramp(t, rite.release, 1.2), brow = ramp(t, 3.9, 1.1);
+    const t = rite.time, out = 1 - ramp(t, Math.min(rite.release, rite.back ?? Infinity), 1.2), brow = ramp(t, 3.9, 1.1);
     if (correct) { if (brow * out > 0) lean(browLean(rite.gap, [-0.15, 0.15]) * brow * out); return; }
     const clasp = 0.22 * ramp(t, 1.3, 1.1);
     lean((clasp + (browLean(rite.gap) - clasp) * brow) * out);
@@ -880,11 +880,11 @@ diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.5, 0.012, 0.02), iris * thirst);
       after(3.6 / (PACE.wear ?? 1), () => { if (flow.segment === 'wear') { sound.play('necklace-touch', 0, 0, 'effects', 0.4); ui.shake(0.08); } });
       after(3.9 / (PACE.wear ?? 1), () => { if (flow.segment === 'wear') closeTo(BROW_GAP, 1.1); });
       // The three closing lines, the first while he opens the chain and each after the last has finished; for the last
-      // he draws back to look at you.
+      // he straightens and steps back to arm's length to look at you, rather than speaking from a hand's width away.
       let delay = brisk ? 0.6 : 1.3;
       for (const [id, gap] of brisk ? [['lose-control', 0.15], ['protect', 0.15], ['not-me', 0]] : [['lose-control', 0.35], ['protect', 0.3], ['not-me', 0.25]]) {
         const start = delay;
-        if (id === 'not-me') after(start - 0.6, () => { if (rite) rite.gapGoal = 0.05; });
+        if (id === 'not-me') after(start - 0.9, () => { if (rite) { rite.gapGoal = 0.05; rite.back = rite.time; closeTo(0.62, 1.4); } });
         after(start, () => say(id));
         delay = start + Math.max(sound.duration(id), 1.5) + gap;
       }
