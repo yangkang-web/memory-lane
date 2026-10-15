@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as T from 'three';
-import {applySummerUniform} from '../src/student-outfit.js';
+import {applySummerUniform} from '../src/school/student-outfit.js';
 
 test('summer shirt preserves skin weights and isolates shared body buffers',()=>{
   const bytes=readFileSync(new URL('../public/assets/characters/sakurada-fumiriya.vrm',import.meta.url));

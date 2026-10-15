@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {storyFrame,STORY_DURATION,cameraKeys} from '../src/sunflower-timeline.js';
-const voice=JSON.parse(fs.readFileSync(new URL('../src/data/sunflower-voice.json',import.meta.url)));
+import {storyFrame,STORY_DURATION,cameraKeys} from '../src/school/sunflower-timeline.js';
+const voice=JSON.parse(fs.readFileSync(new URL('../src/school/data/sunflower-voice.json',import.meta.url)));
 test('the four story chapters have deterministic boundaries, rewind and final hold',()=>{
  for(const [time,chapter] of [[0,0],[14.99,0],[15,1],[29.99,1],[30,2],[45,3],[60,3]])assert.equal(storyFrame(time).chapter,chapter);
  assert.deepEqual(storyFrame(24),storyFrame(24));assert.deepEqual(storyFrame(99),storyFrame(60));assert.deepEqual(storyFrame(-1),storyFrame(0));

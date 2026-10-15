@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {studentRig} from './helpers/student-rig.js';
 import {clothingAudit} from './helpers/mesh-contacts.js';
-import {STUDENT_CHAIR as chair} from '../src/student-motion.js';
+import {STUDENT_CHAIR as chair} from '../src/school/student-motion.js';
 
 // Exercise turns, backwards chair approach, and changes of action on the real
 // shipped mesh; checking only bone endpoints misses fingers and shoe soles.

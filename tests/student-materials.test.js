@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as T from 'three';
 import {MToonMaterial} from '@pixiv/three-vrm';
-import {adaptStudentMaterials} from '../src/student-materials.js';
+import {adaptStudentMaterials} from '../src/school/student-materials.js';
 
 // Exercise the real material roster of both bundled models. No texture decode
 // or WebGL context is needed to check the lighting/alpha/rig contract.

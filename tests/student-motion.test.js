@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {studentRig} from './helpers/student-rig.js';
-import {STUDENT_CHAIR} from '../src/student-motion.js';
+import {STUDENT_CHAIR} from '../src/school/student-motion.js';
 
 const angle=(a,b,c)=>a.clone().sub(b).angleTo(c.clone().sub(b));
 test('original VRM legs keep their lengths, bend forward, and reach planted feet through walking turns',()=>{

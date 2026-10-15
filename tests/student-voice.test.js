@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createStudentVoice,voicePose} from '../src/student-voice.js';
+import {createStudentVoice,voicePose} from '../src/school/student-voice.js';
 import {readFileSync} from 'node:fs';
 
 const cues=[{start:.1,end:.3,shape:'aa'},{start:.5,end:.8,shape:'ou'}];
@@ -38,7 +38,7 @@ test('stop during load ignores a stale rejection, and a failed play can be retri
 });
 
 test('English greeting has audible PCM audio and ordered cues within its real duration',()=>{
-  const line=JSON.parse(readFileSync(new URL('../src/data/fumiriya-voice.json',import.meta.url)));
+  const line=JSON.parse(readFileSync(new URL('../src/school/data/fumiriya-voice.json',import.meta.url)));
   const wav=readFileSync(new URL('../public/assets/voices/fumiriya-greeting-en.wav',import.meta.url));
   assert.equal(line.language,'en-US');assert.match(line.text,/Good morning/);assert.match(line.text,/^[\x20-\x7e]+$/);
   assert.equal(wav.toString('ascii',0,4),'RIFF');assert.equal(wav.toString('ascii',8,12),'WAVE');

@@ -92,7 +92,7 @@ The local development dependency @ffmpeg-installer/ffmpeg provides FFmpeg for br
 - Official download: https://quaternius.itch.io/universal-animation-library
 - Edition: free Standard, v3.0 (June 2026). No purchase, account or runtime service is required.
 - License: CC0 1.0 Universal, confirmed in the downloaded `License.txt`: https://creativecommons.org/publicdomain/zero/1.0/
-- Derived file: `src/data/student-locomotion.json`, containing sampled and coordinate-converted `Walk_Loop`, `Jog_Fwd_Loop` and `Idle_Loop` curves from `Unreal-Godot/UAL1_Standard.glb`. The source GLB SHA-256 is recorded in the derived file.
+- Derived file: `src/school/data/student-locomotion.json`, containing sampled and coordinate-converted `Walk_Loop`, `Jog_Fwd_Loop` and `Idle_Loop` curves from `Unreal-Godot/UAL1_Standard.glb`. The source GLB SHA-256 is recorded in the derived file.
 - Reproducible extraction: `scripts/extract-locomotion.mjs`. No third-party executable is included; the extraction script reads the GLB data using the project's existing Three.js dependency.
 - Runtime adaptation: the complete retargeted humanoid pose (including legs and toes) supplies the motion base. Airborne leg poses are warped at the step boundaries for the curved route; planted feet, shoe pivots, limb proportions and joint limits are corrected after sampling. Sharp source jog keys receive a cyclic zero-phase filter during extraction. Idle posture, turn anticipation, relaxed hands and chair transitions are layered locally. These are adapted game animation curves, not a claim of motion capture.
 
@@ -105,11 +105,11 @@ The local development dependency @ffmpeg-installer/ffmpeg provides FFmpeg for br
 - ONNX implementation: https://github.com/thewh1teagle/kokoro-onnx — MIT; official v1.0 fp16 export from its model-files-v1.1 release.
 - Only the generated WAV and vowel timing JSON are included; no model, runtime, cloud service or new browser dependency is shipped.
 - Reproduction: `scripts/generate-student-voice.py --model <kokoro-v1.0.fp16.onnx> --voices <voices-v1.0.bin>` with `kokoro-onnx==0.6.1`, `onnx`, `numpy`, and `soundfile` installed separately.
-- The original model hash is recorded in `src/data/fumiriya-voice.json`. The generator exposes the model's existing phoneme-duration tensor for audio-aligned mouth cues.
+- The original model hash is recorded in `src/school/data/fumiriya-voice.json`. The generator exposes the model's existing phoneme-duration tensor for audio-aligned mouth cues.
 
 ## Sunflower story (October 2026)
 
-- `public/assets/voices/sunflower-story-en.wav`: 60-second local English track generated with the same Kokoro v1.0 `am_puck` voice and 0.96 speed as the campus greeting. Seven spoken passages, with original model-derived phoneme timings in `src/data/sunflower-voice.json`. Generated offline with `scripts/generate-sunflower-story.py`; the Kokoro and ONNX licenses listed above apply.
+- `public/assets/voices/sunflower-story-en.wav`: 60-second local English track generated with the same Kokoro v1.0 `am_puck` voice and 0.96 speed as the campus greeting. Seven spoken passages, with original model-derived phoneme timings in `src/school/data/sunflower-voice.json`. Generated offline with `scripts/generate-sunflower-story.py`; the Kokoro and ONNX licenses listed above apply.
 - The screenplay and storyboard reference were supplied by the user for this fictional scene. English dialogue adapts that screenplay; it is not a record of real user history. Phone, stationery, envelope, and sunflower geometry/textures were authored for this demo. The existing CC0 Fumiriya model and public-domain Van Gogh painting retain their credits above.
 
 ## Emochi mascot

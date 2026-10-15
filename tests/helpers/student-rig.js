@@ -1,8 +1,8 @@
 import * as T from 'three';
 import { VRMHumanoid } from '@pixiv/three-vrm';
 import {readFileSync} from 'node:fs';
-import {createStudentMotion} from '../../src/student-motion.js';
-import {relaxedShirtPosition,subdivideShirt,seatedShirtOffset} from '../../src/student-outfit.js';
+import {createStudentMotion} from '../../src/school/student-motion.js';
+import {relaxedShirtPosition,subdivideShirt,seatedShirtOffset} from '../../src/school/student-outfit.js';
 
 // Use the shipped skeleton and geometry bounds, rather than an idealized rig.
 export function studentRig(options={}) {

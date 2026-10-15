@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createCurtainSimulation } from '../src/curtain-physics.js';
+import { createCurtainSimulation } from '../src/school/curtain-physics.js';
 
 test('cloth moves under wind while hooks and tie remain fixed and the sill stays clear',()=>{
   const cloth=createCurtainSimulation();

@@ -2,8 +2,8 @@ import test from 'node:test';
 import * as T from 'three';
 import assert from 'node:assert/strict';
 import {studentRig} from './helpers/student-rig.js';
-import {characters} from '../src/characters.js';
-import {sampleLocomotion} from '../src/student-locomotion.js';
+import {characters} from '../src/school/characters.js';
+import {sampleLocomotion} from '../src/school/student-locomotion.js';
 
 test('authored locomotion loops continuously without a quaternion seam',()=>{
   for(const run of [0,.5,1]){

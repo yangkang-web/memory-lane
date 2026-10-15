@@ -39,4 +39,4 @@ with tempfile.TemporaryDirectory(prefix='sunflower-voice-') as d:
   cues.extend({'start':round(start+t.start,5),'end':round(start+t.end,5),'shape':shapes[t.phoneme]} for t in timings if t.phoneme in shapes and t.end>t.start)
   print(key,round(duration,2),flush=True)
 out=root/'public/assets/voices/sunflower-story-en.wav';sf.write(out,track,24000,subtype='PCM_16')
-(root/'src/data/sunflower-voice.json').write_text(json.dumps({'duration':60,'language':'en-US','voice':'am_puck','speed':.96,'modelSha256':hashlib.sha256(Path(args.model).read_bytes()).hexdigest(),'lines':metadata,'cues':cues},indent=2)+'\n')
+(root/'src/school/data/sunflower-voice.json').write_text(json.dumps({'duration':60,'language':'en-US','voice':'am_puck','speed':.96,'modelSha256':hashlib.sha256(Path(args.model).read_bytes()).hexdigest(),'lines':metadata,'cues':cues},indent=2)+'\n')

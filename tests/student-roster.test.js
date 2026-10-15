@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { characters } from '../src/characters.js';
+import { characters } from '../src/school/characters.js';
 import { studentRig } from './helpers/student-rig.js';
 
 test('the two shipped character rigs keep independent actions and reach their own chairs',()=>{
