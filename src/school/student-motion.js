@@ -324,6 +324,7 @@ export function createStudentMotion(root,model,{reducedMotion=false,chair:chairC
       f.worldRotation=turnQ.multiply(pitchQ).multiply(f.rotation);
     });
   }
+  let storyPose=null;
   function pose(dt) {
     if(action==='give'&&stage==='standing'){
       if(!reducedMotion)giveTime+=dt;
@@ -364,7 +365,14 @@ export function createStudentMotion(root,model,{reducedMotion=false,chair:chairC
     joints.neck.rotation.y+=lookLead*.18;
     joints.chest.rotation.y+=lookLead*.14;
     joints.spine.rotation.z+=clamp(turnRate,-1.2,1.2)*.025*active;
+    if(storyPose){
+      joints.head.rotation.x+=storyPose.headPitch+storyPose.nod;
+      joints.head.rotation.y+=storyPose.headYaw;
+      joints.head.rotation.z+=storyPose.headTilt;
+      joints.chest.rotation.z+=storyPose.headTilt*.18;
+    }
     const hipTarget=hipsRest.clone();
+    hipTarget.x+=storyPose?.pelvisShift??0;
     hipTarget.y-=T.MathUtils.lerp(.008,T.MathUtils.lerp(.010,.035,runMix),active);
     hipTarget.x+=(authored.pelvis.x-.0038)*.8*active;
     hipTarget.y+=(authored.pelvis.y-.895)*T.MathUtils.lerp(.45,.7,runMix)*active;
@@ -448,6 +456,9 @@ export function createStudentMotion(root,model,{reducedMotion=false,chair:chairC
       target.lerp(V(sign*.12,chairConfig.seatHeight+.218,-.12),handSeat);
       target.y+=Math.sin(handSeat*Math.PI)*.055;
       elbow.lerp(V(sign*.23,chairConfig.seatHeight+.34,-.32),handSeat);
+      const acting=side==='right'?(storyPose?.gesture??0):0;
+      target.lerp(liveShoulder.clone().add(V(sign*.13,-length*.70,length*.40)),acting);
+      elbow.lerp(liveShoulder.clone().add(V(sign*.22,-length*.40,.07)),acting);
       const waving=side==='right'?waveMix:0;
       const giving=side==='right'?giveMix:0;
       target.lerp(V(sign*(.36+Math.sin(time*5)*.045),shoulder.y+.21,.13),waving);
@@ -502,7 +513,7 @@ export function createStudentMotion(root,model,{reducedMotion=false,chair:chairC
     });
     const blink=time%4.6;
     model.expressionManager?.setValue('blink',!reducedMotion&&blink>4.35?Math.sin((blink-4.35)/.25*Math.PI):0);
-    model.expressionManager?.setValue('happy',waveMix*.16);
+    model.expressionManager?.setValue('happy',storyPose?.smile??waveMix*.16);
     if(speaking&&!reducedMotion)speechTime+=dt;
     const syllable=speaking&&!reducedMotion?(speechFrame??speechPose(speechTime)):{};
     for(const name of mouthShapes){mouth[name]=T.MathUtils.damp(mouth[name],syllable[name]??0,24,dt);model.expressionManager?.setValue(name,mouth[name]);}
@@ -520,7 +531,7 @@ export function createStudentMotion(root,model,{reducedMotion=false,chair:chairC
     lastPose=dt;
   }
   update(0);
-  return {update,setAction,setSpeechFrame(value){speechFrame=value;},setSpeaking(value){if(Boolean(value)!==speaking)speechTime=0;speaking=Boolean(value);},get speaking(){return speaking;},get action(){return action;},get label(){return state;},
+  return {update,setAction,setStoryPose(value){storyPose=value;},setSpeechFrame(value){speechFrame=value;},setSpeaking(value){if(Boolean(value)!==speaking)speechTime=0;speaking=Boolean(value);},get speaking(){return speaking;},get action(){return action;},get label(){return state;},
     // Read-only diagnostics also support tests against the original VRM rig.
     inspect(){return {stage,speed,seat,heading,cycle,giveMix,speaking,mouth:{...mouth},dt:lastPose,feet:feet.map(f=>({side:f.side,swing:f.swing,pitch:f.pitch,swingU:f.swingU,target:f.solvedTarget.clone(),contact:f.anchor.clone()}))};}};
 }

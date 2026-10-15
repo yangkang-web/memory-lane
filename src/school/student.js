@@ -88,6 +88,6 @@ export function createStudent(scene, { character, reducedMotion = false } = {}) 
     if(previousLabel!==motion.label){previousLabel=motion.label;listeners.forEach(fn=>fn());}
   }
   const ready=load();
-  return {character,root,update,setAction,load,ready,setSpeechFrame(value){motion?.setSpeechFrame(value);},setSpeaking(value){motion?.setSpeaking(value);listeners.forEach(fn=>fn());},get speaking(){return motion?.speaking??false;},subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},
+  return {character,root,update,setAction,load,ready,setStoryPose(value){motion?.setStoryPose(value);},setSpeechFrame(value){motion?.setSpeechFrame(value);},setSpeaking(value){motion?.setSpeaking(value);listeners.forEach(fn=>fn());},get speaking(){return motion?.speaking??false;},subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},
     get action(){return motion?.action??'idle';},get label(){return motion?.label??'Loading…';},get status(){return status;}};
 }

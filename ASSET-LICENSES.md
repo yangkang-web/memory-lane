@@ -112,6 +112,8 @@ The local development dependency @ffmpeg-installer/ffmpeg provides FFmpeg for br
 - `public/assets/voices/sunflower-story-en.wav`: 60-second local English track generated with the same Kokoro v1.0 `am_puck` voice and 0.96 speed as the campus greeting. Seven spoken passages, with original model-derived phoneme timings in `src/school/data/sunflower-voice.json`. Generated offline with `scripts/generate-sunflower-story.py`; the Kokoro and ONNX licenses listed above apply.
 - The screenplay and storyboard reference were supplied by the user for this fictional scene. English dialogue adapts that screenplay; it is not a record of real user history. Phone, stationery, envelope, and sunflower geometry/textures were authored for this demo. The existing CC0 Fumiriya model and public-domain Van Gogh painting retain their credits above.
 
+- `public/assets/voices/sunflower-story-mix.wav`: original 68-second mix combining the unchanged English voice above with locally authored procedural felt-key tones, wind, bird chirps, paper rustles and message tones. Reproducible with `scripts/mix-school-story.py` using Python standard library; no additional recordings or third-party music. New sunflower and cropped first-person grip geometry are authored for this demo.
+
 ## Emochi mascot
 
 `public/assets/characters/emochi.glb` is original procedural geometry generated locally by `src/emochi.js`, based on the Emochi icon supplied by the user in this task. No third-party model or texture was imported. The Emochi brand/icon remains attributable to its owner; this entry makes no CC0 claim for the brand. The studio uses no paid APIs or runtime asset services.
