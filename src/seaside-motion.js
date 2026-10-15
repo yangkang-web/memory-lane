@@ -6,8 +6,8 @@ export const INSPECT_END=8;
 export const HERO_POSITION=[3.48,1.39,-.8];
 const cabinetPosition=[1.65,1.6,-.7],cabinetLook=[3.48,1.54,-.8];
 const finalPosition=[2.6,1.54,-.65];
-// Approach first. Only once stationary in front of the cabinet do the two gaze
-// cycles begin; the final move settles on the actual cigarette, without a cut.
+// Approach first. Only once stationary in front of the cabinet does one gentle gaze
+// cycle begin; the final move settles on the actual cigarette, without a cut.
 export function seasidePose(time,reducedMotion=false){
   const t=Math.max(0,time);
   if(reducedMotion)return {position:[...finalPosition],look:[...HERO_POSITION],fov:40,focus:1,stage:'focus',done:true};
@@ -17,8 +17,8 @@ export function seasidePose(time,reducedMotion=false){
   }
   if(t<INSPECT_END){
     const u=(t-APPROACH_END)/(INSPECT_END-APPROACH_END),envelope=Math.sin(u*Math.PI)**2;
-    const sway=Math.sin(u*Math.PI*4)*.36*envelope;
-    return {position:[...cabinetPosition],look:[cabinetLook[0],cabinetLook[1]+Math.sin(u*Math.PI*8)*.018*envelope,cabinetLook[2]+sway],fov:55,focus:0,stage:'inspect',done:false};
+    const sway=Math.sin(u*Math.PI*2)*.36*envelope;
+    return {position:[...cabinetPosition],look:[cabinetLook[0],cabinetLook[1]+Math.sin(u*Math.PI*2)*.012*envelope,cabinetLook[2]+sway],fov:55,focus:0,stage:'inspect',done:false};
   }
   const focus=smooth((t-INSPECT_END)/(GAZE_DURATION-INSPECT_END));
   return {position:mix(cabinetPosition,finalPosition,focus),look:mix(cabinetLook,HERO_POSITION,focus),fov:55-15*focus,focus,stage:'focus',done:t>=GAZE_DURATION};

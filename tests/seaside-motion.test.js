@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { seasidePose, GAZE_DURATION,HERO_POSITION,APPROACH_END,INSPECT_END } from '../src/seaside-motion.js';
 
-test('seaside gaze stays inside the room, has two gentle cycles, and settles without drift',()=>{
+test('seaside gaze stays inside the room, has one gentle cycle, and settles without drift',()=>{
   let previous=seasidePose(0),crossings=0,lastSign=0;
   for(let i=1;i<=GAZE_DURATION*120;i++){
     const t=i/120,p=seasidePose(t);
@@ -18,7 +18,7 @@ test('seaside gaze stays inside the room, has two gentle cycles, and settles wit
     if(t<APPROACH_END){assert.equal(p.stage,'approach');assert.ok(p.position[0]>=previous.position[0]&&p.look[0]>=previous.look[0],'opening approaches and turns steadily, without sway');}
     previous=p;
   }
-  assert.equal(crossings,3,'two complete left/right cycles');
+  assert.equal(crossings,1,'one complete left/right cycle');
   assert.ok(seasidePose(12).look.every((v,i)=>Math.abs(v-HERO_POSITION[i])<1e-9));
   assert.deepEqual(seasidePose(12),seasidePose(60),'hold the collectible after focus');
   assert.deepEqual(seasidePose(2),seasidePose(2),'replay is deterministic');
