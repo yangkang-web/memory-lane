@@ -115,7 +115,7 @@ A ready-to-use copy is bundled at `public/assets/characters/emochi.glb`. **↓ M
 
 ### First-person sunflower story
 
-Open `/?story=1` or select **Always toward you → Play story** in the campus, then **Begin story**. This plays the user's fictional 60-second screenplay in Room 101 with Fumiriya as the only visible character. The English Puck voice reads his dialogue and letter; the first-person protagonist uses phone messages and subtitles. The four chapters include a pink envelope, two-sided letter, remembered sunflower message, confession, and a walk to the window painting.
+Open `/?story=1` or select **Always toward you → Play story** in the campus, then **Begin story**. This plays the user's fictional 60-second screenplay in Room 101 with Fumiriya as the only visible character. The English Puck voice reads his dialogue and letter; the first-person protagonist uses phone messages and subtitles. The four chapters include a pink envelope, two-sided letter, remembered sunflower message, confession, and a walk along the window aisle that ends looking at the original sunflower painting on the right wall.
 
 **Pause/Resume**, **Replay**, the time slider, **Sound on/off**, and **Exit** are available throughout. Leaving the tab pauses playback. Voice, lip cues, props, captions, and camera all use the same audio clock. The local WAV is loaded as a Blob so seeking also works on static servers without byte-range support. No paid API, cloud service, or online speech service is required. The separate original Alice sample retains its own provenance.
 

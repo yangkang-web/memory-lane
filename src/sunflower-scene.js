@@ -3,7 +3,6 @@ import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js'
 import {createStudent} from './student.js';
 import {characters} from './characters.js';
 import {letterFront,letterBack,finalThought,storyFrame} from './sunflower-timeline.js';
-import {sunflowerPaintingMaterial} from './sunflower-painting.js';
 import {voicePose} from './student-voice.js';
 import voice from './data/sunflower-voice.json';
 
@@ -29,10 +28,6 @@ export function createSunflowerScene(scene,camera){
  mesh(envelope,new RoundedBoxGeometry(.34,.23,.008,2,.005),mat('#e6aeb7'));
  const seal=canvasMap(900,600,c=>{c.fillStyle='#ecc0c7';c.fillRect(0,0,900,600);c.strokeStyle='#c98f9f';c.lineWidth=3;c.beginPath();c.moveTo(0,0);c.lineTo(450,320);c.lineTo(900,0);c.stroke();c.textAlign='center';c.fillStyle='#77515a';c.font='italic 39px Georgia';c.fillText('To my favorite girl',450,460);sunflower(c,450,290,30);});
  mesh(envelope,new T.PlaneGeometry(.335,.225),mat('white',{map:seal}),0,0,.0045);
- // A framed sunflower painting on the solid front wall beside the window aisle.
- mesh(stage,new T.BoxGeometry(.756,.952,.065),mat('#886345'),-36.12,2.78,-33.78);
- mesh(stage,new T.BoxGeometry(.693,.889,.012),mat('#fff9ec'),-36.12,2.78,-33.739);
- mesh(stage,new T.PlaneGeometry(.609,.7742),sunflowerPaintingMaterial(),-36.12,2.78,-33.73);
  const flower=new T.Group();flower.position.set(-36.68,1.33,-24.35);stage.add(flower);
  mesh(flower,new T.CylinderGeometry(.09,.067,.18,20),mat('#d7e1ce'),0,.09,0);
  const stem=mesh(flower,new T.CylinderGeometry(.009,.012,.49,8),mat('#65834f'),0,.4,0);
