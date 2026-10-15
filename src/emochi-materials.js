@@ -31,7 +31,17 @@ function softVinylMaps() {
     roughness.set([255, grain, 0, 255], i);
   }
   const texture = (data, name) => {
-    const map = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
+    let map;
+    if (typeof document !== 'undefined') {
+      // Canvas-backed images let GLTFExporter bake tangent-space conventions.
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = size;
+      canvas.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(data), size, size), 0, 0);
+      map = new THREE.CanvasTexture(canvas);
+      map.flipY = false;
+    } else {
+      map = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
+    }
     map.name = name;
     map.wrapS = map.wrapT = THREE.RepeatWrapping;
     map.repeat.set(3, 3);
