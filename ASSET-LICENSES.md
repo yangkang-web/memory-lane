@@ -73,6 +73,38 @@ Download URLs and original checksums are in `public/assets/models/sources.json`;
 
 Offline optimization utility: `scripts/art/optimize-tree.mjs`; meshoptimizer by Arseny Kapoulkine, MIT, installed only in a temporary authoring directory. To rebuild, obtain the original source glTF/buffer from the manifest and pass the path to `meshopt_simplifier.js`. The delivered runtime assets are already optimized.
 
+## Last Companion narrative prototype
+
+The fictional script 《回忆之路：最后一次并肩》 was supplied by the user. It is a fictional authored narrative, not personal history. Story environments, articulated characters and animated props are locally authored procedural geometry; none are extracted from commercial games.
+
+The 39 dialogue recordings under `public/assets/story/voice/` use installed macOS voices (Tingting and Eddy, Mandarin Chinese), generated offline by `scripts/art/synthesize-story.mjs`. They are synthetic prototype performances, not recordings of real actors. The line manifest is `public/assets/story/voice/sources.json`. No paid speech service or runtime cloud dependency is used.
+
+Close-up skin, oxidized steel and surface microdetail in `src/story-surfaces.js` are seeded local procedural textures authored for this fictional demo. They do not use scans of real people or extracted game assets.
+
+- 剧情街道附属建筑、车库栅门、卷帘门分片、屋顶边缘、碎窗和路障：本项目本地程序化几何（`src/companion-street-response.js`），沿用上述已注明来源的砖墙和混凝土材质；没有引入游戏资产或付费资源。
+
+### Skinned character upgrade (2026-10-15)
+
+The first-person arms and the nine narrative infected now use locally bundled, independently released assets. The earlier procedural actors remain as animation/contact drivers and loading fallbacks; the crowd and mirror-body prototype are still procedural.
+
+- **fps arms**, [DJMaesen / bumstrum](https://sketchfab.com/bumstrum), [source](https://sketchfab.com/3d-models/fps-arms-08ec4403a47645d8ad80633abf13d39d), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Approximately 7,000 triangles, 2K source maps and articulated fingers. Downloaded using Sketchfab's normal authorized download. Modified the unsupported legacy specular/gloss material to metallic/roughness and retargeted the skin to authored contacts. Runtime limb groups preserve the existing injury timeline.
+- **Thin Zombie [ Awake Zombie Asset ]**, Rosswet Mobile (submitted by dogchicken), [source](https://opengameart.org/node/14826), [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). Converted the author's Blender source, restored the diffuse material, subdivided the silhouette once (20,040 triangles), adjusted surface response and retargeted the skeleton. 1K diffuse texture. This is a modest free game asset, not a scanned or AAA-quality character.
+- Reproduction command for the zombie: Blender 4.2 with `--background --factory-startup --disable-autoexec --python scripts/art/convert-story-zombie.py -- <source.blend> <texture.png> <output.glb>`. The offline converter is not a runtime dependency.
+- Complete attribution is also bundled in `public/assets/story/characters/CREDITS.txt`. No paid APIs, paid assets, cloud dependencies, commercial-game extractions, or changes to the 60-second edit were introduced.
+- Rusty pipe detailing remains original local geometry (`src/story-weapon-details.js`).
+
+### Mirror protagonist and instanced infected crowd (2026-10-15)
+
+- `public/assets/story/characters/survivor.glb`: [3D Zombie Apocalypse Survivor Male Character](https://sketchfab.com/3d-models/3d-zombie-apocalypse-survivor-male-character-f56ffc64d18c40cf95d17559542ca44c) by [codersan](https://sketchfab.com/codersan), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Free author-provided GLB, downloaded using the normal Sketchfab download UI. Runtime changes: size normalization, skeletal retargeting and matte shading. Embedded creator credits retained.
+- `public/assets/story/characters/infected-crowd.glb`: low-detail derivative of the Rosswet Mobile / dogchicken Thin Zombie source credited above, CC BY 3.0. Original 3,340-triangle mesh, converted locally using Blender with script execution disabled. Runtime poses are authored locally, not imported animations. Color/size/pose-phase variation is applied per instance.
+- Full attribution is also shipped in `public/assets/story/characters/CREDITS.txt`. No purchased assets or game-ripped content introduced.
+
+### Detailed infected replacement
+
+- **Zombie (Male 1)** by **LokitoBlu** (martinezequielgorno), [original asset](https://sketchfab.com/3d-models/zombie-male-1-f40dda49b8b94f2faedf58679f676763), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Downloaded the author's 2K GLB. Local derivative: `public/assets/story/characters/infected-detailed.glb`. Original geometry and UVs retained; locally authored 19-bone skeleton and skin weights, corrected scale, dry nonmetal materials and alpha testing. Color and normal textures retained. Converted with `scripts/art/rig-infected.py`, Blender script auto-execution disabled. No Mixamo upload, asset purchase or paid API. Replaces the near-camera Thin Zombie; the older attributed asset remains the distant crowd LOD.
+
+Additional runtime adaptations: LokitoBlu hand grip shapes, palm-axis and size retargeting; DJMaesen upper torso flaps replaced by locally modeled closed cloth sleeves. Original credited forearm/glove and infected textures/UVs are retained.
+
 ## Seaside cigarette (user supplied, local demo)
 
 - Supplied by the user from Downloads: `Cigarette_1015071228_image-to-3d-texture_fbx.zip`. Archive filenames identify `Meshy_AI_Lit_Cigarette_1015071228_image-to-3d-texture`.
