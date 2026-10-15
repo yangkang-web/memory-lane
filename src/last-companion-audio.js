@@ -1,6 +1,6 @@
 import { DIALOGUE } from './last-companion-timeline.js';
 
-export function createCompanionAudio(){
+export function createCompanionAudio({strict=false}={}){
   const Context=window.AudioContext||window.webkitAudioContext;
   if(!Context)return {ready:Promise.resolve(),update(){},cue(){},seek(){},pause(){},resume(){},mute(){return true;},dispose(){}};
   const ctx=new Context(),master=ctx.createGain(),ambience=ctx.createGain();master.gain.value=.35;master.connect(ctx.destination);ambience.connect(master);
@@ -34,5 +34,5 @@ export function createCompanionAudio(){
   }
   function seek(){stopVoice();lastLine=-1;lastStep=-1;for(const source of active){try{source.stop();}catch{}}active.clear();}
   ctx.resume().catch(()=>{});
-  return {ready,cue,update,seek,pause(){ctx.suspend().catch(()=>{});},resume(){ctx.resume().catch(()=>{});},mute(){muted=!muted;master.gain.setTargetAtTime(muted?0:.35,ctx.currentTime,.03);return muted;},dispose(){seek();wind.stop();ctx.close().catch(()=>{});}};
+  return {ready,cue,update,seek,pause(){ctx.suspend().catch(()=>{});},resume(){const result=ctx.resume().then(()=>{if(ctx.state!=='running')throw new Error('末世音频未能启动');});return strict?result:result.catch(()=>{});},mute(){muted=!muted;master.gain.setTargetAtTime(muted?0:.35,ctx.currentTime,.03);return muted;},dispose(){seek();wind.stop();ctx.close().catch(()=>{});}};
 }

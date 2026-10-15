@@ -1,3 +1,4 @@
+import {inSequence,snapshot} from './sequence-bridge.js';
 import * as T from 'three';
 import { createSunflowerScene } from './sunflower-scene.js';
 import { createStudent } from './student.js';
@@ -198,7 +199,8 @@ export function createCampus(canvas,labelRoot,onZone=()=>{}) {
   addEventListener('keydown',e=>{if(walking&&movementKeys.includes(e.key.toLowerCase())){e.preventDefault();keys.add(e.key.toLowerCase());}});
   addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));addEventListener('blur',()=>{keys.clear();drag=null;});
   const valid=(x,z)=>Math.abs(x)<44.5&&Math.abs(z)<39.5&&interior.canOccupy(x,z)&&!colliders.some(c=>Math.abs(x-c.x)<c.w&&Math.abs(z-c.z)<c.d);
-  function animate(){requestAnimationFrame(animate);const now=performance.now(),dt=Math.min((now-previousTime)/1000,.05);previousTime=now;if(story?.active)story.update(storyTime,dt,storyPlaying);interior.update(dt,camera.position,walking||story?.active);campusCherries.update(dt,camera.position,blossomMotion.matches);
+  let disposed=false,animationFrame;
+  function animate(){if(disposed)return;animationFrame=requestAnimationFrame(animate);const now=performance.now(),dt=Math.min((now-previousTime)/1000,.05);previousTime=now;if(story?.active)story.update(storyTime,dt,storyPlaying);interior.update(dt,camera.position,walking||story?.active);campusCherries.update(dt,camera.position,blossomMotion.matches);
     studentDelta.copy(student.root.position);students.forEach(person=>person.update(story?.active?0:dt));studentDelta.subVectors(student.root.position,studentDelta);
     if(viewingStudent&&!walking){
       if(transition){transition.target.add(studentDelta);transition.to.add(studentDelta);}
@@ -214,7 +216,15 @@ export function createCampus(canvas,labelRoot,onZone=()=>{}) {
     labelNodes.forEach(({el,pos})=>{const p=pos.clone().project(camera);el.style.display=!story?.active&&labels&&!walking&&!viewingStudent&&p.z<1&&Math.abs(p.x)<1&&Math.abs(p.y)<1?'block':'none';el.style.transform=`translate(${(p.x*.5+.5)*width}px,${(-p.y*.5+.5)*height}px) translate(-50%,-100%)`;});scene.fog.near=(walking||story?.active)?150:camera.position.distanceTo(controls.target)+90;scene.fog.far=scene.fog.near+200;renderer.render(scene,camera);
   }animate();
   return {
-    prepareStory(){if(!story)story=createSunflowerScene(scene,camera);return story.ready;},
+    dispose(){
+      if(disposed)return;disposed=true;cancelAnimationFrame(animationFrame);controls.dispose();
+      const geometries=new Set(),materials=new Set(),textures=new Set();
+      scene.traverse(object=>{if(object.geometry)geometries.add(object.geometry);for(const material of [object.material||[]].flat())materials.add(material);});
+      for(const material of materials){for(const value of Object.values(material))if(value?.isTexture)textures.add(value);material.dispose();}
+      geometries.forEach(g=>g.dispose());textures.forEach(t=>t.dispose());renderer.dispose();renderer.forceContextLoss();
+    },
+    captureStory(){return snapshot(renderer.domElement,()=>{story?.update(storyTime,0,false);renderer.render(scene,camera);});},
+    prepareStory(){if(!story)story=createSunflowerScene(scene,camera,{sequence:inSequence});return story.ready;},
     startStory(){if(!story)return;walking=false;viewingStudent=false;transition=null;keys.clear();drag=null;controls.enabled=false;storyTime=0;storyPlaying=false;students.forEach(p=>{storyVisibility.set(p,p.root.visible);p.root.visible=false;});story.start();story.update(0,0,false);interior.update(1,camera.position,true);},
     updateStory(time,playing){storyTime=time;storyPlaying=playing;},
     stopStory(){story?.stop();storyPlaying=false;students.forEach(p=>{if(storyVisibility.has(p))p.root.visible=storyVisibility.get(p);});storyVisibility.clear();controls.enabled=true;camera.fov=39;camera.updateProjectionMatrix();const h=home();camera.position.copy(h.position);controls.target.copy(h.target);controls.update();},

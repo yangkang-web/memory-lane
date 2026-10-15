@@ -1,3 +1,4 @@
+import {inSequence} from './sequence-bridge.js';
 import * as T from 'three';
 import { smooth,clamp } from './last-companion-timeline.js';
 import { CHAPTERS,DURATION,CUES,HOME_OFFSET_Z,editStateAt } from './last-companion-edit.js';
@@ -5,7 +6,7 @@ import { createCompanionSets } from './last-companion-sets.js';
 import { createCompanionCast } from './last-companion-cast.js';
 import { createCompanionAudio } from './last-companion-audio.js';
 
-export function createLastCompanion({world,camera,render,onStart,onExit}){
+export function createLastCompanion({world,camera,render,onStart,onExit,onComplete=()=>{}}){
   const scene=world.scene;
   // Only hide the city's renderables in the sealed shop interior; preserve lighting and camera.
   const city=scene.children.filter(o=>!o.isLight&&!o.isCamera&&o!==world.lighting.sun.target).map(o=>({o,visible:o.visible}));
@@ -31,13 +32,13 @@ export function createLastCompanion({world,camera,render,onStart,onExit}){
     range.value=String(t);select.value=String(CHAPTERS[s.editChapter].start);output.textContent=`${String(Math.floor(t/60)).padStart(2,'0')}:${String(Math.floor(t%60)).padStart(2,'0')} / 01:00`;
     audio?.update(s,speed);render();
   }
-  function tick(now){if(!active||paused||ended)return;const before=t;t=clamp(baseTime+(now-baseClock)/1000,baseTime,DURATION);for(const [at,cue]of CUES)if(at>before&&at<=t)audio?.cue(cue);lastTick=now;showFrame();if(t>=DURATION){ended=true;$('.narrative-ending').hidden=false;$('[data-command="pause"]').disabled=true;}else frame=requestAnimationFrame(tick);}
-  async function start(at=0){if(!active){onStart();oldFov=camera.fov;$('[data-command="sound"]').textContent='静音';$('[data-command="sound"]').setAttribute('aria-pressed','false');audio=createCompanionAudio();audio.ready.catch(error=>{console.warn('Story voice unavailable; subtitles remain available',error);});}active=true;paused=false;ended=false;audio?.resume();panel.hidden=false;$('.narrative-ending').hidden=true;$('[data-command="pause"]').disabled=false;$('[data-command="pause"]').textContent='暂停';sets.root.visible=true;cast.actors.root.visible=true;seek(at);}
+  function tick(now){if(!active||paused||ended)return;const before=t;t=clamp(baseTime+(now-baseClock)/1000,baseTime,DURATION);for(const [at,cue]of CUES)if(at>before&&at<=t)audio?.cue(cue);lastTick=now;showFrame();if(t>=DURATION){ended=true;onComplete();$('.narrative-ending').hidden=false;$('[data-command="pause"]').disabled=true;}else frame=requestAnimationFrame(tick);}
+  async function start(at=0,hold=false){if(!active){onStart();oldFov=camera.fov;$('[data-command="sound"]').textContent='静音';$('[data-command="sound"]').setAttribute('aria-pressed','false');audio=createCompanionAudio({strict:inSequence});audio.ready.catch(error=>{console.warn('Story voice unavailable; subtitles remain available',error);});}active=true;paused=hold;ended=false;if(hold)audio?.pause();else await audio?.resume();panel.hidden=false;$('.narrative-ending').hidden=true;$('[data-command="pause"]').disabled=false;$('[data-command="pause"]').textContent='暂停';sets.root.visible=true;cast.actors.root.visible=true;seek(at);if(hold)await audio.ready;}
   function seek(value){t=clamp(Number(value)||0,0,DURATION);baseTime=t;baseClock=performance.now();ended=t>=DURATION;audio?.seek();$('.narrative-ending').hidden=!ended;$('[data-command="pause"]').disabled=ended;showFrame();cancelAnimationFrame(frame);if(!paused&&!ended)frame=requestAnimationFrame(tick);}
-  function toggle(){if(!active||ended)return;paused=!paused;$('[data-command="pause"]').textContent=paused?'继续':'暂停';if(paused){cancelAnimationFrame(frame);audio?.pause();}else{baseTime=t;baseClock=performance.now();audio?.resume();frame=requestAnimationFrame(tick);}}
+  async function toggle(){if(!active||ended)return;paused=!paused;$('[data-command="pause"]').textContent=paused?'继续':'暂停';if(paused){cancelAnimationFrame(frame);audio?.pause();}else{await audio?.resume();baseTime=t;baseClock=performance.now();frame=requestAnimationFrame(tick);}}
   function exit(){if(!active)return;active=false;cancelAnimationFrame(frame);audio?.dispose();audio=null;sets.root.visible=false;cast.actors.root.visible=false;cast.actors.rig.visible=false;cast.hide();sets.items.terminal.visible=false;panel.hidden=true;restoreCity();stagedHome.visible=false;world.home.cinematicLot.visible=true;world.home.root.visible=true;world.setSinkhole(false);world.setStoryExit(false);world.water.setCollapse(0);if(world.home.doorMesh)world.home.doorMesh.rotation.y=-Math.PI*.94;camera.fov=oldFov;camera.updateProjectionMatrix();onExit();}
   const listeners=[];function listen(el,event,fn){el.addEventListener(event,fn);listeners.push(()=>el.removeEventListener(event,fn));}
   panel.querySelectorAll('[data-command]').forEach(b=>listen(b,'click',()=>{const cmd=b.dataset.command;if(cmd==='exit')exit();if(cmd==='pause')toggle();if(cmd==='replay')start(0);if(cmd==='sound'){const muted=audio?.mute();b.textContent=muted?'开启声音':'静音';b.setAttribute('aria-pressed',String(muted));}}));
-  listen(select,'change',()=>seek(select.value));listen(range,'input',()=>seek(range.value));listen(window,'keydown',event=>{if(active&&event.code==='Escape'){event.preventDefault();exit();}});listen(document,'visibilitychange',()=>{if(document.hidden&&active&&!paused&&!ended)toggle();});
-  return {ready:Promise.all([sets.ready,cast.ready]),start,exit,get active(){return active;},get state(){return lastState;},dispose(){exit();listeners.forEach(fn=>fn());sets.dispose();cast.dispose();stagedHome.removeFromParent();panel.remove();}};
+  listen(select,'change',()=>seek(select.value));listen(range,'input',()=>seek(range.value));listen(window,'keydown',event=>{if(!inSequence&&active&&event.code==='Escape'){event.preventDefault();exit();}});listen(document,'visibilitychange',()=>{if(document.hidden&&active&&!paused&&!ended)toggle();});
+  return {ready:Promise.all([sets.ready,cast.ready]),start,exit,pause(){if(active&&!paused&&!ended)toggle();else audio?.pause();},resume(){if(active&&paused&&!ended)return toggle();},get active(){return active;},get state(){return lastState;},dispose(){exit();listeners.forEach(fn=>fn());sets.dispose();cast.dispose();stagedHome.removeFromParent();panel.remove();}};
 }

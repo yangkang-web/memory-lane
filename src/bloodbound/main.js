@@ -1,3 +1,5 @@
+import {inSequence,installSequence,sequenceEvent,snapshot} from '../sequence-bridge.js';
+import {createBloodboundSequence} from './sequence.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -78,7 +80,7 @@ function showError(message) {
   $('#loading-detail').textContent = message;
   $('#retry-load').hidden = false;
   $('.loading-track').hidden = true;
-  stage.dataset.state = 'error';
+  stage.dataset.state = 'error';sequenceEvent('error',{message});
 }
 let noticeTimer = 0;
 function notice(message) {
@@ -238,7 +240,7 @@ async function init() {
     flash(amount = 0.7, tone = 'light') { flash = Math.max(flash, amount); $('.flash').style.background = tone === 'blood' ? '#8c0c14' : ''; },
   };
   const flow = new StoryFlow({
-    storage,
+    storage:inSequence?null:storage,
     onEnter: id => {
       director.enter(id, { jump: jumping });
       jumping = false;
@@ -251,9 +253,11 @@ async function init() {
   const director = createDirector({
     player, flow, interact, lucien, hunter, arms, chapel, pendant, sound, ui,
     onAccept: () => { accepted = true; event('accept', { keepsakeId: 'blood-heart-pendant' }); },
-    onComplete: () => setState('complete'),
+    onComplete: () => {if(!inSequence)setState('complete');},
   });
 
+  const sequence=inSequence?createBloodboundSequence({flow,player,hunter,lucien,interact,onComplete(){setState('paused');sequenceEvent('done');}}):null;
+  if(inSequence)flow.advance=()=>false; // The edit owns cuts; interactive triggers still animate their performances.
   function setState(next) {
     state = next;
     stage.dataset.state = next;
@@ -266,8 +270,8 @@ async function init() {
     $('.ending').hidden = next !== 'complete';
     $('.handoff-panel').hidden = next !== 'handoff';
     $('.reticle').hidden = next !== 'playing';
-    player.enabled = next === 'playing';
-    interact.enabled = next === 'playing';
+    player.enabled = next === 'playing'&&!inSequence;
+    interact.enabled = next === 'playing'||(inSequence&&next === 'paused');
     if (next !== 'playing') { $('.stick').hidden = true; $('.use-prompt').hidden = true; $('.use-button').hidden = true; }
     if (!live) { $('.subtitle').hidden = true; $('.hint').hidden = true; $('.controls-tip').hidden = true; }
     if (next === 'paused') {
@@ -306,8 +310,9 @@ async function init() {
     setState('playing');
     jumping = true;
     flow.go(segment);
+    if(inSequence){sequence.reset();player.enabled=false;}
     if (state !== 'playing') return;
-    player.requestLock();
+    if(!inSequence)player.requestLock();
     $('.controls-tip').hidden = false;
     tipUntil = runTime + 9;
     renderer.shadowMap.needsUpdate = true;
@@ -323,7 +328,7 @@ async function init() {
     if (state !== 'paused') return;
     await sound.unlock();
     setState('playing');
-    player.requestLock();
+    if(!inSequence)player.requestLock();
   }
   async function jump(segment) {
     await sound.unlock();
@@ -335,7 +340,7 @@ async function init() {
     setState('playing');
     jumping = true;
     flow.go(segment);
-    player.requestLock();
+    if(!inSequence)player.requestLock();
   }
   // The ending card's way on: back on your feet beside him, the nave doors swinging open on the passage east.
   async function walkOut() {
@@ -351,7 +356,7 @@ async function init() {
     const turn = Math.atan2(Math.sin(Math.atan2(-(dx - x), -(dz - z)) - yaw), Math.cos(Math.atan2(-(dx - x), -(dz - z)) - yaw));
     const where = Math.abs(turn) < Math.PI / 4 ? '就在前方' : Math.abs(turn) > Math.PI * 3 / 4 ? '在你身后' : turn > 0 ? '在你左手边' : '在你右手边';
     ui.hint(`东侧的门开了 · 门${where} · 走廊尽头有光`, 8);
-    player.requestLock();
+    if(!inSequence)player.requestLock();
   }
   async function exit() {
     if (state !== 'complete' && !(state === 'playing' && walkingOut)) return;
@@ -405,7 +410,7 @@ async function init() {
     notice(sound.muted ? '声音已关闭 · M 恢复' : '声音已开启');
   });
   // Clicking the scene takes the mouse back for looking around.
-  renderer.domElement.addEventListener('click', () => { if (state === 'playing') player.requestLock(); }, { signal: lifetime.signal });
+  renderer.domElement.addEventListener('click', () => { if (state === 'playing'&&!inSequence)player.requestLock(); }, { signal: lifetime.signal });
   // Leaving pointer lock (Esc, switching windows) opens the menu, as games do.
   let lockedOnce = false;
   let lockLostAt = 0;
@@ -491,7 +496,8 @@ async function init() {
     requestAnimationFrame(loop);
     if (externalHandoff) return;
     if (document.hidden) { lastFrame = now; return; }
-    const dt = Math.min((now - (lastFrame || now)) / 1000, 0.1);
+    const elapsedFrame = Math.max(0,(now - (lastFrame || now)) / 1000);
+    const dt = Math.min(elapsedFrame, 0.1);
     lastFrame = now;
     if (exitAnimation) {
       // An even walk along the path, easing in and out, the view turning from where you looked to the way ahead.
@@ -520,6 +526,7 @@ async function init() {
     } else if (launched) {
       if (state === 'playing') {
         runTime += dt;
+        sequence?.update(elapsedFrame);
         flow.update(dt);
         director.update(dt, runTime);
         if (player.travelled > 1.5 && runTime > tipUntil - 6) tipUntil = Math.min(tipUntil, runTime + 1);
@@ -593,6 +600,7 @@ async function init() {
     getKeepsake: () => pendant.group,
     getContext: () => ({ renderer, scene, camera, chapter: chapterGroup, keepsake: pendant.group }),
   });
+  if(inSequence)installSequence({ready:audioComplete?Promise.resolve():Promise.reject(new Error('吸血鬼音频未就绪')),start:()=>start(),pause,resume,capture:()=>snapshot(renderer.domElement,()=>cinematic.render('scene',4)),dispose:()=>disposeScene()});
   event('ready', { memoryId: 'bloodbound', segments: SEGMENTS.map(s => s.id) });
   addEventListener('pagehide', disposeScene, { once: true });
   console.info('BLOODBOUND ready', { audioComplete, triangles: renderer.info.render.triangles });

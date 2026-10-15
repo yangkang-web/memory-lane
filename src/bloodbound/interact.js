@@ -13,6 +13,7 @@ export function createInteraction({ camera, dom, prompt, button, isLocked }) {
   let pressed = false;
   let enabled = false;
   let shown = '';
+  let directed = false;
   const abort = new AbortController();
   const on = (target, type, fn) => target.addEventListener(type, fn, { signal: abort.signal });
 
@@ -65,8 +66,16 @@ export function createInteraction({ camera, dom, prompt, button, isLocked }) {
     get enabled() { return enabled; },
     add(target) { targets.set(target.id, target); return target; },
     remove(id) { if (held?.id === id) drop(); targets.delete(id); if (focused?.id === id) focused = null; },
-    clear() { drop(); targets.clear(); focused = null; render(); },
+    clear() { directed=false; drop(); targets.clear(); focused = null; render(); },
+    // Cinematic direction invokes the same authored interaction as a player, without faking key events.
+    perform(id) {
+      const target=targets.get(id);if(!target||(target.enabled&&!target.enabled()))return false;
+      directed=true;focused=target;
+      if(target.hold){if(held!==target){drop();held=target;target.onHold?.();}}else target.onUse?.();
+      return true;
+    },
     update() {
+      if(directed)return;
       let next = enabled ? pick() : null;
       // A hold target is let go as soon as the player looks away from it, unless it asks to be kept while held.
       if (held?.sticky?.() && enabled) next = held;

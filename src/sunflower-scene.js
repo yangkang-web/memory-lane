@@ -10,7 +10,7 @@ function canvasMap(w,h,draw){const c=document.createElement('canvas');c.width=w;
 function sunflower(ctx,x,y,r){ctx.save();ctx.translate(x,y);for(let i=0;i<14;i++){ctx.save();ctx.rotate(i*Math.PI/7);ctx.fillStyle=i%2?'#efbd45':'#e4a936';ctx.beginPath();ctx.ellipse(0,-r*.85,r*.25,r*.66,0,0,Math.PI*2);ctx.fill();ctx.restore();}ctx.fillStyle='#6c4836';ctx.beginPath();ctx.arc(0,0,r*.45,0,Math.PI*2);ctx.fill();ctx.restore();}
 function paperMap(lines,back=false){return canvasMap(900,1250,(c,w,h)=>{c.fillStyle='#fff9e9';c.fillRect(0,0,w,h);c.strokeStyle='#e9d4bc';c.lineWidth=3;c.strokeRect(38,38,w-76,h-76);c.fillStyle='#aa8661';c.font='20px sans-serif';c.textAlign='center';c.fillText(back?'A LITTLE SECRET':'TO MY FAVORITE GIRL',w/2,133);c.fillStyle='#524338';c.font='34px Georgia';lines.forEach((line,i)=>c.fillText(line,w/2,270+i*84));sunflower(c,w/2,1010,44);c.fillStyle='#92765d';c.font='italic 25px Georgia';c.fillText('Always, Fumiriya',w/2,1100);c.font='18px Georgia';c.textAlign='left';wrap(c,finalThought,82,1163,736,25);});}
 function wrap(c,text,x,y,maxWidth,lineHeight){let line='';for(const word of text.split(' ')){const next=line+word+' ';if(c.measureText(next).width>maxWidth&&line){c.fillText(line,x,y);line=word+' ';y+=lineHeight;}else line=next;}c.fillText(line,x,y);return y+lineHeight;}
-export function createSunflowerScene(scene,camera){
+export function createSunflowerScene(scene,camera,{sequence=false}={}){
  const stage=new T.Group();stage.name='Sunflower story — user-authored screenplay';stage.visible=false;scene.add(stage);
  const props=new T.Group();props.name='First-person phone and letter';props.visible=false;camera.add(props);scene.add(camera);
  const mat=(color,extra={})=>new T.MeshStandardMaterial({color,roughness:.65,...extra});
@@ -41,14 +41,20 @@ export function createSunflowerScene(scene,camera){
  function update(time,dt,playing){
   if(!active)return;
   const f=storyFrame(time);camera.position.fromArray(f.position);camera.lookAt(...f.target);
-  const portrait=camera.aspect<.8;camera.fov=portrait?65:52;camera.updateProjectionMatrix();
+  const portrait=camera.aspect<.8;camera.fov=portrait?65:52;
+  if(sequence&&time>=55.3){
+   const blend=T.MathUtils.smoothstep(time,55.3,59.6);
+   camera.position.lerp(new T.Vector3(-35.2,1.4,-31.15),blend);
+   camera.lookAt(-26.271,2.94,-31.15);camera.fov=T.MathUtils.lerp(camera.fov,22.2,blend);
+  }
+  camera.updateProjectionMatrix();
   const line=voice.lines.find(l=>time>=l.start&&time<l.end);const speaking=playing&&!!line;
   if(speaking!==lastSpeaking){boy.setSpeaking(speaking);lastSpeaking=speaking;}
   boy.setSpeechFrame(speaking?voicePose(time,voice.cues):{});boy.update(playing?dt:0);
   // During memories he remains present as the imagined boyfriend, like the storyboard.
   personStage.visible=time<14.7||time>=45;
   flower.rotation.z=Math.sin(time*1.4)*.025;stem.rotation.z=Math.sin(time*1.4)*.012;
-  envelope.visible=f.envelope;phone.visible=f.phone;letter.visible=f.letter||f.ending;
+  envelope.visible=f.envelope;phone.visible=f.phone;letter.visible=f.letter||(f.ending&&!sequence);
   const lookingAtBoy=(time>=3.3&&time<9.3)||(time>=12&&time<14);
   phone.position.set(lookingAtBoy?.14:.025,lookingAtBoy?-.30:-.10,-.53);phone.rotation.set(-.08,-.05,-.045);
   const lift=T.MathUtils.smoothstep(time,18.6,19.3)*(1-T.MathUtils.smoothstep(time,39.3,40));

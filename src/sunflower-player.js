@@ -1,3 +1,4 @@
+import {inSequence,installSequence,sequenceEvent} from './sequence-bridge.js';
 import {storyFrame,storyChapters,STORY_DURATION} from './sunflower-timeline.js';
 import voice from './data/sunflower-voice.json';
 
@@ -36,26 +37,28 @@ export function mountSunflowerPlayer(world,{onEnter,onExit}){
   if(!ready||!active)return;
   const attempt=++playAttempt;notice('');if(audio.ended||audio.currentTime>=STORY_DURATION)audio.currentTime=0;
   started=true;intro.hidden=true;pause.disabled=progress.disabled=$('#story-replay').disabled=false;
-  try{await audio.play();}catch{if(active&&attempt===playAttempt)notice('Voice could not play. Press Resume to try again.');}sync();
+  try{await audio.play();}catch(error){if(inSequence)throw error;if(active&&attempt===playAttempt)notice('Voice could not play. Press Resume to try again.');}sync();
  }
  function close(){if(!active)return;opening++;playAttempt++;audio.pause();audio.currentTime=0;active=false;started=false;world.stopStory();panel.hidden=true;app.classList.remove('story-mode');onExit();entry.focus();}
- entry.onclick=async()=>{
+ async function open(){
   if(active)return;const token=++opening;active=true;started=false;ready=false;onEnter();app.classList.add('story-mode');panel.hidden=false;intro.hidden=false;notice('');play.disabled=true;play.textContent='Preparing your story…';pause.disabled=progress.disabled=$('#story-replay').disabled=true;
-  let loaded;try{[loaded]=await Promise.all([world.prepareStory(),prepareAudio()]);}catch{if(token===opening&&active){notice('Voice could not load. Exit and reopen the story to try again.');play.textContent='Voice unavailable';}return;}if(token!==opening||!active)return;
-  if(!loaded){notice('The character could not load. Exit and reopen the story to try again.');play.textContent='Character unavailable';return;}
+  let loaded;try{[loaded]=await Promise.all([world.prepareStory(),prepareAudio()]);}catch(error){if(inSequence)throw error;if(token===opening&&active){notice('Voice could not load. Exit and reopen the story to try again.');play.textContent='Voice unavailable';}return;}if(token!==opening||!active)return;
+  if(!loaded){if(inSequence)throw new Error('校园人物资源未加载');notice('The character could not load. Exit and reopen the story to try again.');play.textContent='Character unavailable';return;}
   world.startStory();ready=true;play.disabled=false;play.textContent='Begin story';play.focus();sync();
  };
+ entry.onclick=open;
  play.onclick=resume;pause.onclick=()=>{if(audio.paused||audio.ended)void resume();else{playAttempt++;audio.pause();sync();}};
  $('#story-replay').onclick=()=>{audio.currentTime=0;void resume();};
  progress.oninput=()=>{audio.currentTime=Number(progress.value);sync();};
  $('#story-exit').onclick=close;
  $('#story-mute').onclick=()=>{audio.muted=!audio.muted;$('#story-mute').textContent=audio.muted?'Sound off':'Sound on';$('#story-mute').setAttribute('aria-pressed',String(audio.muted));$('#story-mute').setAttribute('aria-label',audio.muted?'Unmute story':'Mute story');};
- audio.addEventListener('error',()=>{if(active&&started){audio.pause();notice('Voice could not load. Press Resume to try again.');}});
- audio.addEventListener('waiting',()=>{if(active&&started)notice('Loading voice…');});audio.addEventListener('playing',()=>notice(''));audio.addEventListener('ended',sync);
+ audio.addEventListener('error',()=>{if(active&&started){audio.pause();notice('Voice could not load. Press Resume to try again.');sequenceEvent('error',{message:'校园语音播放失败，请重新载入。'});}});
+ audio.addEventListener('waiting',()=>{if(active&&started)notice('Loading voice…');});audio.addEventListener('playing',()=>notice(''));audio.addEventListener('ended',()=>{world.updateStory(STORY_DURATION,false);sync();sequenceEvent('done');});
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&active){playAttempt++;audio.pause();sync();}});
  window.addEventListener('pagehide',()=>audio.pause());
- addEventListener('keydown',e=>{if(!active)return;if(e.key==='Escape'){e.stopImmediatePropagation();close();}else if(e.code==='Space'&&e.target===document.body){e.preventDefault();pause.click();}},true);
- function frame(){sync();requestAnimationFrame(frame);}requestAnimationFrame(frame);
- if(new URLSearchParams(location.search).has('story'))entry.click();
+ addEventListener('keydown',e=>{if(!active)return;if(inSequence){if(e.key==='Escape')sequenceEvent('pause');return;}if(e.key==='Escape'){e.stopImmediatePropagation();close();}else if(e.code==='Space'&&e.target===document.body){e.preventDefault();pause.click();}},true);
+ let disposed=false,frameId;function frame(){if(disposed)return;sync();frameId=requestAnimationFrame(frame);}frameId=requestAnimationFrame(frame);
+ if(inSequence){const prepared=open();installSequence({ready:prepared,start:resume,pause(){audio.pause();sync();},resume,capture:()=>world.captureStory(),dispose(){disposed=true;active=false;cancelAnimationFrame(frameId);audio.pause();world.dispose();if(audio.src.startsWith('blob:'))URL.revokeObjectURL(audio.src);}});}
+ else if(new URLSearchParams(location.search).has('story'))entry.click();
  return {close,get active(){return active;}};
 }

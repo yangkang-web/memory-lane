@@ -1,3 +1,4 @@
+import {inSequence,installSequence,sequenceEvent,snapshot} from './sequence-bridge.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createDowntown } from './downtown.js';
@@ -59,6 +60,7 @@ try {
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
   world=createDowntown();
 } catch(error) {
+  sequenceEvent('error',{message:'末世场景无法创建，请检查 WebGL。'});
   console.error('Could not create downtown scene',error);
   $('#map-error').hidden=false;resetButton.disabled=true;routeButton.disabled=true;
   viewButtons.forEach(button=>{button.disabled=true;});renderer?.dispose();
@@ -106,7 +108,7 @@ if(world) {
     onLocation(value){inside=value;updatePlace();},
     onRouteState(value,message=''){following=value;$('#walk-status').textContent=message||(value?'沿门口走过去，WASD 可接管':'');updatePlace();},
   });
-  narrative=createLastCompanion({world,camera,render,
+  narrative=createLastCompanion({world,camera,render,onComplete:()=>sequenceEvent('done'),
     onStart(){walker.setEnabled(false);controls.enabled=false;controls.stopListenToKeyEvents();activeView='cinematic';$('#app').classList.add('cinematic');$('#app').classList.remove('walking');},
     onExit(){activeView='walk';$('#app').classList.remove('cinematic');viewButtons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view==='walk')));renderer.shadowMap.needsUpdate=true;resetView();canvas.focus();},
   });
@@ -136,16 +138,20 @@ if(world) {
   viewButtons.forEach(button=>button.addEventListener('click',selectView));window.addEventListener('resize',resize);
   resetView();resize();
   routeButton.disabled=true;$('#walk-status').textContent='正在装载街区材质…';
-  Promise.all([world.assetsReady,narrative.ready]).then(()=>{if(!disposed){assetsLoaded=true;routeButton.disabled=false;storyButton.disabled=false;$('#walk-status').textContent='';render();rain.capture(renderer);render();}}).catch(error=>{if(!disposed){assetsLoaded=true;routeButton.disabled=false;storyButton.disabled=false;render();rain.capture(renderer);console.error('Scene textures failed to load',error);$('#walk-status').textContent='部分场景贴图未加载，请刷新页面重试';}});
+  const sceneReady=Promise.all([world.assetsReady,narrative.ready]);
+  sceneReady.then(()=>{if(!disposed){assetsLoaded=true;routeButton.disabled=false;storyButton.disabled=false;$('#walk-status').textContent='';render();rain.capture(renderer);render();}}).catch(error=>{if(!disposed){assetsLoaded=true;routeButton.disabled=false;storyButton.disabled=false;render();rain.capture(renderer);console.error('Scene textures failed to load',error);$('#walk-status').textContent='部分场景贴图未加载，请刷新页面重试';}});
   // Rain also remains visible outside the windows while the camera is indoors.
+  if(inSequence)installSequence({ready:sceneReady.then(async()=>{assetsLoaded=true;await narrative.start(0,true);render();}),start:()=>narrative.resume(),pause:()=>narrative.pause(),resume:()=>narrative.resume(),capture:()=>{const image=snapshot(canvas,render),ctx=image.getContext('2d');ctx.globalAlpha=narrative.state.blackout||0;ctx.fillStyle='#000';ctx.fillRect(0,0,image.width,image.height);return image;},dispose:disposeMap});
   const weatherTick=setInterval(()=>{
     if(document.hidden){lastWeatherFrame=performance.now();return;}
     if(assetsLoaded&&!disposed&&!narrative.active&&(WEATHER.rain>.005||((activeView!=='walk'||!inside)&&world.water.visibleFrom(camera))))render();
   },1000/30);
-  if(import.meta.hot)import.meta.hot.dispose(()=>{
-    clearInterval(weatherTick);rain.dispose();narrative.dispose();storyButton.removeEventListener('click',startStory);
-    disposed=true;walker.dispose();controls.dispose();world.dispose();post.dispose();renderer.dispose();
+  function disposeMap(){
+    if(disposed)return;disposed=true;
+    clearInterval(weatherTick);narrative.dispose();rain.dispose();storyButton.removeEventListener('click',startStory);
+    walker.dispose();controls.dispose();world.dispose();post.dispose();renderer.dispose();
     window.removeEventListener('resize',resize);resetButton.removeEventListener('click',resetView);routeButton.removeEventListener('click',walker.followRoute);
-    viewButtons.forEach(button=>button.removeEventListener('click',selectView));
-  });
+    viewButtons.forEach(button=>button.removeEventListener('click',selectView));renderer.forceContextLoss();
+  }
+  if(import.meta.hot)import.meta.hot.dispose(disposeMap);
 }
