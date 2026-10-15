@@ -1,0 +1,11 @@
+import * as T from 'three';
+import {inSequence,installSequence,sequenceEvent,snapshot} from './sequence-bridge.js';
+const canvas=document.createElement('canvas');document.querySelector('#app').replaceChildren(canvas);
+Object.assign(document.body.style,{margin:'0',overflow:'hidden',background:'#e6e5df'});
+const renderer=new T.WebGLRenderer({canvas,antialias:false});renderer.setClearColor('#e6e5df');
+const scene=new T.Scene(),camera=new T.PerspectiveCamera(60,innerWidth/innerHeight,.1,100);
+function render(){renderer.render(scene,camera);}function resize(){renderer.setSize(innerWidth,innerHeight);render();}addEventListener('resize',resize);resize();
+let elapsed=0,playing=false,last=0,frame;
+function tick(now){if(playing&&!document.hidden){elapsed+=Math.max(0,(now-last)/1000);if(elapsed>=30){elapsed=30;playing=false;sequenceEvent('done');}}last=now;frame=requestAnimationFrame(tick);}frame=requestAnimationFrame(tick);
+installSequence({ready:Promise.resolve(),start(){elapsed=0;playing=true;last=performance.now();},pause(){playing=false;},resume(){if(elapsed<30){playing=true;last=performance.now();}},capture:()=>snapshot(canvas,render),dispose(){cancelAnimationFrame(frame);renderer.dispose();}});
+if(!inSequence)render();
