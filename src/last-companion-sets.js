@@ -140,6 +140,15 @@ export function createCompanionSets(scene){
   label(metro,'NORTH STATION / 北站',4,.65,-7.48,-4.6,108,Math.PI/2);label(metro,'维修通道 →',2.2,.38,4.7,-4.6,121,Math.PI/2);
   for(let i=0;i<5;i++){box(metro,.5,1.2,.5,metal,-5.8,-6.2,126+i*1.1);box(metro,1.6,.06,.04,rust,-5.1,-5.8,126+i*1.1);}
   for(let z=112;z<140;z+=8){box(metro,1.3,.07,.13,cream,0,-2.94,z);const light=new T.PointLight('#b4c5bc',15,13,2);light.position.set(0,-3.1,z);metro.add(light);(items.metroLights??=[]).push(light);}
+  // A surviving platform utility lamp lights the attacker crossing the aisle.
+  // Keep the far station dark; the pool is attached to a visible pillar fixture.
+  const utilityGlow=mat('#bfd0b9',{emissive:'#a4bea1',emissiveIntensity:1.8});
+  box(metro,.36,.16,.16,metal,5.7,-3.65,113.67);
+  box(metro,.28,.085,.025,utilityGlow,5.7,-3.65,113.58);
+  const utilityLight=new T.PointLight('#c1d1ba',30,7,2);utilityLight.position.set(5.25,-3.85,113.3);metro.add(utilityLight);
+  box(metro,.18,.3,.08,metal,3.6,-4.05,111.82);
+  box(metro,.10,.22,.025,utilityGlow,3.6,-4.05,111.88);
+  const aisleLight=new T.PointLight('#c1d1ba',12,5,2);aisleLight.position.set(3.55,-4.15,112.05);metro.add(aisleLight);
   const shaftLight=new T.SpotLight('#d1e0de',90,20,.48,.6,1.6);shaftLight.position.set(0,1,100);shaftLight.target.position.set(.3,-8,104);metro.add(shaftLight,shaftLight.target);
   const beamSteel=weatheredSurface('metal');materials.add(beamSteel);textures.add(beamSteel.map);textures.add(beamSteel.bumpMap);
   function steelBeam(length,x,y,z){const g=group(metro,x,y,z);for(const yy of [-.155,.155])box(g,length,.05,.38,beamSteel,0,yy,0,true);box(g,length,.26,.045,beamSteel,0,0,0,true);for(const xx of [-length*.32,length*.32]){box(g,.12,.28,.065,beamSteel,xx,0,0,true);for(const yy of [-.085,.085]){const bolt=cylinder(g,.021,.08,rust,xx,yy,0,true);bolt.rotation.x=Math.PI/2;}}return g;}
@@ -160,7 +169,9 @@ export function createCompanionSets(scene){
   items.maintenanceDoor=hinged(metro,4,-6.9,122,2,2.7,'x');
   items.innerDoor=hinged(metro,6.9,-6.9,127,2,2.7,'z');
   items.maintenanceGlass=mesh(metro,new T.PlaneGeometry(2,1),glass,6,-5,126.84,true);
-  for(let i=0;i<24;i++)box(metro,2.1,.29,.55,concrete,8,-6.8+i*.29,126.6+i*.55);
+  // Solid risers and a connected landing, rather than floating thin treads.
+  for(let i=0;i<24;i++){const top=-6.655+i*.29,height=top+7.1;box(metro,2.3,height,.55,concrete,8,-7.1+height/2,126.6+i*.55);}
+  box(metro,2.3,.655,1.5,concrete,8,-.2825,140.275);
   for(const x of [6.8,9.2])box(metro,.2,10,15,concrete,x,-3,133);
   items.gate=hinged(metro,6.9,-.1,139.5,2.2,2.6,'z');for(let i=0;i<12;i++)box(items.gate,.035,2.6,.045,metal,.08+i*.18,1.3,0,true);
   const exitLight=new T.PointLight('#f3c895',24,18,1.5);exitLight.position.set(8,1.5,140);metro.add(exitLight);

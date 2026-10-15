@@ -308,7 +308,10 @@ export function createDowntown() {
   for(const side of [-1,1])for(const x of [73,117,163,211])for(const z of [110,184,229,276,323])distantBlock(side*x,z,distantIndex++);
   for(const side of [-1,1])for(const x of [112,162,212,263])for(const z of [-65,-115,-180,-235,-292])distantBlock(side*x,z,distantIndex++);
   // A second cross street gives the southern extension a readable junction.
-  box(480,.14,17,crossRoad,0,-.01,147);
+  // The cross street must share the subway opening, including its road thickness.
+  box(246.8,.14,17,crossRoad,-116.6,-.01,147);
+  box(230.7,.14,17,crossRoad,124.65,-.01,147);
+  box(2.5,.14,15.5,crossRoad,8.05,-.01,147.75);
   for(const z of [137.8,156.2])for(const side of [-1,1])box(210,.3,2.5,concrete,side*122,.1,z);
   for(let x=-350;x<355;x+=8)if(Math.abs(x)>17)box(3,.018,.12,yellow,x,.08,19);
 
