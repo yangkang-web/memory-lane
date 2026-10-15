@@ -1,9 +1,12 @@
 export const SCHOOL_PATH='/school';
-export const isAppPath=path=>['/','/index.html',SCHOOL_PATH,SCHOOL_PATH+'/'].includes(path);
+const scenePaths={'/apocalypse':'apocalypse','/seaside':'seaside','/white-room':'white-room'};
+export const isAppPath=path=>['/','/index.html',SCHOOL_PATH,SCHOOL_PATH+'/'].includes(path)||Object.hasOwn(scenePaths,path.replace(/\/$/,''));
 
 export function resolveExperience(path,search=''){
  const params=new URLSearchParams(search);
  if(!isAppPath(path))return {experience:'not-found'};
+ const scene=scenePaths[path.replace(/\/$/,'')];
+ if(scene)return {experience:scene};
  if(params.has('emochi'))return {experience:'emochi'};
  const query=params.toString();
  const schoolLink=SCHOOL_PATH+(query?'?'+query:'');

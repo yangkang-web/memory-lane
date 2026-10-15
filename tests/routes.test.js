@@ -18,3 +18,12 @@ test('static-server fallback is restricted to app routes, not missing assets',()
  for(const path of ['/','/index.html','/school','/school/'])assert.ok(isAppPath(path));
  for(const path of ['/assets/missing.wav','/school/assets/missing.vrm','/bloodbound.html','/unknown'])assert.equal(isAppPath(path),false);
 });
+
+test('merged scene routes resolve independently and allow static-server fallback',()=>{
+ for(const scene of ['apocalypse','seaside','white-room'])for(const suffix of ['','/']){
+  const path='/'+scene+suffix;assert.ok(isAppPath(path));
+  assert.equal(resolveExperience(path).experience,scene);
+  assert.equal(resolveExperience(path,'?story=1').experience,scene);
+ }
+ for(const path of ['/apocalypse/assets/missing.glb','/seaside-other','/white-room/missing'])assert.equal(isAppPath(path),false);
+});

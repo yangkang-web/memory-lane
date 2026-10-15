@@ -141,3 +141,60 @@ Open `/school?story=1` or select **Always toward you → Play story** in the cam
 **Pause/Resume**, **Replay**, the time slider, **Sound on/off**, and **Exit** are available throughout. Leaving the tab pauses playback. Voice, lip cues, props, captions, and camera all use the same audio clock. The local WAV is loaded as a Blob so seeking also works on static servers without byte-range support. No paid API, cloud service, or online speech service is required. The separate original Alice sample retains its own provenance.
 
 Emochi surfaces use locally generated seamless micrograin normal and roughness maps (`src/emochi-materials.js`) with soft-touch vinyl, ivory silicone and charcoal satin materials. Both maps are embedded in the GLB. A large studio area light adds a broad highlight; all material detail uses standard PBR properties rather than custom shader-only effects.
+
+
+## Additional scene experiences
+
+Direct routes: `/apocalypse`, `/seaside`, and `/white-room` share the main development server on port 4327. The campus remains at `/school`; `/` retains the world-selection page.
+
+场景地图：打开 http://127.0.0.1:4327/apocalypse 。这是独立的原创末世市中心习作，包含砖楼旅馆、退台高楼、仓库、停车楼、露出结构的废楼等不同建筑，以及不同车型、植被和积水。
+
+白墙世界：打开 http://127.0.0.1:4327/white-room 。沿用末日初始视角的墙面尺寸、画作比例和镜头位置。加载完成后，末世房间从右往左沿斜线以贝塞尔缓动揭开，在画面中央停留 1 秒，再继续覆盖整个画面。GPU 合成两边真实画面，在分界附近产生连续的多边形断面、折射、局部色散与压力波；变形强度随实际推进速度变化。两边共用镜头，切换时锁定视角。点击“重播过渡”重看；“回到白墙”取消过渡并恢复可拖动、缩放的白墙场景。
+
+视觉参考：[The Medium 官方双世界演示](https://www.youtube.com/watch?v=5dNZpKhpvGg) 的双世界对应关系、[Quantum Break 开发团队访谈](https://www.fxguide.com/fxfeatured/time-for-destruction-the-tech-of-quantum-break/) 中的几何扰动与光学畸变。此处为本地原创实现，未使用游戏素材。
+
+默认从可进入的废弃房屋开始。脏墙中央挂着梵高《向日葵》的公版复制图像，室内有破门、残缺屋顶、破沙发、旧柜、倒椅、床垫和遗留物资。房间与街道位于同一三维场景。
+
+初始站位正对做旧的《向日葵》，画下留空。室内包含带纸页和书脊的旧书、标签罐头、瓶子、收音机、木箱、日记和搪瓷杯；桌上提灯提供暖光，窗户和破屋顶引入冷色光，吊灯保留为损坏的陈设。天花、室内墙、外砖墙和屋面使用独立纹理；外侧有排水管、门牌和门灯。
+
+主路南端与东西横街延伸到更多街区，地面覆盖 1200 × 1200 米、道路长 760 米；自由行走范围为 x = -240～240、z = -280～280 米，远景建筑与雾衔接。外围建筑暂不可进入。
+
+- “屋内漫游”：WASD 移动，拖动环顾；↑↓ 前后，←→ 转向，Shift 加快，Esc 停止行走。墙体和主要家具、建筑、车辆有简化碰撞；暂不提供跳跃和上下楼。
+- 点击“走到街上”可连续走出破门，室外可点击“沿路回屋”；WASD 或拖动画面可接管。若在远处没有直达路线，先手动走回门口附近。
+- “街道”“俯瞰”：保留拖动旋转、滚轮缩放、右键平移。重置恢复所选视角。
+- 窄屏提供方向按钮，单指拖动画面环顾。真实触屏设备性能尚未验收。
+
+街景包含弯曲的立体草叶、蕨类、分叉树干和树根、带叶脉的爬山虎，以及带轮拱、倾斜车窗、轮胎纹路和锈蚀的车辆。路边增加湿污渍、落叶、排水口与废弃设施。沥青和树皮使用本地保存的 CC0 基础色、法线及粗糙度贴图。
+
+核心街区的临街立面采用实际窗洞、窗框、窗台、破玻璃和封窗木板，底层增加卷闸、雨棚、窗洞内的暗部、空调和落水管；砖墙与混凝土也使用本地 CC0 PBR 材质。背面和雾中的外围楼群保持简化模型，以控制浏览器的几何与绘制开销。
+
+环境几何与大部分纹理由本地代码生成；挂画及第三方材质来源见 `ASSET-LICENSES.md`。运行时不请求外部图片，不包含游戏提取资产。目前仅这一间房屋可进入，无任务系统；这是浏览器内的场景习作，并非主机游戏同等级资产和渲染管线。
+
+
+### Hero street art pass
+
+The **样板街段** view frames the specially authored Pine Street Printworks opposite the dwelling. This is the detailed house-to-street section: fractured masonry with an inset shop interior, broken glazing, a draped awning, corroded fire escape, chipped plaster and roof reinforcement. The two nearby pickups have missing windshield sections, open driver's doors, cabin furnishings, crumpled bonnets and engine components.
+
+Five nearby trees and the clustered ferns, nettles and fallen wood now use locally bundled CC0 meshes with 2K maps. The tree is reduced from 2.06 million to 154,118 triangles and instanced; plant variants share materials and geometry. Model assets total approximately 60 MB on disk. Distant architecture and vegetation keep the simpler procedural representation. Assets load entirely from this server; see ASSET-LICENSES.md for provenance.
+
+The rendering pass adds depth-based contact occlusion, using the actual alpha-tested scene depth, followed by tone mapping and FXAA. Static views render on camera changes; rain and nearby water animate only while the page is visible. Indoor plaster has surface normals and small curled paint fragments. The initial view remains facing the aged Sunflowers reproduction.
+
+`npm test` includes finite-vertex, index-range, local-URI and tree-size checks for the bundled glTF files. Desktop browser interaction is checked separately; this does not establish a mobile frame-rate target or AAA asset parity.
+
+### Rewilding and structural damage
+
+The printworks now loses an upper corner, exposing jagged floor plates, reinforcement and rubble. Roof shrubs grow on the surviving slabs; broad ivy colonies climb damp piers, spill over the canopy and entwine the fire escape. Other blocks include a garage with missing upper floor edges and a historic building with a lost front upper storey. Rooftop equipment is kept on surviving roof surfaces.
+
+Three authored road fractures are actual holes in the asphalt mesh, with exposed soil, fractured edges, small pavement fragments and plants in the openings. Woody roots meet raised pavement slabs beside the eastern trees. Raised slabs and substantial rubble have collision boundaries, with the house-to-street route left clear. `tests/ruins.test.js` raycasts the fracture openings and intact pavement, checks finite geometry, and verifies route clearance.
+
+### Rainwater and daylight
+
+The **街面积水** view shows shallow street water. Four pools share one 1024px planar reflection capture, with angle-dependent reflectance, subtle moving ripples, a roughened reflection and irregular damp borders. Transparent blending preserves the lit asphalt and markings underneath. The water plane sits above both intersecting road surfaces; a raycast regression test guards against it being buried under the cross street. The weather/water scheduler runs at up to 30 updates/second while rain or nearby visible water needs animation. Hidden tabs do not advance weather or redraw.
+
+A local procedural cloudy sky supplies the background and environment light, aligned with the warm directional sun. Cool hemisphere fill preserves shadow detail. A cached 4096px shadow map follows the camera in quantized steps, with wider coverage for the overview. The depth-based post pass also integrates a thin atmospheric scattering term against the actual directional shadow map, so buildings occlude the light. This is raster lighting and approximate single scattering, not ray tracing or baked global illumination. Desktop browser review remains the visual/interaction acceptance gate; no mobile performance target is established.
+
+### Sunshower weather
+
+The scene defaults to one combined condition: **晴天、少量云彩、小雨同时存在**. There is no weather-mode selector. Warm directional sunshine and a mostly clear blue sky remain active during gentle rain; roads are damp and shallow puddles reflect the sunlit street.
+
+Light rain uses instanced, distance-faded strokes with varied lengths and speeds, plus expanding impact rings on puddles. A one-time top-down depth capture of the actual loaded scene shelters complete roofs, canopies and floor plates; the dwelling's existing broken roof opening admits some rain. The shelter map is static because the scene geometry is static. Animation pauses in hidden tabs. No weather service, cloud dependency or paid API is used. Tests cover the simultaneous daylight/rain configuration and safe rain initialization; visual precipitation and shelter are checked in the browser.

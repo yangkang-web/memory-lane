@@ -1,0 +1,284 @@
+{
+  "source": "Offline macOS speech synthesis",
+  "voices": [
+    "Tingting",
+    "Eddy (中文（中国大陆）)"
+  ],
+  "text": "User-authored fictional story: 回忆之路：最后一次并肩",
+  "generatedWith": "scripts/art/synthesize-story.mjs",
+  "lines": [
+    {
+      "file": "00.wav",
+      "speaker": "小月",
+      "text": "往左压一点。以前就是这样。",
+      "start": 24,
+      "end": 28
+    },
+    {
+      "file": "01.wav",
+      "speaker": "我",
+      "text": "小月？",
+      "start": 28.5,
+      "end": 30.1
+    },
+    {
+      "file": "02.wav",
+      "speaker": "小月",
+      "text": "嗯。听得到。",
+      "start": 30.4,
+      "end": 32.5
+    },
+    {
+      "file": "03.wav",
+      "speaker": "我",
+      "text": "先找吃的。",
+      "start": 52,
+      "end": 54.5
+    },
+    {
+      "file": "04.wav",
+      "speaker": "小月",
+      "text": "街角那家便利店，你以前经常去。",
+      "start": 55,
+      "end": 59
+    },
+    {
+      "file": "05.wav",
+      "speaker": "旧录音 · 小月",
+      "text": "说好了，以后我们是一队的。",
+      "start": 84,
+      "end": 88.5
+    },
+    {
+      "file": "06.wav",
+      "speaker": "小月",
+      "text": "里面有人。",
+      "start": 92,
+      "end": 94.8
+    },
+    {
+      "file": "07.wav",
+      "speaker": "我",
+      "text": "小月？",
+      "start": 108,
+      "end": 110
+    },
+    {
+      "file": "08.wav",
+      "speaker": "小月",
+      "text": "慢慢退。",
+      "start": 111,
+      "end": 114
+    },
+    {
+      "file": "09.wav",
+      "speaker": "我",
+      "text": "后门！",
+      "start": 148,
+      "end": 150
+    },
+    {
+      "file": "10.wav",
+      "speaker": "小月",
+      "text": "穿过仓库，右边！",
+      "start": 150.4,
+      "end": 153.4
+    },
+    {
+      "file": "11.wav",
+      "speaker": "小月",
+      "text": "下面的插销！",
+      "start": 190,
+      "end": 193
+    },
+    {
+      "file": "12.wav",
+      "speaker": "小月",
+      "text": "先压住伤口。",
+      "start": 216,
+      "end": 219
+    },
+    {
+      "file": "13.wav",
+      "speaker": "小月",
+      "text": "跑！",
+      "start": 237.8,
+      "end": 239.8
+    },
+    {
+      "file": "14.wav",
+      "speaker": "小月",
+      "text": "前面左转！",
+      "start": 271,
+      "end": 274
+    },
+    {
+      "file": "15.wav",
+      "speaker": "我",
+      "text": "小月？",
+      "start": 302,
+      "end": 304
+    },
+    {
+      "file": "16.wav",
+      "speaker": "小月",
+      "text": "我在。先别乱动。",
+      "start": 305,
+      "end": 308.8
+    },
+    {
+      "file": "17.wav",
+      "speaker": "小月",
+      "text": "右脚旁边有撬杆。用它抬横梁。",
+      "start": 320,
+      "end": 325.5
+    },
+    {
+      "file": "18.wav",
+      "speaker": "小月",
+      "text": "小心！",
+      "start": 335.5,
+      "end": 337
+    },
+    {
+      "file": "19.wav",
+      "speaker": "我",
+      "text": "小月……",
+      "start": 342,
+      "end": 344
+    },
+    {
+      "file": "20.wav",
+      "speaker": "小月",
+      "text": "看着屏幕，别闭眼。",
+      "start": 345,
+      "end": 348.3
+    },
+    {
+      "file": "21.wav",
+      "speaker": "我",
+      "text": "你报方向。",
+      "start": 355,
+      "end": 357
+    },
+    {
+      "file": "22.wav",
+      "speaker": "小月",
+      "text": "右边。先往右边走。",
+      "start": 357.5,
+      "end": 359.9
+    },
+    {
+      "file": "23.wav",
+      "speaker": "小月",
+      "text": "低头！",
+      "start": 371,
+      "end": 372.5
+    },
+    {
+      "file": "24.wav",
+      "speaker": "小月",
+      "text": "一直走。别看后面。",
+      "start": 380,
+      "end": 384
+    },
+    {
+      "file": "25.wav",
+      "speaker": "我",
+      "text": "还有路吗？",
+      "start": 396,
+      "end": 398
+    },
+    {
+      "file": "26.wav",
+      "speaker": "小月",
+      "text": "内门后面，维护楼梯。",
+      "start": 398.2,
+      "end": 400.8
+    },
+    {
+      "file": "27.wav",
+      "speaker": "我",
+      "text": "出来了。",
+      "start": 429.2,
+      "end": 431
+    },
+    {
+      "file": "28.wav",
+      "speaker": "我",
+      "text": "怎么了？",
+      "start": 431.5,
+      "end": 433
+    },
+    {
+      "file": "29.wav",
+      "speaker": "小月",
+      "text": "你前面……",
+      "start": 433.4,
+      "end": 435.5
+    },
+    {
+      "file": "30.wav",
+      "speaker": "我",
+      "text": "找不到了，是吗？",
+      "start": 445,
+      "end": 447.3
+    },
+    {
+      "file": "31.wav",
+      "speaker": "小月",
+      "text": "等一下。再让我找一下。",
+      "start": 447.5,
+      "end": 451.7
+    },
+    {
+      "file": "32.wav",
+      "speaker": "我",
+      "text": "小月。",
+      "start": 453.3,
+      "end": 454.7
+    },
+    {
+      "file": "33.wav",
+      "speaker": "小月",
+      "text": "我在。",
+      "start": 454.8,
+      "end": 456
+    },
+    {
+      "file": "34.wav",
+      "speaker": "我",
+      "text": "我走不动了。",
+      "start": 457,
+      "end": 459.5
+    },
+    {
+      "file": "35.wav",
+      "speaker": "小月",
+      "text": "别。我们再找找。",
+      "start": 461,
+      "end": 464
+    },
+    {
+      "file": "36.wav",
+      "speaker": "我",
+      "text": "你别关机。",
+      "start": 464.3,
+      "end": 466
+    },
+    {
+      "file": "37.wav",
+      "speaker": "小月",
+      "text": "你先看着我。",
+      "start": 466.2,
+      "end": 468.4
+    },
+    {
+      "file": "38.wav",
+      "speaker": "终端 · 小月",
+      "text": "……听得到吗？",
+      "start": 477,
+      "end": 480
+    }
+  ]
+}
