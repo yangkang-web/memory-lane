@@ -1,148 +1,154 @@
 import './style.css';
-import { world } from './story.js';
-import { loadSave, writeSave } from './storage.js';
-import { createAmbience } from './audio.js';
-import { createWorld } from './scene.js';
+import {mountSunflowerPlayer} from './sunflower-player.js';
+import { createStudentVoice } from './student-voice.js';
+import voiceLine from './data/fumiriya-voice.json';
+import { createCampus, locations } from './school.js';
+import { characters } from './characters.js';
+import { interiorStops } from './school-interior.js';
 
 const icons = {
-  arrow: '<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>',
-  play: '<svg viewBox="0 0 24 24"><path d="m9 5 11 7-11 7Z"/></svg>',
-  pause: '<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>',
-  sound: '<svg viewBox="0 0 24 24"><path d="m11 4-5 4H3v8h3l5 4Zm4 4a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg>',
-  mute: '<svg viewBox="0 0 24 24"><path d="m11 4-5 4H3v8h3l5 4Zm5 5 6 6m0-6-6 6"/></svg>',
-  bookmark: '<svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4Z"/></svg>',
-  close: '<svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>',
-  leaf: '<svg viewBox="0 0 32 32"><path d="M26 5C8 2 3 13 10 21c7 8 19 0 16-16ZM8 25 23 9M14 18l-1-7m5 3 7 1"/></svg>',
+  school: '<path d="m3 10 9-7 9 7M5 9v12h14V9M9 21v-6h6v6M9 10h.01M15 10h.01"/>',
+  compass: '<circle cx="12" cy="12" r="9"/><path d="m16 8-3 5-5 3 3-5Z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/>',
+  walk: '<circle cx="14" cy="4" r="2"/><path d="m7 12 3-4 5 1 3 4m-7-4-1 7-4 5m5-7 4 3 1 4"/>',
+  pin: '<path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2"/>',
+  reset: '<path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/>',
 };
-const {data:save,available:saveAvailable}=loadSave();
-const app=document.querySelector('#app');
-app.innerHTML=`
-  <canvas id="world" aria-label="可以漫游的黄昏茶会花园" tabindex="0"></canvas>
-  <div class="vignette" aria-hidden="true"></div>
-  <div id="load" class="loading"><span class="loading-mark">${icons.leaf}</span><p>花园正在醒来</p><small>准备你的回忆之路</small></div>
+const icon = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]}</svg>`;
+document.querySelector('#app').innerHTML = `
+  <canvas id="world" aria-label="Interactive 3D school campus"></canvas>
+  <div id="loading" role="status"><span class="loader"></span>Building your campus…</div>
   <header class="topbar">
-    <button id="home" class="brand" aria-label="返回回忆入口">${icons.leaf}<span>回忆之路<small>MEMORY LANE</small></span></button>
-    <span class="world-label">CHAPTER VII <i></i> 六点以后的花园</span>
-    <div class="top-actions"><button id="source" class="text-button">故事出处</button><button id="sound" class="icon-button" aria-label="关闭环境声音">${icons.sound}</button><button id="settings" class="icon-button" aria-label="画面与操作设置"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 17h16M9 4v6m6 4v6"/></svg></button></div>
+    <a class="brand" href="/school" aria-label="Return to campus overview"><span class="brand-mark">${icon('school')}</span><span>Westbridge<small>ACADEMY · EST. 1968</small></span></a>
+    <div class="top-right"><span class="scene-status"><i></i>INTERACTIVE CAMPUS</span><a class="icon-button" href="/?emochi=1" style="text-decoration:none;color:inherit" aria-label="Meet Emochi">Emochi</a><button id="student-focus" class="icon-button" aria-label="Meet the students">${icon('walk')}<span>Characters</span></button><button id="light" class="icon-button" title="Switch to sunset" aria-label="Switch to sunset">${icon('sun')}<span>Daylight</span></button></div>
   </header>
-  <section id="welcome" class="welcome" aria-labelledby="welcome-title">
-    <div class="eyebrow"><span></span> A PLACE THE STORY LEFT BEHIND</div>
-    <h1 id="welcome-title">六点<span>以后</span><em>After six.</em></h1>
-    <p class="welcome-line">时间停了，故事还在。</p>
-    <p class="intro">回到那场没有结束的茶会。<br>沿着花园小路，拾起三个留下的瞬间。</p>
-    <div class="entry-actions"><button id="enter" class="primary">进入回忆 ${icons.arrow}</button><button id="explore-entry" class="secondary">先在花园走走</button></div>
-    <div class="entry-meta"><span>与 帽匠</span><i></i><span>3 段回忆</span><i></i><span>约 90 秒 · 可自由停留</span></div>
-    <div id="return-note" class="return-note" hidden></div>
-    <div class="sample-note">文学改编样例 · 非真实聊天 <button id="sample-details">了解这段故事 ${icons.arrow}</button></div>
+  <section class="intro"><div class="eyebrow">A LITTLE WORLD OF LEARNING</div><h1>A place to belong.</h1><p>Quiet courtyards. Open doors. Room to discover.</p></section>
+  <aside class="places" aria-label="Campus destinations"><div class="places-heading"><span>Around campus</span><span>04 PLACES</span></div>${locations.map((p,i)=>`<button class="place" data-place="${p.id}"><span class="place-number">0${i+1}</span><span><strong>${p.title}</strong><small>${p.en}</small></span><span class="place-arrow">↗</span></button>`).join('')}<div class="place-footer"><span class="dot"></span><span id="mode-description">Choose a place to explore</span></div></aside>
+  <nav class="indoor-route" aria-label="Explore the school"><div class="route-heading">Step inside <span>WALK INSIDE</span></div><div class="route-stops">${interiorStops.map((p,i)=>`<button data-stop="${p.id}" class="route-stop"><span class="route-step">${i+1}</span><span><strong>${p.title}</strong><small>${p.subtitle}</small></span><span class="route-enter">↗</span></button>`).join('')}</div><p>Doors open as you approach</p></nav>
+  <section class="student-controls" aria-label="Student actions" hidden>
+    <div class="character-picker" role="group" aria-label="Choose a character">${characters.map(person=>`<button data-character="${person.id}" aria-pressed="${person.id==='fumiriya'}">${person.shortName}</button>`).join('')}</div>
+    <div class="student-heading"><div><small>ON THE WAY TO CLASS</small><strong id="student-name">Meet Fumiriya</strong></div><span id="student-state" role="status">Loading…</span></div>
+    <div class="character-picker" role="group" aria-label="Camera framing"><button data-student-frame="full" aria-pressed="true">Full body</button><button data-student-frame="face" aria-pressed="false">Face close-up</button></div>
+    <div class="student-actions"><button data-student-action="idle" aria-pressed="false">Stand</button><button data-student-action="walk" aria-pressed="false">Walk</button><button data-student-action="run" aria-pressed="false">Run</button><button data-student-action="sit" aria-pressed="false">Sit</button><button data-student-action="wave" aria-pressed="false">Wave</button></div>
+    <div class="student-gestures"><button data-student-action="give" aria-pressed="false">Give book</button><button id="student-talk" aria-pressed="false">Talk (silent)</button></div>
+    <div id="student-voice-caption" class="student-voice-caption" role="status" aria-live="polite"></div>
+    <audio id="student-voice" preload="none" src="/assets/voices/fumiriya-greeting-en.wav"></audio>
+    <button id="student-retry" hidden>Retry loading</button><p>Drag to look around · Scroll to zoom<br><span id="student-credit">Sakurada Fumiriya · VRoid Project · CC0</span></p>
   </section>
-  <aside id="welcome-chapters" class="welcome-chapters" aria-label="世界中的三个瞬间"><span class="tiny-label">INSIDE THIS MEMORY</span>${world.nodes.map(n=>`<div class="welcome-chapter"><span>${n.number}</span><div>${n.title}<small>${n.label}</small></div></div>`).join('')}</aside>
-  <footer id="welcome-footer" class="welcome-footer"><span>把经历，留在一个可以回来的地方。</span><span>THE TEA GARDEN <span class="dot"></span> 18:00</span></footer>
-  <section id="hud" hidden>
-    <div class="mode-badge"><span class="live-dot"></span><span id="mode-text">回忆漫游</span><small id="place-label">花园入口</small></div>
-    <nav id="chapters" class="chapter-nav" aria-label="回忆章节">${world.nodes.map((n,i)=>`<button data-chapter="${i}" aria-label="前往回忆：${n.title}"><span>${n.number}</span><strong>${n.title}</strong><small>${n.place}</small><i class="chapter-dot"></i></button>`).join('')}</nav>
-    <div id="route-caption" class="route-caption"><span>沿着小路，回到那个下午。</span></div>
-    <button id="nearby" class="nearby" hidden>${icons.bookmark}<span></span><kbd>E</kbd></button>
-    <div class="bottom-bar"><span id="saved" class="save-status">${saveAvailable?'本地回忆已准备':'本次体验暂无法保存'}</span><div class="transport"><button id="tour" class="transport-button">${icons.pause}<span>暂停漫游</span></button><span class="transport-divider"></span><button id="free" class="text-button">自由探索</button></div><span class="movement-help"><kbd>W A S D</kbd> 移动 <i></i> 拖动画面环顾</span></div>
-  </section>
-  <section id="memory" class="memory-card" hidden aria-labelledby="memory-title">
-    <div class="memory-top"><span id="memory-index" class="tiny-label"></span><button id="memory-close" class="icon-button" aria-label="关闭回忆">${icons.close}</button></div>
-    <p id="memory-place" class="memory-place"></p><h2 id="memory-title"></h2><p id="memory-summary" class="memory-summary"></p>
-    <div id="quotes" class="quotes"></div>
-    <button id="original" class="original-link">查看当时的对话 <span>↗</span></button>
-    <div class="memory-actions"><button id="favorite" class="favorite-button">${icons.bookmark}<span>收藏这一刻</span></button><button id="next" class="primary">继续走走 ${icons.arrow}</button></div>
-  </section>
-  <section id="ending" class="ending" hidden aria-labelledby="ending-title"><span class="eyebrow">THIS AFTERNOON IS YOURS TO KEEP</span><h2 id="ending-title">故事走完了，<br>你还可以留下。</h2><p>三段回忆已经留在这座花园。<br>再坐一会儿，或者回到你喜欢的那一刻。</p><div class="ending-actions"><button id="stay" class="primary">留在花园 ${icons.arrow}</button><button id="restart" class="secondary">从头再走一次</button></div><small id="ending-save">回忆已保存在这台设备</small></section>
-  <dialog id="detail-dialog"><div class="dialog-top"><span class="tiny-label">BEHIND THE MEMORY</span><button id="dialog-close" class="icon-button" aria-label="关闭详情">${icons.close}</button></div><div id="dialog-content"></div></dialog>
-  <div id="toast" class="toast" role="status" hidden></div>
-  <div id="error" class="error-state" hidden><h2>花园暂时没有打开</h2><p>请使用支持 WebGL 的 Chrome、Safari 或 Edge 浏览器，并开启硬件加速。</p><button onclick="location.reload()" class="primary">重新打开</button></div>
+  <div id="labels" aria-hidden="true"></div>
+  <div class="view-caption"><span class="caption-line"></span><div><small>YOUR VIEW</small><strong id="view-name">Campus overview</strong></div></div>
+  <nav class="toolbar" aria-label="Scene controls"><button id="overview" class="tool active">${icon('compass')}<span>Overview</span></button><button id="walk" class="tool">${icon('walk')}<span>Walk</span></button><span class="divider"></span><button id="labels-toggle" class="tool active" aria-pressed="true">${icon('pin')}<span>Labels</span></button><button id="reset" class="tool" title="Reset view">${icon('reset')}<span>Reset</span></button></nav>
+  <div class="help" id="help"><span>Drag to orbit</span><b>·</b><span>Scroll to zoom</span><b>·</b><span>Right-drag to pan</span></div>
+  <div class="north" aria-hidden="true"><span>N</span><svg viewBox="0 0 40 40"><path d="M20 3 28 33 20 27 12 33Z" fill="currentColor"/><path d="M20 3v24l8 6Z" fill="#abb4a2"/></svg></div>
+  <div id="touch-move" aria-label="Walking controls" hidden><button data-move="w" aria-label="Forward">↑</button><div><button data-move="a" aria-label="Move left">←</button><button data-move="s" aria-label="Backward">↓</button><button data-move="d" aria-label="Move right">→</button></div></div>
+  <div id="error" role="alert" hidden></div>
 `;
-const $=selector=>document.querySelector(selector);
-let entered=false,mode='welcome',activeNode=null,tourProgress=0,nextNode=0,lastTime=performance.now(),elapsed=0,endingShown=false,engine,memoryPending=false,endingPending=false;
-const ambience=createAmbience();ambience.setEnabled(save.sound);
-function persist(){const ok=writeSave(save);$('#saved').textContent=ok?'已保存到本机':'本次体验暂无法保存';$('#ending-save').textContent=ok?'回忆已保存在这台设备':'本次体验暂无法保存';return ok;}
-function toast(text){$('#toast').textContent=text;$('#toast').hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('#toast').hidden=true,2600);}
-function updateChapters(){document.querySelectorAll('[data-chapter]').forEach(b=>{const n=world.nodes[Number(b.dataset.chapter)];b.classList.toggle('visited',save.visited.includes(n.id));b.classList.toggle('active',activeNode?.id===n.id);b.classList.toggle('collected',save.favorites.includes(n.id));});}
-function updateSound(){$('#sound').innerHTML=save.sound?icons.sound:icons.mute;$('#sound').setAttribute('aria-label',save.sound?'关闭环境声音':'开启环境声音');}
-function setMode(value){mode=value;$('#mode-text').textContent={tour:'回忆漫游',free:'自由探索',paused:'漫游已暂停',memory:'停留在回忆',ending:'故事已走完'}[value]||'回忆漫游';$('#tour').innerHTML=(value==='tour'?icons.pause:icons.play)+`<span>${value==='tour'?'暂停漫游':nextNode>=3?'重新漫游':'继续漫游'}</span>`;$('#free').classList.toggle('selected',value==='free');}
-function hideMemory(){$('#memory').hidden=true;memoryPending=false;activeNode=null;updateChapters();}
-function enter(free=false){
-  entered=true;$('#welcome').hidden=true;$('#welcome-chapters').hidden=true;$('#welcome-footer').hidden=true;$('#hud').hidden=false;$('#ending').hidden=true;
-  $('#app').classList.add('entered');engine.enable(true);ambience.start();
-  if(free){setMode('free');engine.setPose([0,1.72,19.8],[0,1.8,-3],true);toast('WASD 移动，按住画面拖动环顾；Esc 暂停');}
-  else {tourProgress=0;nextNode=0;endingShown=false;setMode('tour');engine.setPath(0);}
-  persist();
-}
-function openMemory(node,travel=false){
-  if(!entered)enter(true);activeNode=node;nextNode=world.nodes.indexOf(node)+1;tourProgress=node.start;
-  $('#ending').hidden=true;$('#nearby').hidden=true;$('#route-caption').hidden=true;setMode('memory');engine.enable(false);engine.pause();
-  if(travel)engine.setPose(node.camera,node.look,true);
-  $('#memory-index').textContent=`MEMORY ${node.number} / 03`;
-  $('#memory-place').textContent=node.place;$('#memory-title').textContent=node.title;$('#memory-summary').textContent=node.summary;
-  $('#quotes').innerHTML=node.quotes.map(q=>`<div class="quote"><span>${q.role}</span><p>“${q.content}”</p></div>`).join('');
-  $('#favorite span').textContent=save.favorites.includes(node.id)?'已收藏这一刻':'收藏这一刻';$('#favorite').classList.toggle('selected',save.favorites.includes(node.id));
-  $('#next').innerHTML=(nextNode===3?'走到故事的最后':'继续走走')+icons.arrow;
-  memoryPending=!!travel;$('#memory').hidden=memoryPending;save.visited=[...new Set([...save.visited,node.id])];save.lastNode=node.id;persist();updateChapters();
-  $('#place-label').textContent=node.place;
-}
-function resume(){
-  if(nextNode>=3&&tourProgress>=.999){hideMemory();$('#ending').hidden=true;tourProgress=0;nextNode=0;endingShown=false;engine.setPose([0,1.72,20],[0,1.8,-3],true);}
-  else hideMemory();
-  $('#nearby').hidden=true;$('#route-caption').hidden=false;engine.enable(true);setMode('tour');
-  // Return to the path gently before progressing after manual exploration.
-  const p=engine.curve.getPoint(tourProgress),look=engine.curve.getPoint(Math.min(1,tourProgress+.04));
-  engine.setPose([p.x,1.72,p.z],[look.x,1.65,look.z],true);
-}
-function manual(){if(!entered||mode==='memory'||mode==='ending')return;setMode('free');$('#route-caption').hidden=true;}
-function showEnding(){endingShown=true;endingPending=true;setMode('ending');engine.enable(false);engine.setPose([0,1.72,-16],[0,2,4],true);$('#route-caption').hidden=true;$('#ending').hidden=true;$('#nearby').hidden=true;persist();}
-function openDialog(html){$('#dialog-content').innerHTML=html;$('#detail-dialog').showModal();engine?.enable(false);if(mode==='tour')setMode('paused');}
-function source(){openDialog(`<h2>这座花园从哪里来</h2><p class="dialog-lead">文学改编样例 · 非真实聊天</p><p>你以爱丽丝的视角，重访与帽匠有关的三个瞬间。对话来自 Lewis Carroll《Alice’s Adventures in Wonderland》第七章 “A Mad Tea-Party”。</p><p>${world.environmentNote}</p><div class="source-detail"><span>文本</span><strong>Lewis Carroll · 1865</strong><span>在线版本</span><a href="${world.sourceUrl}" target="_blank" rel="noopener">Project Gutenberg · eBook #11 ↗</a><span>原文副本</span><a href="${world.sourceFile}" target="_blank">阅读第七章原文 ↗</a></div><p class="fine-print">今晚先验证回忆如何成为可探索的空间。这个样例不代表已经接入真实账号历史，也不具备任意聊天自动生成世界的能力。</p>`);}
-$('#enter').onclick=()=>enter();$('#explore-entry').onclick=()=>enter(true);
-$('#source').onclick=source;$('#sample-details').onclick=source;
-$('#sound').onclick=()=>{save.sound=!save.sound;ambience.setEnabled(save.sound);if(save.sound&&entered)ambience.start();updateSound();persist();toast(save.sound?'环境声音已开启':'环境声音已关闭');};
-$('#settings').onclick=()=>openDialog(`<h2>自在地走一走</h2><div class="control-grid"><kbd>W / ↑</kbd><span>向前走</span><kbd>S / ↓</kbd><span>向后走</span><kbd>A / D</kbd><span>向左右移动</span><kbd>← / →</kbd><span>转动视角</span><kbd>鼠标拖动</kbd><span>环顾花园</span><kbd>E</kbd><span>打开附近的回忆</span><kbd>Esc</kbd><span>关闭回忆或暂停漫游</span></div><h3>画面质量</h3><p>流畅度会影响漫游体验。自动模式会在持续卡顿时降低渲染分辨率。</p><div class="quality-options">${[['auto','自动'],['high','精细'],['balanced','流畅']].map(([v,n])=>`<button data-quality="${v}" class="secondary ${save.quality===v?'selected':''}">${n}</button>`).join('')}</div><p class="fine-print">存档只保存在当前浏览器。清除网站数据会清除收藏与访问记录。</p>`);
-$('#dialog-content').addEventListener('click',e=>{const b=e.target.closest('[data-quality]');if(!b)return;save.quality=b.dataset.quality;engine.setQuality(save.quality);persist();document.querySelectorAll('[data-quality]').forEach(x=>x.classList.toggle('selected',x===b));toast('画面设置已保存');});
-function closeDialog(){$('#detail-dialog').close();engine?.enable(entered&&mode!=='memory'&&mode!=='ending');}
-$('#dialog-close').onclick=closeDialog;$('#detail-dialog').addEventListener('cancel',()=>{engine?.enable(entered&&mode!=='memory'&&mode!=='ending');});
-$('#detail-dialog').addEventListener('click',e=>{if(e.target===$('#detail-dialog'))closeDialog();});
-$('#home').onclick=()=>{hideMemory();$('#ending').hidden=true;$('#hud').hidden=true;$('#welcome').hidden=false;$('#welcome-chapters').hidden=false;$('#welcome-footer').hidden=false;$('#app').classList.remove('entered');entered=false;setMode('welcome');engine.enable(false);ambience.pause();engine.setPose([0,1.72,20],[0,2,-3],true);updateReturn();};
-$('#tour').onclick=()=>{if(mode==='tour'){setMode('paused');engine.pause();}else resume();};
-$('#free').onclick=()=>{hideMemory();$('#ending').hidden=true;setMode('free');engine.enable(true);engine.pause();$('#route-caption').hidden=true;toast('自由探索已开启，WASD 移动，拖动环顾');};
-$('#memory-close').onclick=()=>{hideMemory();setMode('free');engine.enable(true);engine.pause();};
-$('#next').onclick=resume;
-$('#favorite').onclick=()=>{if(!activeNode)return;const id=activeNode.id;save.favorites=save.favorites.includes(id)?save.favorites.filter(x=>x!==id):[...save.favorites,id];persist();$('#favorite span').textContent=save.favorites.includes(id)?'已收藏这一刻':'收藏这一刻';$('#favorite').classList.toggle('selected',save.favorites.includes(id));updateChapters();toast(save.favorites.includes(id)?'这一刻已经收藏，回来时还会在这里':'已取消收藏');};
-$('#original').onclick=()=>{if(!activeNode)return;const n=activeNode;openDialog(`<h2>${n.title}</h2><p class="dialog-lead">${n.context}</p>${n.quotes.map(q=>`<div class="source-quote"><small>${q.role}</small><p>${q.original.replaceAll('_','')}</p><p class="translation">${q.content}</p></div>`).join('')}<p class="fine-print">原文：Chapter VII · A Mad Tea-Party<br>中文：本 Demo 演示译文</p><a class="source-file" href="${world.sourceFile}" target="_blank">阅读本章完整原文 ↗</a>`);};
-$('#chapters').onclick=e=>{const b=e.target.closest('[data-chapter]');if(b)openMemory(world.nodes[Number(b.dataset.chapter)],true);};
-$('#nearby').onclick=()=>{const n=engine.nearest();if(n)openMemory(n);};
-$('#stay').onclick=()=>{$('#ending').hidden=true;setMode('free');engine.enable(true);engine.pause();toast('你可以通过右侧章节，回到任何一个瞬间');};
-$('#restart').onclick=()=>{hideMemory();$('#ending').hidden=true;tourProgress=0;nextNode=0;endingShown=false;resume();};
-function updateReturn(){const n=world.nodes.find(n=>n.id===save.lastNode);if(!n)return;$('#return-note').hidden=false;$('#return-note').innerHTML=`<span>欢迎回来 · 上次停留在「${n.title}」</span><button id="return">回到这一刻 ${icons.arrow}</button>`;$('#return').onclick=()=>openMemory(n,true);}
-addEventListener('keydown',e=>{
-  if($('#detail-dialog').open)return;
-  if(e.code==='Escape'&&entered){if(activeNode)$('#memory-close').click();else if(mode==='tour')$('#tour').click();}
-  if(e.code==='KeyE'&&entered&&!activeNode){const n=engine.nearest();if(n)openMemory(n);}
-});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){ambience.pause();if(mode==='tour'){setMode('paused');engine.pause();}}else if(entered){ambience.start();}});
-$('#world').addEventListener('webglcontextlost',e=>{e.preventDefault();$('#error').hidden=false;});
+let world;
 try {
-  engine=await createWorld($('#world'),world.nodes,manual,n=>openMemory(n));engine.setQuality(save.quality);
-  updateSound();updateChapters();updateReturn();
-  let metrics={};
-  function frame(now){const dt=Math.min((now-lastTime)/1000,.05);lastTime=now;elapsed+=dt;
-    metrics=engine.frame(dt,elapsed);
-    if(memoryPending&&!metrics.moving&&activeNode){memoryPending=false;$('#memory').hidden=false;}
-    if(endingPending&&!metrics.moving&&mode==='ending'){endingPending=false;$('#ending').hidden=false;}
-    if(mode==='tour'&&!metrics.moving&&!$('#detail-dialog').open){
-      tourProgress=Math.min(1,tourProgress+dt/64);
-      const node=world.nodes[nextNode];
-      if(node&&tourProgress>=node.start){openMemory(node,true);}
-      else if(tourProgress>=1&&!endingShown)showEnding();
-      else engine.setPath(tourProgress);
-    }
-    if(entered&&(mode==='free'||mode==='paused')&&!$('#detail-dialog').open){const n=engine.nearest();$('#nearby').hidden=!n;if(n)$('#nearby span').textContent=`重温 · ${n.title}`;}
-    else $('#nearby').hidden=true;
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);$('#load').classList.add('ready');setTimeout(()=>$('#load').hidden=true,700);
-  window.__appReady=true;
-  Object.defineProperty(window,'__memoryRealm',{get:()=>({mode,activeNode:activeNode?.id||null,tourProgress,nextNode,visited:[...save.visited],favorites:[...save.favorites],sound:save.sound,quality:save.quality,worldId:save.worldId,...metrics})});
-} catch(error){console.error(error);$('#load').hidden=true;$('#error').hidden=false;}
+  world = createCampus(document.querySelector('#world'), document.querySelector('#labels'), name => { document.querySelector('#view-name').textContent=name; });
+  document.querySelector('#loading').remove();
+} catch (error) {
+  document.querySelector('#loading').remove();
+  document.querySelector('#error').hidden = false;
+  document.querySelector('#error').textContent = 'Unable to load the campus. Please refresh in a WebGL 2 compatible browser.';
+  console.error(error);
+}
+if (world) {
+  let walking = false, sunset = false, showLabels = true;
+  let voice;
+  const setWalking = (value,keepVoice=false) => {
+    if(!keepVoice){voice?.stop();world.setStudentSpeaking(false);world.setStudentSpeechFrame(null);}
+    walking = value; world.setWalking(value);
+    document.querySelector('#app').classList.remove('student-view');
+    document.querySelector('.student-controls').hidden=true;
+    document.querySelector('#app').classList.toggle('walking',value);
+    document.querySelector('#walk').classList.toggle('active',value);
+    document.querySelector('#overview').classList.toggle('active',!value);
+    document.querySelector('#walk').setAttribute('aria-pressed',String(value));
+    document.querySelector('#touch-move').hidden = !value;
+    document.querySelector('#help').innerHTML = value ? '<span>WASD / arrows to move</span><b>·</b><span>Drag to look · Auto doors</span><b>·</b><span>Esc for overview</span>' : '<span>Drag to orbit</span><b>·</b><span>Scroll to zoom</span><b>·</b><span>Right-drag to pan</span>';
+    document.querySelector('#view-name').textContent = value ? 'Exploring campus' : 'Campus overview';
+    document.querySelector('#mode-description').textContent = value ? 'Explore the hall and classrooms' : 'Choose a place to explore';
+    document.querySelectorAll('.place,.route-stop').forEach(b=>b.classList.remove('selected'));
+  };
+  const syncStudent = () => {
+    const character=world.studentCharacter;
+    document.querySelector('#student-name').textContent='Meet '+character.shortName;
+    document.querySelector('#student-credit').textContent=character.name+' · VRoid Project · CC0';
+    document.querySelectorAll('[data-character]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.character===character.id)));
+    const action=world.studentAction;
+    const status=world.studentStatus;
+    const talk=document.querySelector('#student-talk');
+    talk.disabled=status!=='ready';
+    talk.setAttribute('aria-pressed',String(world.studentSpeaking));
+    const voiced=character.id==='fumiriya';
+    const activeVoice=voiced&&(voice?.state==='playing'||voice?.state==='loading');
+    talk.setAttribute('aria-pressed',String(activeVoice||world.studentSpeaking));
+    talk.textContent=voiced?(activeVoice?'Stop voice':voice?.state==='error'?'Retry voice':'Talk · '+voiceLine.languageLabel):(world.studentSpeaking?'Stop talking':'Talk (silent)');
+    const caption=document.querySelector('#student-voice-caption');
+    caption.hidden=!voiced;
+    caption.textContent=voiced?(voice?.state==='error'?'Voice could not play. Please try again.':voice?.state==='loading'?'Loading voice…':voice?.state==='playing'?voiceLine.text:voiceLine.languageLabel+' voice · '+voiceLine.credit):'';
+    document.querySelector('#student-retry').hidden=status!=='error';
+    document.querySelectorAll('[data-student-action]').forEach(b=>b.disabled=status!=='ready');
+    document.querySelector('#student-state').textContent=status==='loading'?'Loading…':status==='error'?'Load failed':world.studentLabel;
+    document.querySelectorAll('[data-student-action]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.studentAction===action)));
+  };
+  voice=createStudentVoice(document.querySelector('#student-voice'),voiceLine.cues,{
+    onState(state){if(world.studentCharacter.id==='fumiriya'){world.setStudentSpeaking(state==='playing');syncStudent();}},
+    onPose(pose){if(world.studentCharacter.id==='fumiriya')world.setStudentSpeechFrame(pose);},
+  });
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)voice.stop();});
+  window.addEventListener('pagehide',()=>voice.stop());
+  let studentCloseup=new URLSearchParams(location.search).get('view')==='face';
+  const meetStudent=()=>{
+    setWalking(false,true);world.focusStudent(studentCloseup);
+    document.querySelector('#app').classList.add('student-view');
+    document.querySelector('.student-controls').hidden=false;
+    document.querySelector('#view-name').textContent=world.studentCharacter.shortName+' · Campus student';
+    syncStudent();
+    document.querySelectorAll('[data-student-frame]').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.studentFrame==='face')===studentCloseup)));
+  };
+  document.querySelectorAll('[data-student-frame]').forEach(b=>b.onclick=()=>{studentCloseup=b.dataset.studentFrame==='face';meetStudent();});
+  document.querySelector('#student-focus').onclick=meetStudent;
+  document.querySelectorAll('[data-character]').forEach(button=>button.onclick=()=>{voice.stop();world.setStudentSpeaking(false);world.setStudentSpeechFrame(null);world.selectStudent(button.dataset.character);meetStudent();});
+  world.studentReady.then(syncStudent);
+  world.subscribeStudent(syncStudent);
+  document.querySelector('#student-retry').onclick=()=>{const ready=world.loadStudent();syncStudent();ready.then(syncStudent);};
+  document.querySelectorAll('[data-student-action]').forEach(b=>b.onclick=()=>{world.setStudentAction(b.dataset.studentAction);syncStudent();});
+  document.querySelector('#student-talk').onclick=()=>{
+    if(world.studentCharacter.id==='fumiriya'){if(voice.state==='playing'||voice.state==='loading')voice.stop();else void voice.play();}
+    else world.setStudentSpeaking(!world.studentSpeaking);
+    syncStudent();
+  };
+  const reset = () => { setWalking(false); world.overview(); };
+  document.querySelector('.brand').onclick = e => {e.preventDefault();reset();};
+  document.querySelector('#overview').onclick = reset;
+  document.querySelector('#reset').onclick = reset;
+  document.querySelector('#walk').onclick = () => { if(walking)reset();else setWalking(true); };
+  document.querySelectorAll('.place').forEach(button=>button.onclick=()=>{
+    setWalking(false); world.focus(button.dataset.place);button.classList.add('selected');
+    document.querySelector('#view-name').textContent = locations.find(p=>p.id===button.dataset.place).title;
+  });
+  document.querySelectorAll('[data-stop]').forEach(button=>button.onclick=()=>{
+    setWalking(true);world.visit(button.dataset.stop);button.classList.add('selected');
+  });
+  document.querySelector('#light').onclick = e => {
+    sunset=!sunset;world.setSunset(sunset);
+    const b=e.currentTarget;b.querySelector('span').textContent=sunset?'Sunset':'Daylight';
+    b.title=b.ariaLabel=sunset?'Switch to daylight':'Switch to sunset';
+  };
+  document.querySelector('#labels-toggle').onclick=e=>{
+    showLabels=!showLabels;world.setLabels(showLabels);e.currentTarget.classList.toggle('active',showLabels);e.currentTarget.setAttribute('aria-pressed',String(showLabels));
+  };
+  addEventListener('keydown',e=>{if(e.key==='Escape')reset();});
+  const initialCharacter=new URLSearchParams(location.search).get('student');
+  if(initialCharacter!==null){world.selectStudent(initialCharacter);meetStudent();}
+  mountSunflowerPlayer(world,{
+    onEnter(){voice.stop();world.setStudentSpeaking(false);setWalking(false);world.setSunset(false);},
+    onExit(){setWalking(false);world.setSunset(sunset);world.overview();},
+  });
+  document.querySelectorAll('[data-move]').forEach(b=>{
+    b.onpointerdown=e=>{b.setPointerCapture(e.pointerId);world.moveKey(b.dataset.move,true);};
+    b.onpointerup=b.onpointercancel=()=>world.moveKey(b.dataset.move,false);
+  });
+}

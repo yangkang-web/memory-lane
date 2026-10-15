@@ -1,0 +1,107 @@
+{
+  "text": "Good morning. The breeze feels nice today. Want to walk to class together?",
+  "language": "en-US",
+  "languageLabel": "English",
+  "credit": "Kokoro \u00b7 Puck",
+  "voice": "am_puck",
+  "speed": 0.96,
+  "duration": 4.117333333333334,
+  "modelSha256": "f3a290d384fbb27966d462905c71a46cef9e5fd00516b40df32a0b4afe77ac96",
+  "cues": [
+    {
+      "start": 0.133,
+      "end": 0.183,
+      "shape": "ou"
+    },
+    {
+      "start": 0.358,
+      "end": 0.383,
+      "shape": "oh"
+    },
+    {
+      "start": 0.558,
+      "end": 0.633,
+      "shape": "ih"
+    },
+    {
+      "start": 0.808,
+      "end": 0.833,
+      "shape": "ee"
+    },
+    {
+      "start": 1.033,
+      "end": 1.108,
+      "shape": "ih"
+    },
+    {
+      "start": 1.333,
+      "end": 1.358,
+      "shape": "ih"
+    },
+    {
+      "start": 1.658,
+      "end": 1.708,
+      "shape": "aa"
+    },
+    {
+      "start": 1.708,
+      "end": 1.783,
+      "shape": "ih"
+    },
+    {
+      "start": 1.908,
+      "end": 1.958,
+      "shape": "ee"
+    },
+    {
+      "start": 2.083,
+      "end": 2.183,
+      "shape": "ee"
+    },
+    {
+      "start": 2.183,
+      "end": 2.308,
+      "shape": "ih"
+    },
+    {
+      "start": 2.508,
+      "end": 2.533,
+      "shape": "oh"
+    },
+    {
+      "start": 2.633,
+      "end": 2.658,
+      "shape": "ee"
+    },
+    {
+      "start": 2.758,
+      "end": 2.783,
+      "shape": "oh"
+    },
+    {
+      "start": 2.883,
+      "end": 2.908,
+      "shape": "ee"
+    },
+    {
+      "start": 3.133,
+      "end": 3.183,
+      "shape": "aa"
+    },
+    {
+      "start": 3.308,
+      "end": 3.358,
+      "shape": "ee"
+    },
+    {
+      "start": 3.458,
+      "end": 3.508,
+      "shape": "ee"
+    },
+    {
+      "start": 3.608,
+      "end": 4.11733,
+      "shape": "ee"
+    }
+  ]
+}

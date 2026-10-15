@@ -1,0 +1,54 @@
+FIRST-PERSON ARMS
+"fps arms" by DJMaesen (bumstrum)
+https://sketchfab.com/3d-models/fps-arms-08ec4403a47645d8ad80633abf13d39d
+https://sketchfab.com/bumstrum
+Licensed CC BY 4.0: https://creativecommons.org/licenses/by/4.0/
+Downloaded via the author's public Sketchfab download on 2026-10-15.
+Changes: converted legacy specular/gloss material to metallic/roughness;
+retargeted fingers, wrists and elbows; split rendering for the story injury.
+
+INFECTED CHARACTER
+"Thin Zombie [ Awake Zombie Asset ]" by Rosswet Mobile (submitted by dogchicken)
+https://opengameart.org/node/14826
+Original archive: https://opengameart.org/sites/default/files/new_thin_zom.zip
+Licensed CC BY 3.0: https://creativecommons.org/licenses/by/3.0/
+Downloaded 2026-10-15.
+Changes: one level of silhouette subdivision, recreated PBR material,
+GLB conversion, surface tone adjustment, normalized size, retargeted to the
+local cinematic contact skeleton. Original animations are not included.
+
+These are independently released assets, not assets extracted from The Last of Us.
+Runtime files are served locally; no account or external service is required.
+
+MIRROR PROTAGONIST
+"3D Zombie Apocalypse Survivor Male Character" by codersan
+https://sketchfab.com/3d-models/3d-zombie-apocalypse-survivor-male-character-f56ffc64d18c40cf95d17559542ca44c
+https://sketchfab.com/codersan
+Licensed CC BY 4.0: https://creativecommons.org/licenses/by/4.0/
+Downloaded via the author's public Sketchfab download on 2026-10-15.
+Changes: normalized scale, retargeted humanoid bones to the reflection performance,
+matte material adjustment. Original embedded creator metadata retained.
+
+CROWD
+infected-crowd.glb derives from the same Rosswet Mobile CC BY 3.0 source above.
+Original low-detail mesh retained (3,340 triangles); 24 local skeletal poses baked
+at load time and rendered as instances, with deterministic size/color/phase variation.
+No third-party animations included. Routes and the 60-second edit are unchanged.
+Mirror hands additionally use DJMaesen's FPS arms skin (CC BY 4.0 above),
+filtered to the glove/hand triangles; original survivor hand triangles are hidden.
+
+"Zombie (Male 1)" by LokitoBlu (martinezequielgorno)
+https://sketchfab.com/3d-models/zombie-male-1-f40dda49b8b94f2faedf58679f676763
+CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Delivered derivative: infected-detailed.glb. Local 19-bone rig and smooth skin weights,
+normalized scale, dry nonmetal materials and alpha testing. Authored 2K color/normal
+textures and original mesh/UVs retained. Used for close infected actors; the Thin
+Zombie derivative above remains the distant crowd LOD.
+
+Additional local runtime changes: independent finger-curl shapes and palm-axis/size
+retargeting for LokitoBlu hands. DJMaesen open upper-arm/torso triangles are replaced
+by locally modeled closed cloth sleeves; original forearms/gloves are retained.
+
+The giant uses the same free infected asset with a locally sculpted heavier torso,
+thicker legs and impact-settling morph. Original UVs and textures are retained.
+Fungal growths and landing choreography are locally authored.
