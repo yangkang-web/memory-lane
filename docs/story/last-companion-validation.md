@@ -343,3 +343,34 @@ The reviewer found a P2 at 32–35 seconds: the injured arm was unreadable in th
 After the final pose/light adjustment: all 61 tests pass, production build passes, and diff whitespace check passes. No listening acceptance. Changes remain local.
 
 Final independent supplementary natural segments covered 0–12.15, 32–38 and 49–60 seconds, without seeks or pauses within each segment. The opening doorway is clear, walking hands no longer remain raised flat, and all five ending pursuers are already distant at 50.75 and approach progressively at 52.6/54.4/56.1/57.75 with changing leg poses. No stationary pop-in or new definite P1/P2 was found in that scope. Playback stops at 01:00, return to free roam works, and console warnings/errors are empty. Evidence: `evidence/threat-final-review-samples.json`, `threat-final-opening-6.jpg`, `threat-final-opening-7.jpg`, `threat-final-ending-3.jpg`, `threat-final-ending-6.jpg`, `threat-final-ending-9.jpg`, `threat-final-ending-12.jpg`, `threat-final-ending-15.jpg`; exact paused impact view `threat-final-giant-14.70.jpg`. Stable preview: http://127.0.0.1:4318/apocalypse. These are sampled visual checks, not every-frame or audio-listening acceptance.
+
+
+## Original giant refinement — 2026-10-15
+
+The paid Fat Zombie option was abandoned at the user's request. The original local
+infected giant remains, with a fuller torso/legs sculpted directly into its skin,
+UVs preserved, an independent impact-settling morph, and fewer, thicker fungal
+clusters so its face and body remain readable. Landing uses separated support
+feet, delayed arm absorption, a brief compressed hold, and then road subsidence.
+
+Independent pre-fix visual review found an unreadable near attacker at 40.7s and a
+black slab across the stair exit at 50.7s. Added localized platform utility lamps
+and cut the cross-street thickness around the exit shaft; solid risers and a
+connected landing now meet the road. Parent browser checks confirm the attacker
+face/hand are visible and the obstructing slab is gone.
+
+Validation: 66 tests passed, production build passed (existing bundle-size warning).
+Additional real-skin checks preserve ordinary infected geometry, grip morphs and
+UVs, and check camera clearance against the giant triangles at ten samples between
+14.45 and 16.1s. Total playback remains 60s. These checks do not imply AAA asset
+quality or audio-listening acceptance. Screenshots: original-giant-refined.png,
+metro-attack-light-refined.png, stair-exit-refined.png in evidence/.
+
+Final independent browser review closes both P2 findings: face/hand visibility
+at 40.7s and the exit slab at 50.6s. Sampled natural 13.8–16.1s showed descent,
+compression and left-side camera fall without the old body clipping. Playback
+reached 01:00 after one automatic visibility pause at 9.7s; a sampling gap around
+30.85–42.9s was supplemented by natural 39–42.5s playback and a paused 40.7s
+check. No new definite P1/P2 and no console warnings/errors in this scope.
+Evidence: evidence/regression-final-samples.json. This is not every-frame or
+audio-listening acceptance.
