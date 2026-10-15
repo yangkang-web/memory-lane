@@ -1,8 +1,11 @@
 import * as T from 'three';
+import { createSunflowerScene } from './sunflower-scene.js';
 import { createStudent } from './student.js';
+import { characters } from './characters.js';
 import { addCampusArchitecture } from './campus-architecture.js';
 import { buildSchoolInterior, interiorStops } from './school-interior.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { SunLight } from 'three/addons/lights/SunLight.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { mapWallUVs } from './wall-materials.js';
 import { springSky } from './spring-sky.js';
@@ -23,11 +26,16 @@ export function createCampus(canvas,labelRoot,onZone=()=>{}) {
   const renderer=new T.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
   renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
-  renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.25;
+  renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;
   const camera=new T.PerspectiveCamera(39,1,.1,500);
   const controls=new OrbitControls(camera,canvas);controls.enableDamping=true;controls.dampingFactor=.07;controls.maxPolarAngle=Math.PI*.47;controls.minDistance=15;controls.maxDistance=450;controls.target.set(0,0,0);
-  const hemi=new T.HemisphereLight('#e6f5ff','#f4e8cb',2.5);scene.add(hemi);
-  const sun=new T.DirectionalLight('#fff4d7',3.5);sun.position.set(-40,70,35);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-75,right:75,top:75,bottom:-75,near:1,far:180});sun.shadow.normalBias=.13;sun.shadow.bias=-.0002;scene.add(sun);
+  const hemi=new T.HemisphereLight('#e6f5ff','#f4e8cb',2.1);scene.add(hemi);
+  // One sun and two camera-fitted shadow cascades for people AND scenery.
+  // Millimetre-scale bias retains fringe/chin contact instead of lifting the
+  // shadow off the face. The outer cascade preserves the campus shadows.
+  const sun=new SunLight('#fff4d7',3.5);sun.position.set(-40,70,35);sun.castShadow=true;
+  sun.shadow.mapSize.set(4096,4096);sun.shadow.camera.near=.1;sun.shadow.camera.far=350;
+  sun.shadow.normalBias=.004;sun.shadow.bias=-.000015;sun.shadow.radius=2.5;scene.add(sun);
   const palette={cream:'#f3e9ce',wall:'#e4d6b7',brick:'#9b5546',roof:'#495964',glass:'#688c96',frame:'#e9ead8',wood:'#b38a5c',green:'#7d9b63',dark:'#445e50',path:'#dedbc5'};
   const mats=new Map(), batches=new Map(),colliders=[];
   const material=color=>{if(color?.isMaterial)return color;if(!mats.has(color))mats.set(color,new T.MeshStandardMaterial({color,roughness:.85}));return mats.get(color);};
@@ -159,17 +167,28 @@ export function createCampus(canvas,labelRoot,onZone=()=>{}) {
   addCampusArchitecture({box,cyl,mesh,block,textSign});
   for(const [color,geos]of batches){const merged=mergeGeometries(geos,false);const m=new T.Mesh(merged,material(color));m.castShadow=true;m.receiveShadow=true;scene.add(m);geos.forEach(g=>g.dispose());}
   addClassroomReflections(renderer,scene);
-  const student=createStudent(scene,{reducedMotion:blossomMotion.matches});
+  const students=characters.map(character=>createStudent(scene,{character,reducedMotion:blossomMotion.matches}));
+  let student=students[0];
+  characters.forEach(({chair})=>block(chair.x,chair.z,.46,.45));
   const studentDelta=new T.Vector3();
-  let viewingStudent=false;
+  let viewingStudent=false,studentCloseup=false;
+  let story=null,storyTime=0,storyPlaying=false;
+  const storyVisibility=new Map();
   const labelNodes=locations.map(p=>{const el=document.createElement('div');el.className='map-label';el.textContent=p.title;labelRoot.append(el);return{el,pos:v(...p.label)};});
   let width=0,height=0,walking=false,labels=true,transition=null,yaw=0,pitch=0,drag=null,sunset=false;
   const keys=new Set();let previousTime=performance.now();
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   function home(){const scale=width<700?Math.max(1.45,.92/camera.aspect):1;return{position:v(99,104,126).multiplyScalar(scale),target:v(0,0,0)};}
   function tween(position,target){transition={start:performance.now(),from:camera.position.clone(),to:position,fromTarget:controls.target.clone(),target};if(reduced){camera.position.copy(position);controls.target.copy(target);transition=null;controls.update();}}
-  function studentFrame(){const target=student.root.position.clone().add(v(0,width<700?.7:1.05,0));return{target,position:target.clone().add(v(width<700?.5:3,1.25,4.8).multiplyScalar(width<700?1.55:1))};}
-  function resize(){width=canvas.clientWidth;height=canvas.clientHeight;renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();if(viewingStudent){const f=studentFrame();transition=null;camera.position.copy(f.position);controls.target.copy(f.target);controls.update();}if(!walking&&!transition&&!viewingStudent){const h=home();camera.position.copy(h.position);controls.target.copy(h.target);controls.update();}}
+  function studentFrame(){
+    if(studentCloseup){
+      const target=student.root.position.clone().add(v(0,student.character.height*.9-(width<700?.14:0),0));
+      const offset=v(0,.015,width<700?1.1:.82).applyAxisAngle(v(0,1,0),student.root.rotation.y);
+      return{target,position:target.clone().add(offset)};
+    }
+    const target=student.root.position.clone().add(v(0,width<700?.15:.85,0));return{target,position:target.clone().add(v(width<700?.35:1.15,.38,width<700?5.8:3.8))};
+  }
+  function resize(){width=canvas.clientWidth;height=canvas.clientHeight;renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();if(story?.active)return;if(viewingStudent){const f=studentFrame();transition=null;camera.position.copy(f.position);controls.target.copy(f.target);controls.update();}if(!walking&&!transition&&!viewingStudent){const h=home();camera.position.copy(h.position);controls.target.copy(h.target);controls.update();}}
   resize();addEventListener('resize',resize);
   controls.addEventListener('start',()=>{transition=null;});
   canvas.addEventListener('pointerdown',e=>{if(walking){drag={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);}});
@@ -179,27 +198,43 @@ export function createCampus(canvas,labelRoot,onZone=()=>{}) {
   addEventListener('keydown',e=>{if(walking&&movementKeys.includes(e.key.toLowerCase())){e.preventDefault();keys.add(e.key.toLowerCase());}});
   addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));addEventListener('blur',()=>{keys.clear();drag=null;});
   const valid=(x,z)=>Math.abs(x)<44.5&&Math.abs(z)<39.5&&interior.canOccupy(x,z)&&!colliders.some(c=>Math.abs(x-c.x)<c.w&&Math.abs(z-c.z)<c.d);
-  function animate(){requestAnimationFrame(animate);const now=performance.now(),dt=Math.min((now-previousTime)/1000,.05);previousTime=now;interior.update(dt,camera.position,walking);campusCherries.update(dt,camera.position,blossomMotion.matches);
-    studentDelta.copy(student.root.position);student.update(dt);studentDelta.subVectors(student.root.position,studentDelta);
+  function animate(){requestAnimationFrame(animate);const now=performance.now(),dt=Math.min((now-previousTime)/1000,.05);previousTime=now;if(story?.active)story.update(storyTime,dt,storyPlaying);interior.update(dt,camera.position,walking||story?.active);campusCherries.update(dt,camera.position,blossomMotion.matches);
+    studentDelta.copy(student.root.position);students.forEach(person=>person.update(story?.active?0:dt));studentDelta.subVectors(student.root.position,studentDelta);
     if(viewingStudent&&!walking){
       if(transition){transition.target.add(studentDelta);transition.to.add(studentDelta);}
       else{camera.position.add(studentDelta);controls.target.add(studentDelta);}
     }
-    const indoors=walking&&camera.position.z< -19&&camera.position.z> -34&&camera.position.x> -37&&camera.position.x<9;
-    hemi.intensity=T.MathUtils.damp(hemi.intensity,indoors?(sunset?.85:1.02):(sunset?1.9:2.5),5,dt);
-    renderer.toneMappingExposure=T.MathUtils.damp(renderer.toneMappingExposure,indoors?1.1:1.25,5,dt);
-    if(walking){let dx=Number(keys.has('d')||keys.has('arrowright'))-Number(keys.has('a')||keys.has('arrowleft'));let dz=Number(keys.has('s')||keys.has('arrowdown'))-Number(keys.has('w')||keys.has('arrowup'));const len=Math.hypot(dx,dz)||1;const speed=camera.position.z< -16?2.8:5;dx=dx/len*dt*speed;dz=dz/len*dt*speed;const mx=dx*Math.cos(yaw)+dz*Math.sin(yaw),mz=-dx*Math.sin(yaw)+dz*Math.cos(yaw);if(valid(camera.position.x+mx,camera.position.z))camera.position.x+=mx;if(valid(camera.position.x,camera.position.z+mz))camera.position.z+=mz;camera.rotation.set(pitch,yaw,0,'YXZ');onZone(interior.zone(camera.position));}
+    const indoors=(walking||story?.active)&&camera.position.z< -19&&camera.position.z> -34&&camera.position.x> -37&&camera.position.x<9;
+    hemi.intensity=T.MathUtils.damp(hemi.intensity,indoors?(sunset?.85:1.02):(sunset?1.55:2.1),5,dt);
+    renderer.toneMappingExposure=T.MathUtils.damp(renderer.toneMappingExposure,indoors?1.1:1.18,5,dt);
+    sun.shadow.camera.far=story?.active?70:viewingStudent?80:walking?120:350;
+    if(story?.active){/* The cinematic owns the first-person camera. */}
+    else if(walking){let dx=Number(keys.has('d')||keys.has('arrowright'))-Number(keys.has('a')||keys.has('arrowleft'));let dz=Number(keys.has('s')||keys.has('arrowdown'))-Number(keys.has('w')||keys.has('arrowup'));const len=Math.hypot(dx,dz)||1;const speed=camera.position.z< -16?2.8:5;dx=dx/len*dt*speed;dz=dz/len*dt*speed;const mx=dx*Math.cos(yaw)+dz*Math.sin(yaw),mz=-dx*Math.sin(yaw)+dz*Math.cos(yaw);if(valid(camera.position.x+mx,camera.position.z))camera.position.x+=mx;if(valid(camera.position.x,camera.position.z+mz))camera.position.z+=mz;camera.rotation.set(pitch,yaw,0,'YXZ');onZone(interior.zone(camera.position));}
     else if(transition){let t=Math.min(1,(performance.now()-transition.start)/1100);t=t*t*(3-2*t);camera.position.lerpVectors(transition.from,transition.to,t);controls.target.lerpVectors(transition.fromTarget,transition.target,t);controls.update();if(t>=1)transition=null;}else controls.update();
-    labelNodes.forEach(({el,pos})=>{const p=pos.clone().project(camera);el.style.display=labels&&!walking&&!viewingStudent&&p.z<1&&Math.abs(p.x)<1&&Math.abs(p.y)<1?'block':'none';el.style.transform=`translate(${(p.x*.5+.5)*width}px,${(-p.y*.5+.5)*height}px) translate(-50%,-100%)`;});scene.fog.near=walking?150:camera.position.distanceTo(controls.target)+90;scene.fog.far=scene.fog.near+200;renderer.render(scene,camera);
+    labelNodes.forEach(({el,pos})=>{const p=pos.clone().project(camera);el.style.display=!story?.active&&labels&&!walking&&!viewingStudent&&p.z<1&&Math.abs(p.x)<1&&Math.abs(p.y)<1?'block':'none';el.style.transform=`translate(${(p.x*.5+.5)*width}px,${(-p.y*.5+.5)*height}px) translate(-50%,-100%)`;});scene.fog.near=(walking||story?.active)?150:camera.position.distanceTo(controls.target)+90;scene.fog.far=scene.fog.near+200;renderer.render(scene,camera);
   }animate();
   return {
+    prepareStory(){if(!story)story=createSunflowerScene(scene,camera);return story.ready;},
+    startStory(){if(!story)return;walking=false;viewingStudent=false;transition=null;keys.clear();drag=null;controls.enabled=false;storyTime=0;storyPlaying=false;students.forEach(p=>{storyVisibility.set(p,p.root.visible);p.root.visible=false;});story.start();story.update(0,0,false);interior.update(1,camera.position,true);},
+    updateStory(time,playing){storyTime=time;storyPlaying=playing;},
+    stopStory(){story?.stop();storyPlaying=false;students.forEach(p=>{if(storyVisibility.has(p))p.root.visible=storyVisibility.get(p);});storyVisibility.clear();controls.enabled=true;camera.fov=39;camera.updateProjectionMatrix();const h=home();camera.position.copy(h.position);controls.target.copy(h.target);controls.update();},
     overview(){viewingStudent=false;controls.minDistance=15;controls.maxDistance=450;const h=home();tween(h.position,h.target);},
     focus(id){viewingStudent=false;controls.minDistance=15;controls.maxDistance=450;const p=locations.find(p=>p.id===id);if(p){const target=v(...p.point);const offset=v(...p.view).multiplyScalar(width<700?1.55:1);tween(target.clone().add(offset),target);}},
     setWalking(value){viewingStudent=false;controls.minDistance=15;controls.maxDistance=450;if(walking===value)return;walking=value;transition=null;controls.enabled=!value;camera.fov=value?68:39;camera.updateProjectionMatrix();keys.clear();drag=null;if(value){camera.position.set(-5.5,2.15,38);yaw=0;pitch=0;}else{camera.rotation.set(0,0,0);const h=home();camera.position.copy(h.position);controls.target.copy(h.target);controls.update();}},
     visit(id){const stop=interiorStops.find(s=>s.id===id);if(!stop)return;camera.position.set(...(width<700&&stop.compactPosition?stop.compactPosition:stop.position));yaw=width<700&&stop.compactYaw!==undefined?stop.compactYaw:stop.yaw;pitch=stop.pitch||0;camera.fov=stop.fov?(width<700?68:stop.fov):68;camera.updateProjectionMatrix();keys.clear();drag=null;interior.update(1,camera.position,true);},
-    focusStudent(){viewingStudent=true;controls.minDistance=2.8;controls.maxDistance=18;camera.fov=39;camera.updateProjectionMatrix();const f=studentFrame();tween(f.position,f.target);},
+    focusStudent(closeup=false){studentCloseup=closeup;viewingStudent=true;controls.minDistance=closeup?.38:1.15;controls.maxDistance=18;camera.fov=39;camera.updateProjectionMatrix();const f=studentFrame();tween(f.position,f.target);},
+    selectStudent(id){const selected=students.find(person=>person.character.id===id);if(!selected)return false;student=selected;return true;},
+    get studentCharacter(){return student.character;},
     setStudentAction(value){student.setAction(value);},
+    setStudentSpeaking(value){student.setSpeaking(value);},
+    setStudentSpeechFrame(value){student.setSpeechFrame(value);},
+    get studentSpeaking(){return student.speaking;},
     get studentAction(){return student.action;},
+    get studentStatus(){return student.status;},
+    get studentLabel(){return student.label;},
+    subscribeStudent(fn){const unsubscribe=students.map(person=>person.subscribe(fn));return()=>unsubscribe.forEach(stop=>stop());},
+    studentReady:Promise.all(students.map(person=>person.ready)),
+    loadStudent(){return student.load();},
     moveKey(key,value){if(value)keys.add(key);else keys.delete(key);},
     setLabels(value){labels=value;},
     setSunset(value){sunset=value;interior.setSunset(value);sun.color.set(value?'#ffd1a1':'#fff4d7');sun.position.set(value?-65:-40,value?28:70,35);sun.intensity=value?3:3.5;scene.background=value?duskSky:daySky;scene.fog.color.set(value?'#f2dcd4':'#cbe9f5');floor.material.color.set(value?'#f0e2d5':'#e9e9dc');},
