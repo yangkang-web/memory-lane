@@ -212,6 +212,46 @@ async function init() {
     chapel.openEnd(runTime, length);
     sound.play('door-open', 0, 0, 'effects', .6);
   };
+  // Inside the journey the memory is one minute from the blade to the door. When he has said his last line you turn
+  // from him, cross the nave and push the doors to the passage open with both hands, into the light the next memory
+  // grows from (see journey-effects.js), and the minute is up.
+  const SEQUENCE_SECONDS = 60;
+  let sequenceStart = 0, outro = null;
+  const smooth = u => { const k = Math.min(1, Math.max(0, u)); return k * k * (3 - 2 * k); };
+  const wrap = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
+  function beginOutro() {
+    const { x, z, yaw, pitch } = player.pose, [doorX, , doorZ] = chapel.group.userData.exit.doorway;
+    // An arm's length from the leaves, which hang at x 5.82.
+    // Far enough back that the arch stays in frame on the approach; the step in comes with the push.
+    const stand = new THREE.Vector3(doorX - .8, 0, doorZ);
+    const path = new THREE.CatmullRomCurve3([new THREE.Vector3(x, 0, z), new THREE.Vector3(stand.x - 1.2, 0, doorZ + (z - doorZ) * .2), stand], false, 'centripetal');
+    outro = { time: 0, length: THREE.MathUtils.clamp(SEQUENCE_SECONDS - (runTime - sequenceStart), 4.2, 5.4), path, yaw, pitch, pushed: false, sent: false };
+  }
+  // Seconds below are on a 4.8 s clock, stretched to whatever is left of the minute.
+  function steerOutro(dt) {
+    const o = outro;
+    o.time += dt;
+    const s = o.time / o.length * 4.8, ease = (from, length) => smooth((s - from) / length);
+    const walk = ease(.35, 2.95), point = o.path.getPointAt(walk), tangent = o.path.getTangentAt(Math.min(walk, .999));
+    // Facing the way you go, and square to the doors for the last steps.
+    const along = Math.atan2(-tangent.x, -tangent.z), ahead = along + wrap(-Math.PI / 2 - along) * ease(2.4, .8);
+    const turn = ease(0, 2.1), yaw = o.yaw + wrap(ahead - o.yaw) * turn;
+    // Leaning into the doors as they give, then a step on into the doorway.
+    const forward = ease(2.85, .5) * .48 + ease(3.55, 1.25) * .55;
+    player.limitLook(null);
+    player.passageOpen = true;
+    Object.assign(player.pose, { x: point.x - Math.sin(yaw) * forward, z: point.z - Math.cos(yaw) * forward, yaw, pitch: o.pitch + (.03 - o.pitch) * turn });
+    if (s > 2.8 && arms.pose !== 'push' && !o.pushed) arms.set('push', { speed: 5 });
+    if (s > 3.3 && !o.pushed) {
+      o.pushed = true;
+      chapel.burst(runTime);
+      sound.play('door-burst', 0, 0, 'effects', 1.1);
+      sound.play('door-open', 0, .2, 'effects', .45);
+      ui.shake(.45);
+    }
+    if (s > 3.95 && arms.pose === 'push') arms.set('rest', { speed: 2.2 });
+    if (s >= 4.8 && !o.sent) { o.sent = true; sequenceEvent('done'); }
+  }
   let completionSent = false;
   let accepted = false;
   let externalHandoff = false;
@@ -259,12 +299,13 @@ async function init() {
     },
   });
   const director = createDirector({
-    player, flow, interact, lucien, hunter, arms, chapel, pendant, sound, ui,
+    player, flow, interact, lucien, hunter, arms, chapel, pendant, sound, ui, brisk: inSequence,
     onAccept: () => { accepted = true; event('accept', { keepsakeId: 'blood-heart-pendant' }); },
-    onComplete: () => (autopilot.active ? leaveOnOwn() : setState('complete')),
+    onComplete: () => (outro ? null : autopilot.active ? leaveOnOwn() : setState('complete')),
   });
   autopilot = createAutopilot({ player, flow, interact, director, lucien, hunter, pendant, arms });
-  let autoplay = readAutoplay(storage);
+  // Inside the journey it always plays itself.
+  let autoplay = inSequence || readAutoplay(storage);
   // The same switch on the title and in the menu; it takes the body over (or hands it back) when the memory plays on.
   function showAutoplay() {
     document.querySelectorAll('[data-autoplay]').forEach(button => button.setAttribute('aria-pressed', String(autoplay)));
@@ -326,6 +367,8 @@ async function init() {
     completionSent = false;
     accepted = ['wear', 'end'].includes(segment);
     exitAnimation = null;
+    sequenceStart = runTime;
+    outro = null;
     walkingOut = endOpened = false;
     leaveAt = 0;
     externalHandoff = false;
@@ -346,6 +389,8 @@ async function init() {
     event('enter', { memoryId: 'bloodbound', segment });
   }
   async function pause() {
+    // The journey holds the memory still once the doors are open; the room's sound dies away under its own.
+    if (outro?.sent && state === 'playing') { sound.fadeOut(1.2); state = 'held'; return true; }
     if (state !== 'playing') return false;
     setState('paused');
     player.releaseLock();
@@ -585,22 +630,31 @@ async function init() {
       $('.flash').style.opacity = String(flash);
       cinematic.render('scene', 4);
     } else if (launched) {
-      if (state === 'playing') {
-        runTime += dt;
-        flow.update(dt);
-        director.update(dt, runTime);
-        autopilot.update(dt);
-        if (player.travelled > 1.5 && runTime > tipUntil - 6) tipUntil = Math.min(tipUntil, runTime + 1);
-        if (walkingOut && player.pose.x > PASSAGE.maxX - PLAYER_RADIUS - .25) exit();
-        if (walkingOut && leaveAt && runTime > leaveAt) { leaveAt = 0; exit(); }
+      // In the journey the minute keeps to the wall clock: a stall (the next memory loading alongside) is caught up in
+      // short steps, drawn once, rather than lost.
+      const steps = inSequence && state === 'playing' ? Math.min(40, Math.ceil(elapsedFrame / 0.1)) : 1;
+      const step = steps > 1 ? elapsedFrame / steps : dt;
+      for (let i = 0; i < steps; i++) {
+        if (state === 'playing') {
+          runTime += step;
+          flow.update(step);
+          director.update(step, runTime);
+          autopilot.update(step);
+          if (inSequence && !outro && flow.segment === 'wear' && director.rite?.release < Infinity) beginOutro();
+          if (outro) steerOutro(step);
+          if (player.travelled > 1.5 && runTime > tipUntil - 6) tipUntil = Math.min(tipUntil, runTime + 1);
+          if (walkingOut && player.pose.x > PASSAGE.maxX - PLAYER_RADIUS - .25) exit();
+          if (walkingOut && leaveAt && runTime > leaveAt) { leaveAt = 0; exit(); }
+        }
+        player.update(state === 'playing' ? step : 0);
+        if (i < steps - 1) director.animate(step, camera);
       }
-      player.update(state === 'playing' ? dt : 0);
       if (shake > 0.01 && !reducedMotion) {
         camera.rotation.x += (Math.random() - 0.5) * 0.035 * shake;
         camera.rotation.z += (Math.random() - 0.5) * 0.025 * shake;
       }
       shake *= Math.exp(-dt * 6);
-      director.animate(state === 'playing' ? dt : 0, camera);
+      director.animate(state === 'playing' ? step : 0, camera);
       interact.update();
       $('.reticle').classList.toggle('active', Boolean(interact.focused));
       chapel.update(runTime);
@@ -661,7 +715,7 @@ async function init() {
     getKeepsake: () => pendant.group,
     getContext: () => ({ renderer, scene, camera, chapter: chapterGroup, keepsake: pendant.group }),
   });
-  if(inSequence)installSequence({ready:audioComplete?Promise.resolve():Promise.reject(new Error('吸血鬼音频未就绪')),start:()=>start(),pause,resume,capture:()=>snapshot(renderer.domElement,()=>cinematic.render('scene',4)),dispose:()=>disposeScene()});
+  if(inSequence)installSequence({ready:audioComplete?Promise.resolve():Promise.reject(new Error('吸血鬼音频未就绪')),start:()=>start('danger'),pause,resume,capture:()=>snapshot(renderer.domElement,()=>cinematic.render('scene',4)),dispose:()=>disposeScene()});
   event('ready', { memoryId: 'bloodbound', segments: SEGMENTS.map(s => s.id) });
   addEventListener('pagehide', disposeScene, { once: true });
   console.info('BLOODBOUND ready', { audioComplete, triangles: renderer.info.render.triangles });

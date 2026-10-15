@@ -47,6 +47,7 @@ npm run start:bloodbound
 - `public/assets/bloodbound/heart-pendant.glb`：场景中的血心项链；`blood-heart-pendant.glb` 是供收藏柜复用的程序化版本。
 - `BLOODBOUND-INTEGRATION.md`：共享画布、出口、完成事件与资源所有权说明。
 - `public/assets/bloodbound/integration-test.html`：真实宿主接入验收页。
+- `/journey` 串联：`?sequence=1` 时自动驾驶播放 60 秒剪辑（`director.js` 的 `brisk` 加快信物与佩戴），结尾推开礼拜堂门（`chapel.burst`），交给 `src/journey-effects.js` 的 door 转场。
 
 制作 Key 存在被 Git 忽略的 `.local/`，不进入客户端或开发包。2026-10-15 的用户授权仅允许公司 Kaon 素材制作，今晚总预算上限 $1,000；它不是实际花费目标，也不授权其他付费服务或素材购买。
 

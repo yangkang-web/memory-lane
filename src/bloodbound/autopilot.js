@@ -74,6 +74,7 @@ export function createAutopilot({ player, flow, interact, director, lucien, hunt
         // At his face while he opens the chain; once it is fastened and his brow rests on yours, down at the heart now
         // on your chest, and up again as he draws back for the last line.
         if (rite?.kind === 'wear' && rite.time > 4.3 && rite.gapGoal !== 0.05 && rite.release === Infinity) face(arms.anchor('chest', at).addScaledVector(arms.forward, 0.08), dt, 2);
+        else if (rite?.kind === 'wear' && rite.gapGoal === 0.05) face(head(lucienHead, -0.07), dt, 3.6); // up to his eyes for the last line
         else face(head(lucienHead, 0.13), dt, 2.2);
         break;
       case 'end':

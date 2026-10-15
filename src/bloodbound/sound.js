@@ -53,6 +53,7 @@ export class MemorySound {
       entry.duration = buffer.duration;
     }));
     this.buffers.set('door-open', this.door());
+    this.buffers.set('door-burst', this.burst());
     return this.manifest;
   }
 
@@ -81,6 +82,28 @@ export class MemorySound {
       peak = Math.max(peak, Math.abs(out[i]));
     }
     for (let i = 0; i < length; i++) out[i] *= .4 / peak;
+    return buffer;
+  }
+
+  // Both nave doors thrown open: the deep blow of the leaves giving at once, felt more than heard, a short knock of
+  // wood, and the air of the passage rushing past.
+  burst() {
+    const rate = this.context.sampleRate, length = Math.round(rate * 2.6);
+    const buffer = this.context.createBuffer(1, length, rate), out = buffer.getChannelData(0);
+    let seed = 19, knock = 0, air = 0, air2 = 0, phase = 0, peak = 0;
+    const noise = () => ((seed = Math.imul(1664525, seed) + 1013904223 >>> 0) / 2147483648 - 1);
+    for (let i = 0; i < length; i++) {
+      const t = i / rate;
+      phase += (36 + 26 * Math.exp(-t * 6)) / rate;
+      const blow = Math.sin(2 * Math.PI * phase) * Math.min(1, t / .008) * Math.exp(-t * 2.6);
+      knock += (noise() - knock) * .18;
+      const wood = knock * Math.exp(-t * 38) * 1.4;
+      air += (noise() - air) * .035; air2 += (air - air2) * .2;
+      const rush = air2 * 3.2 * Math.min(1, t / .35) * Math.exp(-Math.max(0, t - .35) * 1.6);
+      out[i] = blow + .25 * Math.sin(4 * Math.PI * phase) * Math.exp(-t * 5) + wood + rush;
+      peak = Math.max(peak, Math.abs(out[i]));
+    }
+    for (let i = 0; i < length; i++) out[i] *= .55 / peak;
     return buffer;
   }
 
@@ -135,6 +158,8 @@ export class MemorySound {
 
   // Pausing freezes every sound where it is, so a line resumes mid-word instead of restarting.
   async suspend() { if (this.context.state === 'running') await this.context.suspend(); }
+
+  fadeOut(seconds) { this.master.gain.setTargetAtTime(0, this.now, seconds / 4); }
 
   mute(value) {
     this.muted = value;

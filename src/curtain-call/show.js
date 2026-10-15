@@ -31,7 +31,7 @@ export const SUBTITLES = [
   { start: 5.8, end: 8.0, zh: '我一直在想——回忆到底是什么？', en: 'I keep wondering — what is a memory, really?' },
   { start: 8.2, end: 10.3, zh: '是向日葵教室里的阳光，是海边小屋的风，', en: 'Sunlight in the sunflower classroom, wind at the seaside cottage,' },
   { start: 10.5, end: 12.6, zh: '是废墟里那句「我在」，是月下教堂的誓言，', en: 'an “I’m here” among the ruins, a vow in the moonlit chapel,' },
-  { start: 12.8, end: 15.2, zh: '还有一场永远停在六点的茶会。', en: 'and a tea party forever stopped at six o’clock.' },
+  { start: 12.8, end: 15.2, zh: '还有那间装满故事的回忆小屋。', en: 'and the little house that keeps all these stories.' },
   { start: 17.6, end: 20.1, zh: '原来答案，一直都在这里。', en: 'So the answer was right here all along.' },
   { start: 20.3, end: 22.5, zh: '谢谢你，陪我走完这一程。', en: 'Thank you for walking all this way with me.' },
   { start: 22.8, end: 25.3, zh: '这些回忆会发光，是因为有你在。', en: 'These memories glow because you were there.' },

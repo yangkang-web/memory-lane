@@ -863,7 +863,7 @@ export function createChapel(THREE, options = {}) {
     ...outline(0, 0, spring, width, rise, 0).filter(point => point.x >= -1e-6).reverse().map(point => [width / 2 - point.x, point.y]),
     [width / 2, 0],
   ];
-  const doors = { nave: [], end: null, naveAt: Infinity, endAt: Infinity, endLength: 1.4 };
+  const doors = { nave: [], end: null, naveAt: Infinity, naveLength: 2.2, endAt: Infinity, endLength: 1.4, floodAt: Infinity };
   const AJAR = .38;
   for (const side of [-1, 1]) {
     // side -1 hangs on the north jamb, side 1 on the south; both open towards +x.
@@ -894,13 +894,63 @@ export function createChapel(THREE, options = {}) {
   const warmth = new T.PointLight('#ffc58a', 7, 9, 1.5);
   warmth.position.set(PASSAGE_END + .12, 1.6, DOOR.z + .5);
   group.add(warmth);
+  // The journey's way out: both nave doors thrown open at once on a passage full of warm light, the end door already
+  // wide, the light growing round it until it fills the view, and the dust in the passage carried in on the air.
+  const flood = new T.PointLight('#ffd6a6', 0, 9, 1.2);
+  flood.position.set(9.4, 1.9, DOOR.z);
+  group.add(flood);
+  const glowCanvas = document.createElement('canvas');
+  glowCanvas.width = glowCanvas.height = 128;
+  {
+    const g = glowCanvas.getContext('2d'), gradient = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gradient.addColorStop(0, 'rgba(255,240,214,1)');
+    gradient.addColorStop(.3, 'rgba(255,218,170,.55)');
+    gradient.addColorStop(.7, 'rgba(255,190,130,.12)');
+    gradient.addColorStop(1, 'rgba(255,180,120,0)');
+    g.fillStyle = gradient;
+    g.fillRect(0, 0, 128, 128);
+  }
+  const glowMap = new T.CanvasTexture(glowCanvas);
+  glowMap.colorSpace = T.SRGBColorSpace;
+  textures.add(glowMap);
+  // Glare rather than a thing in the room, so nothing in the passage cuts it off.
+  const glow = new T.Sprite(new T.SpriteMaterial({ map: glowMap, transparent: true, depthTest: false, depthWrite: false, blending: T.AdditiveBlending, fog: false, opacity: 0 }));
+  glow.renderOrder = 10;
+  materials.add(glow.material);
+  glow.position.set(PASSAGE_END + .2, 1.25, DOOR.z);
+  glow.visible = false;
+  // Light, not stone: line-of-sight rays pass through it.
+  glow.raycast = () => {};
+  group.add(glow);
+  const motes = new Float32Array(90 * 3);
+  {
+    let seed = 41;
+    const random = () => ((seed = Math.imul(seed, 1664525) + 1013904223 >>> 0) / 4294967296);
+    for (let i = 0; i < motes.length; i += 3) motes.set([6.2 + random() * 6, .25 + random() * 2.6, DOOR.z + (random() - .5) * 1.4], i);
+  }
+  const moteGeometry = new T.BufferGeometry();
+  moteGeometry.setAttribute('position', new T.BufferAttribute(motes, 3));
+  const dust = new T.Points(moteGeometry, new T.PointsMaterial({ color: '#ffd9a8', size: .014, transparent: true, opacity: 0, depthWrite: false, blending: T.AdditiveBlending, fog: false }));
+  materials.add(dust.material);
+  dust.visible = false;
+  dust.raycast = () => {};
+  group.add(dust);
   const swing = (at, time, length) => { const t = Math.min(1, Math.max(0, (time - at) / length)); return t * t * (3 - 2 * t); };
   function updateDoors(time) {
-    const open = swing(doors.naveAt, time, 2.2);
+    // Pushed hard, they swing fast from the first instant and slow as they reach the walls.
+    const open = doors.naveLength < 2 ? 1 - (1 - Math.min(1, Math.max(0, (time - doors.naveAt) / doors.naveLength))) ** 3 : swing(doors.naveAt, time, doors.naveLength);
     doors.nave.forEach((pivot, i) => { pivot.rotation.y = pivot.userData.closed * (1 - open * .96) + (i ? -.01 : .01) * Math.sin(open * Math.PI); });
     const wide = swing(doors.endAt, time, doors.endLength);
     doors.end.rotation.y = doors.end.userData.closed + AJAR + wide * (Math.PI / 2 + .12 - AJAR);
     warmth.intensity = 7 + wide * 10;
+    const light = swing(doors.floodAt, time, 1.3), since = Math.max(0, time - doors.floodAt);
+    flood.intensity = light * 26;
+    glow.visible = dust.visible = light > 0;
+    glow.material.opacity = light * .8;
+    glow.scale.setScalar(1.6 + 5.4 * swing(doors.floodAt + .2, time, 2.6));
+    // The air pushed in by the doors, slowing as it spends itself.
+    dust.material.opacity = light * .55;
+    dust.position.set(-1.6 * (1 - Math.exp(-since * 1.1)), Math.sin(since * 1.3) * .04, 0);
   }
   let smashTime=Infinity;
   const upright = new T.Quaternion();
@@ -1019,7 +1069,9 @@ export function createChapel(THREE, options = {}) {
     // Swing the nave doors open, or the end door wide, from `time` on.
     openPassage(time=0){doors.naveAt=Math.min(doors.naveAt,time);},
     openEnd(time=0,length=1.4){if(time<doors.endAt)doors.endLength=length;doors.endAt=Math.min(doors.endAt,time);},
-    reset(){smashTime=Infinity;doors.naveAt=doors.endAt=Infinity;updateDoors(0);intactPillar.visible=true;fracturedPillar.visible=fallenCapital.visible=false;impact.reset();},
+    // Both hands on the nave doors at `time`: they give at once, and the light comes in.
+    burst(time=0){doors.naveAt=time;doors.naveLength=.95;this.openEnd(time-.6,.8);doors.floodAt=time+.08;},
+    reset(){smashTime=Infinity;doors.naveAt=doors.endAt=doors.floodAt=Infinity;doors.naveLength=2.2;updateDoors(0);intactPillar.visible=true;fracturedPillar.visible=fallenCapital.visible=false;impact.reset();},
     dispose() {
       disposed=true;
       const disposedGeometry=new Set();

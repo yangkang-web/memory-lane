@@ -90,28 +90,25 @@ function flame() {
   group.add(outer, inner);
   return group;
 }
-function teacup() {
+// The little house from the year's memory, its window and open door lit from within.
+function house() {
   const group = new THREE.Group();
-  const china = new THREE.MeshPhysicalMaterial({ color: '#fbf8f2', roughness: 0.25, clearcoat: 0.6 });
-  const gold = new THREE.MeshStandardMaterial({ color: '#e0b964', metalness: 1, roughness: 0.25 });
-  const profile = [[0, -0.07], [0.05, -0.07], [0.055, -0.06], [0.09, 0.02], [0.105, 0.07], [0.098, 0.072], [0.085, 0.02], [0.045, -0.055], [0, -0.055]].map(([x, y]) => new THREE.Vector2(x, y));
-  group.add(new THREE.Mesh(new THREE.LatheGeometry(profile, 40), china));
-  const rim = new THREE.Mesh(new THREE.TorusGeometry(0.102, 0.005, 6, 48), gold);
-  rim.rotation.x = Math.PI / 2;
-  rim.position.y = 0.071;
-  group.add(rim);
-  const handle = new THREE.Mesh(new THREE.TorusGeometry(0.035, 0.011, 8, 24, Math.PI * 1.3), china);
-  handle.position.set(0.105, 0.005, 0);
-  handle.rotation.z = -Math.PI * 0.65;
-  group.add(handle);
-  const saucer = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.1, 0.018, 40), china);
-  saucer.position.y = -0.08;
-  group.add(saucer);
-  const tea = new THREE.Mesh(new THREE.CircleGeometry(0.09, 32), new THREE.MeshStandardMaterial({ color: '#8a4b1c', roughness: 0.2, emissive: '#3a1606', emissiveIntensity: 0.5 }));
-  tea.rotation.x = -Math.PI / 2;
-  tea.position.y = 0.055;
-  group.add(tea);
-  group.rotation.x = 0.35;
+  const wall = new THREE.MeshStandardMaterial({ color: '#efe6ff', roughness: 0.55, emissive: '#4a3a6e', emissiveIntensity: 0.3 });
+  const roof = new THREE.MeshStandardMaterial({ color: '#8f6fd0', roughness: 0.4, emissive: '#3a2370', emissiveIntensity: 0.45, flatShading: true });
+  const light = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffd89a').multiplyScalar(2.2), toneMapped: false });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.14, 0.16), wall);
+  body.position.y = -0.03;
+  const top = new THREE.Mesh(new THREE.ConeGeometry(0.165, 0.11, 4), roof);
+  top.position.y = 0.095;
+  top.rotation.y = Math.PI / 4;
+  const door = new THREE.Mesh(new THREE.PlaneGeometry(0.05, 0.08), light);
+  door.position.set(-0.04, -0.06, 0.081);
+  const window = new THREE.Mesh(new THREE.PlaneGeometry(0.045, 0.04), light);
+  window.position.set(0.05, -0.015, 0.081);
+  const chimney = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.06, 0.03), wall);
+  chimney.position.set(0.06, 0.12, -0.02);
+  group.add(body, top, door, window, chimney);
+  group.rotation.set(0.25, -0.45, 0);
   return group;
 }
 
@@ -120,7 +117,7 @@ export const MEMORIES = [
   { key: 'seaside', title: '海边小屋', color: '#7cc8ff', make: paperBoat },
   { key: 'companion', title: '「我在」', color: '#ff9a4a', make: flame },
   { key: 'chapel', title: '月下教堂', color: '#ff4f6e', make: null },
-  { key: 'tea', title: '六点的茶会', color: '#d8b2ff', make: teacup },
+  { key: 'house', title: '回忆小屋', color: '#d8b2ff', make: house },
 ];
 
 export function createProps({ questionMark, pendant }) {

@@ -10,7 +10,10 @@ if(route.redirect){
  import('./bloodbound/main.js');
 }else if(route.experience==='annual'){
  import('./journey-annual.js');
-}else if(route.experience==='blank'||route.experience==='stage'){
+}else if(route.experience==='stage'){
+ document.title='谢幕 · Memory Lane';
+ import('./curtain-call/main.js');
+}else if(route.experience==='blank'){
  import('./journey-blank.js');
 }else if(route.experience==='emochi'){
  import('./emochi-studio.js');

@@ -11,11 +11,12 @@ import { createProps, MEMORIES } from './props.js';
 import { createShow, DURATION, SUBTITLES, ORB_TIMES } from './show.js';
 import { renderScore, createPlayer } from './music.js';
 import { clamp } from './tracks.js';
+import { inSequence, installSequence, sequenceEvent, snapshot } from '../sequence-bridge.js';
 import './style.css';
 
 const params = new URLSearchParams(location.search);
 const REVIEW = params.has('review');
-const START_AT = params.has('t') ? clamp(Number(params.get('t')) || 0, 0, DURATION) : null;
+const START_AT = !inSequence && params.has('t') ? clamp(Number(params.get('t')) || 0, 0, DURATION) : null;
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
 const app = document.querySelector('#app');
@@ -28,7 +29,7 @@ app.innerHTML = `
     <h2>MEMORY LANE</h2>
     <p class="cc-thanks">谢谢你走过这条回忆小径</p>
     <button class="cc-button cc-replay-big" type="button">再看一次</button>
-    <p class="cc-provenance">回忆片段取自 Memory Lane 的演示与文学样本世界（六点茶会改编自《爱丽丝梦游仙境》第七章），并非真实用户的聊天记录。<br>Emochi 形象依据 white-character.blend 重建，问号取自该模型；血心吊坠复用 BLOODBOUND 资源；音乐与音效均为本地实时合成。</p>
+    <p class="cc-provenance">回忆片段取自 Memory Lane 的演示样本世界，并非真实用户的聊天记录。<br>Emochi 形象依据 white-character.blend 重建，问号取自该模型；血心吊坠复用 BLOODBOUND 资源；音乐与音效均为本地实时合成。</p>
   </section>
   <section class="cc-intro">
     <div class="cc-intro-inner">
@@ -37,7 +38,7 @@ app.innerHTML = `
       <p class="cc-sub">Curtain Call</p>
       <button class="cc-button cc-start" type="button" disabled><span class="cc-start-label">正在搭建舞台</span><span class="cc-meter"><i></i></span></button>
       <p class="cc-hint">约 30 秒 · 建议打开声音 · 空格暂停，← → 快退快进</p>
-      <p class="cc-provenance">演示内容：回忆取自 Memory Lane 的演示与文学样本世界，并非真实用户历史。</p>
+      <p class="cc-provenance">演示内容：回忆取自 Memory Lane 的演示样本世界，并非真实用户历史。</p>
     </div>
   </section>
   <nav class="cc-controls" aria-label="播放控制">
@@ -378,6 +379,7 @@ track.addEventListener('keydown', event => {
   if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); event.stopPropagation(); seek(now() + (event.key === 'ArrowLeft' ? -SKIP : SKIP)); }
 });
 window.addEventListener('keydown', event => {
+  if (inSequence) return;
   if (event.metaKey || event.ctrlKey || event.altKey) return;
   if (!started) {
     if ((event.key === 'Enter' || event.key === ' ') && !startButton.disabled) { event.preventDefault(); begin(); }
@@ -405,13 +407,14 @@ startButton.addEventListener('click', begin);
 const fps = $('.cc-fps');
 let last = performance.now(), fpsFrames = 0, fpsSince = last;
 function loop() {
+  if (disposed) return;
   requestAnimationFrame(loop);
   const wall = performance.now();
   const delta = wall - last;
   last = wall;
   if (!props) return;
   let t = now();
-  if (playing && t >= DURATION) { time = DURATION; playing = false; endedAt = performance.now(); player?.stop(); syncControls(); t = DURATION; }
+  if (playing && t >= DURATION) { time = DURATION; playing = false; endedAt = performance.now(); player?.stop(); syncControls(); t = DURATION; sequenceEvent('done'); }
   if (t < DURATION) endedAt = 0;
   drawAt(t, wall / 1000);
   govern(delta);
@@ -427,7 +430,18 @@ function loop() {
 }
 
 resize();
-load().then(() => {
+const loading = load();
+// In the journey the parent page starts, pauses and captures the show; its own intro and controls stay hidden.
+let disposed = false;
+installSequence({
+  ready: loading,
+  start() { time = 0; started = true; app.classList.add('is-started'); play(); },
+  pause() { if (playing) pause(); },
+  resume() { if (started && !playing && time < DURATION) play(); },
+  capture: () => snapshot(renderer.domElement, () => drawAt(now(), performance.now() / 1000)),
+  dispose() { disposed = true; player?.stop(); player?.context?.close?.(); composer.dispose(); renderer.dispose(); renderer.forceContextLoss(); },
+});
+loading.then(() => {
   startButton.disabled = false;
   $('.cc-start-label').textContent = '开始谢幕';
   app.classList.add('is-ready');

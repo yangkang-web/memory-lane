@@ -1,5 +1,4 @@
 import * as T from 'three';
-import {createJourneyDoor} from './journey-door.js';
 // Image-driven refraction: the outgoing room remains recognisable as the incoming world opens inside it.
 export function createJourneyEffects(canvas) {
   const renderer = new T.WebGLRenderer({canvas, antialias:false});
@@ -18,7 +17,7 @@ export function createJourneyEffects(canvas) {
         vec3 a=image(from,uv,0.),b=image(to,uv,0.);
         if(reduced>.5){gl_FragColor=vec4(mix(a,b,e),1.);return;}
         float envelope=sin(p*3.14159265);
-        vec2 origin=mode<.5?vec2(.5,.31):vec2(.5);
+        vec2 origin=mode<.5?vec2(.5,.31):mode>2.5?vec2(.5,.52):vec2(.5);
         vec2 q=(uv-origin)*vec2(aspect,1.);float r=length(q),n=fbm(q*5.+vec2(p*.7,-p*.4));
         vec3 color;
         if(mode<.5){
@@ -46,6 +45,28 @@ export function createJourneyEffects(canvas) {
           color=mix(image(from,uv+warp,rim*.003),image(to,uv-warp,0.),mask);
           color=mix(color,color*vec3(.7,.15,.23),rim*.65*(1.-e));
           color+=rim*e*vec3(.36,.23,.12);
+        }else if(mode>2.5){
+          // Through the doors: the light at the end of the passage swells towards you and takes the whole view, never
+          // quite white, and the next world comes up out of its middle, settling from slightly too close as it clears.
+          float rise=smoothstep(0.,.5,p),clear=smoothstep(.3,1.,p);
+          vec3 cream=vec3(1.,.93,.81);
+          vec2 at=origin+(uv-origin)/(1.+.38*rise*rise);
+          // Rushing forwards: the outgoing frame smears along lines from the light.
+          // Each pixel starts its taps at a different offset, so the copies blur instead of banding.
+          vec3 near=vec3(0.);float jitter=hash(uv*913.7);
+          for(int i=0;i<12;i++)near+=image(from,mix(at,origin,(float(i)+jitter)*.008*rise),0.);
+          near/=12.;
+          float glow=exp(-r*r/(.012+.75*rise*rise));
+          float veil=clamp(glow*(.25+1.4*rise)+rise*rise*.55,0.,.94);
+          vec3 out1=mix(near*(1.+.7*rise),cream,veil);
+          // The push-in keeps easing all the way to the hand-off rather than stopping short of it.
+          float scale=1.15-.15*(1.-pow(1.-clamp((p-.3)/.7,0.,1.),1.7));
+          vec3 world=image(to,origin+(uv-origin)/scale,0.);
+          float reach=clear*(length(vec2(aspect,1.))*.5+.55);
+          float shown=1.-smoothstep(reach-.5,reach,r);
+          float haze=pow(1.-clear,1.6)*.94;
+          vec3 in1=mix(world*mix(vec3(1.),vec3(1.06,1.,.9),haze),cream,haze);
+          color=mix(out1,in1,shown*smoothstep(.26,.46,p));
         }else{
           float field=fbm(q*4.+vec2(0.,p*.2));
           float mask=smoothstep(field-.18,field+.18,e*1.5-.25);
@@ -57,12 +78,12 @@ export function createJourneyEffects(canvas) {
         gl_FragColor=vec4(color,1.);
       }`});
   const scene=new T.Scene(),camera=new T.Camera(),quad=new T.Mesh(new T.PlaneGeometry(2,2),material);scene.add(quad);
-  const door=createJourneyDoor(renderer);let kind='rift',textures=[];
+  let textures=[];
   const drawImage=p=>{uniforms.progress.value=p;renderer.render(scene,camera);};
   return {
-    capture(a,b,type,reduced=false){kind=type;textures.forEach(t=>t.dispose());textures=[a,b].map(source=>{const t=new T.CanvasTexture(source);t.colorSpace=T.NoColorSpace;t.generateMipmaps=false;t.minFilter=T.LinearFilter;return t;});uniforms.from.value=textures[0];uniforms.to.value=textures[1];uniforms.mode.value={rift:0,ink:1,ash:2,enter:2}[type]||0;uniforms.reduced.value=Number(reduced);},
-    resize(w,h){renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(w,h,false);uniforms.aspect.value=w/h;door.resize(w,h);},
-    draw(p){if(kind==='door'&&!uniforms.reduced.value)door.draw(p,drawImage);else drawImage(p);},
-    dispose(){door.dispose();textures.forEach(t=>t.dispose());quad.geometry.dispose();material.dispose();renderer.dispose();}
+    capture(a,b,type,reduced=false){textures.forEach(t=>t.dispose());textures=[a,b].map(source=>{const t=new T.CanvasTexture(source);t.colorSpace=T.NoColorSpace;t.generateMipmaps=false;t.minFilter=T.LinearFilter;return t;});uniforms.from.value=textures[0];uniforms.to.value=textures[1];uniforms.mode.value={rift:0,ink:1,ash:2,enter:2,door:3}[type]||0;uniforms.reduced.value=Number(reduced);},
+    resize(w,h){renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(w,h,false);uniforms.aspect.value=w/h;},
+    draw:drawImage,
+    dispose(){textures.forEach(t=>t.dispose());quad.geometry.dispose();material.dispose();renderer.dispose();}
   };
 }

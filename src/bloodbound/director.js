@@ -19,7 +19,7 @@ const smooth = t => { const k = Math.min(1, Math.max(0, t)); return k * k * (3 -
 const wrap = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
 
 // What happens in each story segment, driven by where the player is and what they do.
-export function createDirector({ player, flow, interact, lucien, hunter, arms, chapel, pendant, sound, ui, onAccept, onComplete }) {
+export function createDirector({ player, flow, interact, lucien, hunter, arms, chapel, pendant, sound, ui, onAccept, onComplete, brisk = false }) {
   let cues = [];
   let clock = 0;
   let holdTime = 0;
@@ -133,6 +133,9 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
   };
   // The gift's beats, seconds into the segment: the blood runs from your hand into the vial from `pour` until `full`.
   const GIFT = { inspect: 0.9, pour: 2.2, full: 5.2, offered: 6.0 };
+  // Inside the journey the memory has a fixed minute, so the gift and the clasp play quicker: his hands move faster
+  // and the pauses between the lines close up, but every line is still said whole.
+  const PACE = brisk ? { gift: 1.6, wear: 1.25 } : {};
   const catchAt = new THREE.Vector3(), dripAt = new THREE.Vector3();
   // [time, pose] for each hand; before the first key the hand comes in from the clip, after the last it stays.
   const KEYS = {
@@ -837,10 +840,10 @@ diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.5, 0.012, 0.02), iris * thirst);
       let accepted = false;
       // A step in, and your cut hand comes up over the glass.
       after(0.3, () => { if (flow.segment === 'gift') closeTo(0.6, 1.3); });
-      after(GIFT.inspect, () => { if (flow.segment === 'gift') arms.set('bleed', { speed: 3.5 }); });
-      after(GIFT.pour, () => { if (flow.segment === 'gift') sound.play('heartbeat', 0, 0, 'effects', 0.35); });
-      after(GIFT.full, () => { if (flow.segment === 'gift') { arms.set('rest', { speed: 3 }); sound.play('crystal-bloom', 0, 0, 'effects', 0.4); } });
-      after(GIFT.offered + 1.5, () => { if (flow.segment === 'gift' && !accepted) ui.hint(touchDevice() ? '他把项链递到你眼前 · 按准星旁的按钮接受' : '他把项链递到你眼前 · 按 E 接受', 6); });
+      after(GIFT.inspect / (PACE.gift ?? 1), () => { if (flow.segment === 'gift') arms.set('bleed', { speed: 3.5 }); });
+      after(GIFT.pour / (PACE.gift ?? 1), () => { if (flow.segment === 'gift') sound.play('heartbeat', 0, 0, 'effects', 0.35); });
+      after(GIFT.full / (PACE.gift ?? 1), () => { if (flow.segment === 'gift') { arms.set('rest', { speed: 3 }); sound.play('crystal-bloom', 0, 0, 'effects', 0.4); } });
+      after(GIFT.offered / (PACE.gift ?? 1) + 1.5, () => { if (flow.segment === 'gift' && !accepted) ui.hint(touchDevice() ? '他把项链递到你眼前 · 按准星旁的按钮接受' : '他把项链递到你眼前 · 按 E 接受', 6); });
       interact.add({
         id: 'pendant', label: '接受他的项链', radius: 0.14, maxDistance: 1.5,
         enabled: () => !accepted && rite?.kind === 'gift' && rite.time > GIFT.offered,
@@ -852,13 +855,13 @@ diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.5, 0.012, 0.02), iris * thirst);
           ui.hint('', 0);
           // Your fingertips find the heart, set it swinging, and you nod.
           arms.set('touch', { point: pendant.group.position, speed: 4 });
-          after(0.85, () => {
+          after(brisk ? 0.6 : 0.85, () => {
             sound.play('necklace-touch', 0, 0, 'effects', 0.35);
             bob.last.addScaledVector(F.pf, -0.006);
             arms.set('rest', { speed: 3 });
             onAccept();
           });
-          after(1.3, () => flow.advance('gift'));
+          after(brisk ? 0.9 : 1.3, () => flow.advance('gift'));
         },
       });
     },
@@ -874,12 +877,12 @@ diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.5, 0.012, 0.02), iris * thirst);
       rite = { kind: 'wear', time: 0, release: Infinity, gap: 0, gapGoal: 0 };
       if (!pendant.group.visible) { pendant.group.visible = true; bob.ready = false; }
       closeTo(CLASP_GAP, 1.1);
-      after(3.6, () => { if (flow.segment === 'wear') { sound.play('necklace-touch', 0, 0, 'effects', 0.4); ui.shake(0.08); } });
-      after(3.9, () => { if (flow.segment === 'wear') closeTo(BROW_GAP, 1.1); });
+      after(3.6 / (PACE.wear ?? 1), () => { if (flow.segment === 'wear') { sound.play('necklace-touch', 0, 0, 'effects', 0.4); ui.shake(0.08); } });
+      after(3.9 / (PACE.wear ?? 1), () => { if (flow.segment === 'wear') closeTo(BROW_GAP, 1.1); });
       // The three closing lines, the first while he opens the chain and each after the last has finished; for the last
       // he draws back to look at you.
-      let delay = 1.3;
-      for (const [id, gap] of [['lose-control', 0.35], ['protect', 0.3], ['not-me', 0.25]]) {
+      let delay = brisk ? 0.6 : 1.3;
+      for (const [id, gap] of brisk ? [['lose-control', 0.15], ['protect', 0.15], ['not-me', 0]] : [['lose-control', 0.35], ['protect', 0.3], ['not-me', 0.25]]) {
         const start = delay;
         if (id === 'not-me') after(start - 0.6, () => { if (rite) rite.gapGoal = 0.05; });
         after(start, () => say(id));
@@ -890,7 +893,7 @@ diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.5, 0.012, 0.02), iris * thirst);
         rite.release = rite.time;
         closeTo(0.6, 2.2);
       });
-      after(delay + 0.9, () => flow.advance('wear'));
+      after(delay + (brisk ? 0.4 : 0.9), () => flow.advance('wear'));
     },
 
     end() {
@@ -1131,7 +1134,7 @@ diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.5, 0.012, 0.02), iris * thirst);
     // On entering the wound, before the arm is in view, he looks at where the arm hangs.
     if (segment === 'wound' && arms.lowered) gazePoint.set(player.pose.x, player.pose.floor + 1.0, player.pose.z);
     if (rite) {
-      rite.time += dt;
+      rite.time += dt * (PACE[rite.kind] ?? 1);
       rite.gap += (rite.gapGoal - rite.gap) * (1 - Math.exp(-dt * 2.5));
       eye.copy(camera.position);
       riteFrame();
