@@ -48,3 +48,7 @@ Zombie derivative above remains the distant crowd LOD.
 Additional local runtime changes: independent finger-curl shapes and palm-axis/size
 retargeting for LokitoBlu hands. DJMaesen open upper-arm/torso triangles are replaced
 by locally modeled closed cloth sleeves; original forearms/gloves are retained.
+
+The giant uses the same free infected asset with a locally sculpted heavier torso,
+thicker legs and impact-settling morph. Original UVs and textures are retained.
+Fungal growths and landing choreography are locally authored.

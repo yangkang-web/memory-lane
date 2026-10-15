@@ -63,13 +63,13 @@ export function createCompanionCast(scene,camera,sets,door){
   fc.putImageData(fd,0,0);const fungusMap=new T.CanvasTexture(fungusCanvas);fungusMap.colorSpace=T.SRGBColorSpace;fungusMap.anisotropy=8;crust.map=fungusMap;crust.bumpMap=fungusMap;crust.bumpScale=.009;
 
   const growth=new T.Group();growth.name='Fungal mantle / layered shoulder and cranial plates';giant.body.add(growth);growth.visible=false;
-  for(let i=0;i<62;i++){
+  for(let i=0;i<34;i++){
     const geo=new T.SphereGeometry(1,24,16),p=geo.attributes.position;
     for(let j=0;j<p.count;j++){const x=p.getX(j),y=p.getY(j),z=p.getZ(j),r=1+.16*Math.sin(x*9+y*13)*Math.sin(z*11)+.035*Math.sin(x*37-z*19);p.setXYZ(j,x*r,y*r,z*r);}
     geo.computeVertexNormals();const mat=crust.clone();mat.color.setHSL(.075+i%4*.008,.12,.36+i%5*.018);mat.roughness=.91;
     const plate=new T.Mesh(geo,mat),a=i*2.399;
-    if(i<48){plate.position.set(Math.cos(a)*(.24+i%3*.025),1.05+(i%8)*.063,Math.sin(a)*.16);plate.scale.set(.10+i%4*.018,.035+i%3*.012,.10);plate.rotation.set(Math.sin(a)*.55,a,Math.cos(a)*.25);}
-    else{plate.position.set(Math.cos(a)*.11,1.58+(i%4)*.045,-.035+Math.sin(a)*.10);plate.scale.set(.09,.035,.085);plate.rotation.set(.25,a,.25);}
+    if(i<26){plate.position.set(Math.cos(a)*(.27+i%3*.018),1.25+(i%5)*.063,Math.sin(a)*.17+.035);plate.scale.set(.065+i%4*.014,.055+i%3*.013,.07);plate.rotation.set(Math.sin(a)*.8,a,Math.cos(a)*.65);}
+    else{plate.position.set((i%2?1:-1)*.105,1.58+(i%4)*.035,.015+Math.sin(a)*.075);plate.scale.set(.06,.052,.06);plate.rotation.set(.45,a,.5);}
     plate.castShadow=plate.receiveShadow=true;growth.add(plate);
   }
   const impactDebris=createImpactDebris(actors.root);

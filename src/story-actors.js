@@ -82,7 +82,7 @@ export function createStoryActors(scene,camera){
     const shoulderAnchor=new T.Object3D();shoulderAnchor.position.set(.17,1.36,-.17);body.add(shoulderAnchor);
     batchRigid(body);
     function pose(t,state='run',death=0){
-      const phase=g.userData.motionTime??t;g.userData.contactRun=false;g.userData.flightHeight=0;body.scale.set(1,1,1);
+      const phase=g.userData.motionTime??t;g.userData.contactRun=false;g.userData.flightHeight=0;g.userData.giantSettle=0;body.scale.set(1,1,1);
       jaw.scale.set(1,1,1);jaw.visible=zombie&&['run','crawl'].includes(state);body.position.set(0,0,0);body.rotation.set(0,0,0);head.rotation.x=zombie?.13:0;head.rotation.y=0;head.rotation.z=zombie?(index%2?1:-1)*.12:0;eyes.forEach(({pupil,side})=>pupil.position.x=side*.047);
       const moving=['run','walk','crawl','squeeze','climb'].includes(state),rate=state==='walk'?8:12,stride=moving?Math.sin(phase*rate)*(state==='walk'?.45:.8):.025*Math.sin(phase*2);
       legs.forEach((l,i)=>{l.hip.rotation.set(i?-stride:stride,0,0);l.knee.rotation.x=Math.max(0,(i?stride:-stride))*.85;});
