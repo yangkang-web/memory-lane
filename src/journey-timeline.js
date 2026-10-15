@@ -1,9 +1,10 @@
 export const JOURNEY = Object.freeze([
+  {id:'annual', path:'/annual-memory', seconds:11, transition:'enter', transitionSeconds:2.2},
   {id:'seaside', path:'/seaside', seconds:12, transition:'rift', transitionSeconds:3.8},
-  {id:'bloodbound', path:'/bloodbound', seconds:60, transition:'ink', transitionSeconds:3.2},
+  {id:'bloodbound', path:'/bloodbound', seconds:60, transition:'door', transitionSeconds:4.4},
   {id:'school', path:'/school', seconds:60, transition:'fracture', transitionSeconds:5.1},
   {id:'apocalypse', path:'/apocalypse', seconds:60, transition:'ash', transitionSeconds:3},
-  {id:'blank', path:'/blank', seconds:30},
+  {id:'stage', path:'/stage', seconds:30},
 ]);
 export const JOURNEY_SECONDS = JOURNEY.reduce((sum, stage) => sum + stage.seconds + (stage.transitionSeconds || 0), 0);
 export const BLOODBOUND_CUT = Object.freeze([

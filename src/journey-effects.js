@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {createJourneyDoor} from './journey-door.js';
 // Image-driven refraction: the outgoing room remains recognisable as the incoming world opens inside it.
 export function createJourneyEffects(canvas) {
   const renderer = new T.WebGLRenderer({canvas, antialias:false});
@@ -56,11 +57,12 @@ export function createJourneyEffects(canvas) {
         gl_FragColor=vec4(color,1.);
       }`});
   const scene=new T.Scene(),camera=new T.Camera(),quad=new T.Mesh(new T.PlaneGeometry(2,2),material);scene.add(quad);
-  let textures=[];
+  const door=createJourneyDoor(renderer);let kind='rift',textures=[];
+  const drawImage=p=>{uniforms.progress.value=p;renderer.render(scene,camera);};
   return {
-    capture(a,b,type,reduced=false){textures.forEach(t=>t.dispose());textures=[a,b].map(source=>{const t=new T.CanvasTexture(source);t.colorSpace=T.NoColorSpace;t.generateMipmaps=false;t.minFilter=T.LinearFilter;return t;});uniforms.from.value=textures[0];uniforms.to.value=textures[1];uniforms.mode.value={rift:0,ink:1,ash:2}[type]||0;uniforms.reduced.value=Number(reduced);},
-    resize(w,h){renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(w,h,false);uniforms.aspect.value=w/h;},
-    draw(p){uniforms.progress.value=p;renderer.render(scene,camera);},
-    dispose(){textures.forEach(t=>t.dispose());quad.geometry.dispose();material.dispose();renderer.dispose();}
+    capture(a,b,type,reduced=false){kind=type;textures.forEach(t=>t.dispose());textures=[a,b].map(source=>{const t=new T.CanvasTexture(source);t.colorSpace=T.NoColorSpace;t.generateMipmaps=false;t.minFilter=T.LinearFilter;return t;});uniforms.from.value=textures[0];uniforms.to.value=textures[1];uniforms.mode.value={rift:0,ink:1,ash:2,enter:2}[type]||0;uniforms.reduced.value=Number(reduced);},
+    resize(w,h){renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(w,h,false);uniforms.aspect.value=w/h;door.resize(w,h);},
+    draw(p){if(kind==='door'&&!uniforms.reduced.value)door.draw(p,drawImage);else drawImage(p);},
+    dispose(){door.dispose();textures.forEach(t=>t.dispose());quad.geometry.dispose();material.dispose();renderer.dispose();}
   };
 }

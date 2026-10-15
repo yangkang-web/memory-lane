@@ -8,7 +8,9 @@ if(route.redirect){
  import('./journey.js');
 }else if(route.experience==='bloodbound'){
  import('./bloodbound/main.js');
-}else if(route.experience==='blank'){
+}else if(route.experience==='annual'){
+ import('./journey-annual.js');
+}else if(route.experience==='blank'||route.experience==='stage'){
  import('./journey-blank.js');
 }else if(route.experience==='emochi'){
  import('./emochi-studio.js');

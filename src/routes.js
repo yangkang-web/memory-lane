@@ -1,5 +1,5 @@
 export const SCHOOL_PATH='/school';
-const scenePaths={'/journey':'journey','/bloodbound':'bloodbound','/blank':'blank','/apocalypse':'apocalypse','/seaside':'seaside','/white-room':'white-room'};
+const scenePaths={'/annual-memory':'annual','/stage':'stage','/journey':'journey','/bloodbound':'bloodbound','/blank':'blank','/apocalypse':'apocalypse','/seaside':'seaside','/white-room':'white-room'};
 export const isAppPath=path=>['/','/index.html',SCHOOL_PATH,SCHOOL_PATH+'/'].includes(path)||Object.hasOwn(scenePaths,path.replace(/\/$/,''));
 
 export function resolveExperience(path,search=''){

@@ -10,7 +10,7 @@ if (inSequence) {
     .sequence-mode .story-entry,.sequence-mode .story-header,.sequence-mode .story-start,.sequence-mode .story-caption,.sequence-mode .story-controls,.sequence-mode #story-notice,
     .sequence-mode .narrative-title,.sequence-mode .narrative-subtitles,.sequence-mode .narrative-controls,.sequence-mode .narrative-ending,
     .sequence-mode .memory-stage > :not(canvas):not(.film-shade):not(.grain):not(.cinema-matte):not(.flash):not(.fade) { display:none!important; }
-    .sequence-mode #app > :not(canvas):not(.story-player):not(.narrative-player):not(.memory-stage):not(.sea-vignette) { visibility:hidden!important; }
+    .sequence-mode #app > :not(canvas):not(.story-player):not(.narrative-player):not(.memory-stage):not(.sea-vignette):not(.annual) { visibility:hidden!important; }
   `;
   document.head.append(style);
   addEventListener('keydown',event=>{if(event.code==='Escape'){event.preventDefault();event.stopImmediatePropagation();sequenceEvent('pause');}},true);

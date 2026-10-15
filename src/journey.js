@@ -6,7 +6,7 @@ import {worldWipeAt} from './world-wipe.js';
 import './journey.css';
 
 document.title='Memory Lane · 连续回忆';
-document.querySelector('#app').innerHTML=`<main class="journey" data-state="loading"><div class="journey-worlds"></div><canvas class="journey-effect" hidden></canvas><canvas class="journey-fracture" hidden></canvas><section class="journey-gate"><small>MEMORY LANE</small><h1>每一件信物，<br>通往一个世界。</h1><p class="journey-status">正在准备小屋与第一段回忆…</p><button class="journey-start" disabled>准备中</button><a href="/">返回场景选择</a><p class="journey-credit">虚构故事 · 含惊悚、受伤场景 · 建议佩戴耳机<br>播放时无界面，按 Esc 暂停 · 约 ${Math.ceil(JOURNEY_SECONDS/60)} 分钟<br><a href="/assets/bloodbound/credits.html" target="_blank" rel="noopener">吸血鬼素材致谢</a> · <a href="/school" target="_blank" rel="noopener">校园故事</a> · <a href="/apocalypse" target="_blank" rel="noopener">末世与画作来源</a></p></section></main>`;
+document.querySelector('#app').innerHTML=`<main class="journey" data-state="loading"><div class="journey-worlds"></div><canvas class="journey-effect" hidden></canvas><canvas class="journey-fracture" hidden></canvas><section class="journey-gate"><small>MEMORY LANE</small><h1>每一件信物，<br>通往一个世界。</h1><p class="journey-status">正在准备年度回忆…</p><button class="journey-start" disabled>准备中</button><a href="/">返回场景选择</a><p class="journey-credit">虚构故事 · 含惊悚、受伤场景 · 建议佩戴耳机<br>播放时无界面，按 Esc 暂停 · 约 ${Math.floor(JOURNEY_SECONDS/60)} 分 ${Math.round(JOURNEY_SECONDS%60)} 秒<br><a href="/assets/bloodbound/credits.html" target="_blank" rel="noopener">吸血鬼素材致谢</a> · <a href="/school" target="_blank" rel="noopener">校园故事</a> · <a href="/apocalypse" target="_blank" rel="noopener">末世与画作来源</a></p></section></main>`;
 const root=document.querySelector('.journey'),worlds=root.querySelector('.journey-worlds'),gate=root.querySelector('.journey-gate'),button=root.querySelector('button'),status=root.querySelector('.journey-status');
 const fxCanvas=root.querySelector('.journey-effect'),fractureCanvas=root.querySelector('.journey-fracture');
 const effects=createJourneyEffects(fxCanvas),fracture=createWorldFracture(fractureCanvas),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -88,7 +88,7 @@ addEventListener('keydown',event=>{if(event.code==='Escape'){event.preventDefaul
 document.addEventListener('visibilitychange',()=>{if(document.hidden)void pause();});
 button.onclick=start;
 // Loading both first scenes before the gesture avoids a long break after the necklace close-up.
-Promise.all([load(0),load(1)]).then(()=>{if(failed)return;state('ready');status.textContent='项链 → 血色承诺 → 向日葵 → 末世 → 留白';button.disabled=false;button.textContent='开始完整旅程';}).catch(fail);
+Promise.all([load(0),load(1)]).then(()=>{if(failed)return;reveal(slots.get(0));state('ready');status.textContent='首页弹窗 → 回忆小屋 → 三段故事 → 星光舞台';button.disabled=false;button.textContent='播放年度回忆演示';}).catch(fail);
 frame=requestAnimationFrame(tick);
 function dispose(){sound.dispose();disposed=true;cancelAnimationFrame(frame);for(const slot of slots.values()){slot.api?.dispose?.();slot.iframe.remove();}effects.dispose();fracture.dispose();}
 addEventListener('pagehide',dispose,{once:true});if(import.meta.hot)import.meta.hot.dispose(dispose);
