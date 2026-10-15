@@ -9,7 +9,7 @@ document.title = 'Emochi · A little ball of sunshine';
 document.querySelector('meta[name="description"]').content = 'Meet Emochi: an interactive 3D mascot with round hands, round feet and a little wave.';
 document.querySelector('#app').innerHTML = `
   <canvas id="emochi-canvas" aria-label="Interactive 3D Emochi. Drag to rotate and scroll to zoom."></canvas>
-  <header class="studio-header"><div class="studio-brand"><i aria-hidden="true"></i>emochi<span style="font-size:11px;letter-spacing:1px;font-weight:400;margin-left:7px;color:#858872">STUDIO</span></div><a href="./">Back to campus ↗</a></header>
+  <header class="studio-header"><div class="studio-brand"><i aria-hidden="true"></i>emochi<span style="font-size:11px;letter-spacing:1px;font-weight:400;margin-left:7px;color:#858872">STUDIO</span></div><a href="/school">Back to campus ↗</a></header>
   <section class="studio-heading"><div class="studio-kicker">SMALL FRIEND. BIG FEELINGS.</div><h1>A little ball <br>of sunshine.</h1><p>Round hands. Tiny feet.<br>Always happy to see you.</p><div class="studio-tag"><i></i>MEET EMOCHI / 001</div></section>
   <div class="studio-side" role="group" aria-label="View controls"><button id="emochi-spin" aria-label="Auto rotate" title="Auto rotate" aria-pressed="false">↻</button><button id="emochi-reset" aria-label="Reset view" title="Reset view">⌂</button></div>
   <nav class="studio-bottom" aria-label="Emochi actions"><button data-pose="idle" aria-pressed="true">Relax</button><button data-pose="wave" aria-pressed="false">Say hello</button><button data-pose="bounce" aria-pressed="false">Little hop</button><button class="studio-export" id="emochi-export">↓ Model</button></nav>
@@ -181,6 +181,6 @@ try {
   });
 } catch (error) {
   console.error(error);
-  document.querySelector('#app').insertAdjacentHTML('beforeend', '<div class="studio-error" role="alert">Emochi needs a browser with WebGL 2. Please enable hardware acceleration and refresh, or <a href="./">return to campus</a>.</div>');
+  document.querySelector('#app').insertAdjacentHTML('beforeend', '<div class="studio-error" role="alert">Emochi needs a browser with WebGL 2. Please enable hardware acceleration and refresh, or <a href="/school">return to campus</a>.</div>');
   document.querySelectorAll('button').forEach(button => { button.disabled = true; });
 }

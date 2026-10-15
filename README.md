@@ -34,7 +34,7 @@ npm ci
 npm run dev
 ```
 
-Open http://127.0.0.1:4327/ . The server listens only on the local machine.
+Open http://127.0.0.1:4327/school . The server listens only on the local machine.
 
 For the built version:
 
@@ -62,9 +62,11 @@ npm run start:bloodbound
 
 开发模式：`npm run dev:bloodbound`，打开 <http://127.0.0.1:4331/bloodbound.html>；加 `?review=1` 可跳转章节并显示帧率。玩法、文件结构和接入方式见 [BLOODBOUND.md](BLOODBOUND.md) 与 [BLOODBOUND-INTEGRATION.md](BLOODBOUND-INTEGRATION.md)，素材来源见体验内的“制作与素材致谢”。
 
+The school uses `/school`; `/` is a lightweight scene chooser. `/school?story=1` opens the story and `/school?student=fumiriya` opens the character preview. Old `/?story=1` and `/?student=…` links redirect to `/school` while retaining their parameters. Both Vite and the bundled production server support direct navigation and refresh on `/school`. Other static hosts must serve `index.html` for `/school` and `/school/`; asset URLs stay rooted at `/assets/`.
+
 ## Campus characters
 
-Use **Characters** in the top bar and choose **Fumiriya** or **Shino**. Both characters remain in the campus, with independent actions, chairs, and walking routes. The camera and action controls follow the selected character. Open `http://127.0.0.1:4327/?student=fumiriya` or `http://127.0.0.1:4327/?student=shino` to focus either character; the existing `?student=1` link still selects Fumiriya. Both are VRoid Project / pixiv models released under CC0. Shino is fitted to 1.65 m and retains her original long hair and school uniform. Each model loads locally with its own loading/error state and retry control.
+Use **Characters** in the top bar and choose **Fumiriya** or **Shino**. Both characters remain in the campus, with independent actions, chairs, and walking routes. The camera and action controls follow the selected character. Open `http://127.0.0.1:4327/school?student=fumiriya` or `http://127.0.0.1:4327/school?student=shino` to focus either character; the existing `?student=1` link still selects Fumiriya. Both are VRoid Project / pixiv models released under CC0. Shino is fitted to 1.65 m and retains her original long hair and school uniform. Each model loads locally with its own loading/error state and retry control.
 
 Fumiriya wears a Natsume-inspired summer outfit: a soft white short-sleeved collared shirt with a button placket and breast pocket, plus matte charcoal twill trousers. The trousers use fine mipmapped diagonal weave, restrained fiber sheen and shallow knee/ankle normal folds; the original UV-aligned tailoring is remapped into a low-contrast neutral range to retain pockets and seams without the original navy shading dominating. The tie is hidden and the former vest artwork is replaced. The shirt retains its rigged collar, with room through the chest and waist, wider sleeve openings and a slightly longer curved hem; the garment mesh is refined with normalized skin weights, a smooth hanging torso profile, shallow asymmetric folds and a gently uneven shirt tail. A continuous seated shape raises the front tail over the thighs during sitting and rising, including interrupted transitions; its normals deform with it. Fine cotton normals, underarm compression creases and local crease occlusion preserve light-responsive fabric detail; seams and buttons follow the garment during motion. His original skeleton, facial expressions and source VRM file remain intact. The rear hair strands and scalp cap match the fringe's pale warm color in both light and shade, retaining their original strand detail and transparency. The model is fitted to 1.78 m, starts standing, and loads asynchronously with an explicit loading/error state and retry button. Its original 19.6 MB file is served locally.
 
@@ -134,7 +136,7 @@ A ready-to-use copy is bundled at `public/assets/characters/emochi.glb`. **↓ M
 
 ### First-person sunflower story
 
-Open `/?story=1` or select **Always toward you → Play story** in the campus, then **Begin story**. This plays the user's fictional 60-second screenplay in Room 101 with Fumiriya as the only visible character. The English Puck voice reads his dialogue and letter; the first-person protagonist uses phone messages and subtitles. The four chapters include a pink envelope, two-sided letter, remembered sunflower message, confession, and a walk along the window aisle that ends looking at the original sunflower painting on the right wall.
+Open `/school?story=1` or select **Always toward you → Play story** in the campus, then **Begin story**. This plays the user's fictional 60-second screenplay in Room 101 with Fumiriya as the only visible character. The English Puck voice reads his dialogue and letter; the first-person protagonist uses phone messages and subtitles. The four chapters include a pink envelope, two-sided letter, remembered sunflower message, confession, and a walk along the window aisle that ends looking at the original sunflower painting on the right wall.
 
 **Pause/Resume**, **Replay**, the time slider, **Sound on/off**, and **Exit** are available throughout. Leaving the tab pauses playback. Voice, lip cues, props, captions, and camera all use the same audio clock. The local WAV is loaded as a Blob so seeking also works on static servers without byte-range support. No paid API, cloud service, or online speech service is required. The separate original Alice sample retains its own provenance.
 
