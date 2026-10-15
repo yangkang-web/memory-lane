@@ -13,6 +13,8 @@ export function createInteraction({ camera, dom, prompt, button, isLocked }) {
   let pressed = false;
   let enabled = false;
   let shown = '';
+  // Set while auto-play reaches for a target by name rather than by where the view points; `quiet` hides the prompt.
+  let forced = null, quiet = false;
   const abort = new AbortController();
   const on = (target, type, fn) => target.addEventListener(type, fn, { signal: abort.signal });
 
@@ -66,8 +68,14 @@ export function createInteraction({ camera, dom, prompt, button, isLocked }) {
     add(target) { targets.set(target.id, target); return target; },
     remove(id) { if (held?.id === id) drop(); targets.delete(id); if (focused?.id === id) focused = null; },
     clear() { drop(); targets.clear(); focused = null; render(); },
+    // Auto-play's hands: press and keep holding the target `id` whatever the view, let go, or use one outright.
+    hold(id) { forced = id; pressed = true; },
+    letGo() { forced = null; release(); },
+    use(id) { const target = targets.get(id); if (enabled && target && (!target.enabled || target.enabled())) target.onUse?.(); },
+    set quiet(value) { quiet = value; shown = ''; render(); },
     update() {
-      let next = enabled ? pick() : null;
+      const named = forced && targets.get(forced);
+      let next = enabled ? (named && (!named.enabled || named.enabled()) ? named : pick()) : null;
       // A hold target is let go as soon as the player looks away from it, unless it asks to be kept while held.
       if (held?.sticky?.() && enabled) next = held;
       if (held && next !== held) { const was = held; held = null; was.onRelease?.(); }
@@ -80,7 +88,7 @@ export function createInteraction({ camera, dom, prompt, button, isLocked }) {
   };
 
   function render() {
-    const label = focused ? (held === focused ? focused.holdingLabel ?? focused.label : focused.label) : '';
+    const label = focused && !quiet ? (held === focused ? focused.holdingLabel ?? focused.label : focused.label) : '';
     const signature = `${label}|${held === focused}`;
     if (signature === shown) return;
     shown = signature;

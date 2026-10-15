@@ -66,9 +66,11 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
     lucien.root.updateMatrixWorld(true);
     relax(dt);
     if (rite) riteLean();
+    if (hunger) lean(hungerPose().lean);
     gaze.update(dt);
     if (rite) { lucien.root.updateMatrixWorld(true); riteLean(true); }
     if (rite) lids(rite.kind === 'wear' ? 0.9 * ramp(rite.time, 4.4, 0.5) * (1 - smooth(rite.gap / 0.03)) : 0);
+    if (hunger) { const h = hungerPose(); lids(h.lids); feed(h); }
     contact.weight += (contact.goal - contact.weight) * (1 - Math.exp(-dt * contact.rate));
     if (contact.weight >= 0.01 && contact.mode) {
       lucien.root.updateMatrixWorld(true);
@@ -114,6 +116,9 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
   const HANDS = {
     // Inside his coat, over his heart.
     coat: () => ({ p: off(new THREE.Vector3(), lucien.group.position, [-0.13, 0.06, 1.3]), f: [0, 0.5, -0.8], n: [1, 0, 0], curl: 0.35 }),
+    // Holding the empty vial upright under your cut hand to catch what runs off it, pinched by its neck from his side
+    // and above, so the glass hangs clear of his fingers where you can see it fill.
+    catch: () => ({ p: catchAt.clone(), f: [-0.8, 0.35, -0.1], n: [0.15, 0.3, -0.94], curl: 0.5, thumb: 0.6, each: [0.38, 0.62, 0.78, 0.9] }),
     // Held up between you by the clasp, low and to the side of his face; the pendant hangs from his fingers.
     // Pinched between finger and thumb, palm down and in, the other fingers folding away one after another.
     offer: () => ({ p: off(new THREE.Vector3(), eye, [0.36, -0.12, 0.0]), f: [-0.75, 0.3, 0.1], n: [0, 0.6, -0.8], curl: 0.5, thumb: 0.6, each: [0.38, 0.62, 0.78, 0.9] }),
@@ -126,9 +131,12 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
     // Resting on your shoulders, fingers over the top of them.
     shoulder: s => ({ p: off(new THREE.Vector3(), F.neck, [0.02, s * 0.15, 0.02]), f: [-0.75, 0, -0.5], n: [0, -s * 0.2, -0.85], curl: 0.3, thumb: 0.3 }),
   };
+  // The gift's beats, seconds into the segment: the blood runs from your hand into the vial from `pour` until `full`.
+  const GIFT = { inspect: 0.9, pour: 2.2, full: 5.2, offered: 6.0 };
+  const catchAt = new THREE.Vector3(), dripAt = new THREE.Vector3();
   // [time, pose] for each hand; before the first key the hand comes in from the clip, after the last it stays.
   const KEYS = {
-    gift: { right: [[1.0, 'coat'], [1.4, 'coat'], [3.0, 'offer']], left: [] },
+    gift: { right: [[0.8, 'coat'], [1.1, 'coat'], [2.0, 'catch'], [GIFT.full, 'catch'], [GIFT.full + 1.0, 'offer']], left: [] },
     wear: {
       right: [[0, 'offer'], [0.2, 'offer'], [1.2, 'open'], [1.5, 'open'], [2.4, 'side'], [3.1, 'nape'], [3.9, 'nape'], [4.8, 'shoulder']],
       left: [[1.2, 'open'], [1.5, 'open'], [2.4, 'side'], [3.1, 'nape'], [3.9, 'nape'], [4.8, 'shoulder']],
@@ -220,9 +228,122 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
   function lids(value) {
     for (const mesh of lidMeshes) for (const name of ['blinkLeft', 'blinkRight']) mesh.morphTargetInfluences[mesh.morphTargetDictionary[name]] = value;
   }
+  // The hunger in him: his eyes go red, his lips part and the fangs come down behind them. All of it is driven by one
+  // value per part (see `hungerPose`) so it can come and go in any order.
+  let hunger = null;
+  // The model has no teeth, only the back of the throat far behind the lips, so the open mouth is given an upper row
+  // along the arch, in the head joint's frame (centimetres, facing +z, up +y, the mouth centred at x 0.37), the roots
+  // hidden behind the lip. The canines are his fangs and grow down from the root. A lower row only ever showed as loose
+  // flecks over the lower lip, so there is none.
+  // A tooth is turned from a profile, [radius, down] from the root, then flattened front to back; `hook` bends the tip
+  // back, as canines are.
+  function toothGeometry(profile, { flat = 0.45, hook = 0 } = {}) {
+    const g = new THREE.LatheGeometry(profile.map(([r, y]) => new THREE.Vector2(r, -y)), 14);
+    const p = g.attributes.position, colors = [];
+    const length = profile.at(-1)[1];
+    for (let i = 0; i < p.count; i++) {
+      const s = -p.getY(i) / length;
+      p.setZ(i, p.getZ(i) * flat - hook * s * s);
+      // Shadowed at the gum and where each tooth turns away into the gap beside the next, ivory down the crown, and a
+      // little grey at the thin, translucent edge.
+      const side = Math.abs(Math.atan2(p.getX(i), p.getZ(i)) / Math.PI * 2 - Math.sign(p.getX(i)));
+      const k = THREE.MathUtils.smoothstep(s, 0.05, 0.7) * (1 - 0.4 * THREE.MathUtils.smoothstep(s, 0.85, 1)) * (0.45 + 0.55 * THREE.MathUtils.smoothstep(side, 0.15, 0.6));
+      colors.push(0.38 + 0.4 * k, 0.32 + 0.41 * k, 0.27 + 0.4 * k);
+    }
+    g.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    g.computeVertexNormals();
+    return g;
+  }
+  const square = (w, h) => [[0, 0], [w * 0.92, 0.05], [w, h * 0.45], [w * 0.95, h * 0.86], [w * 0.65, h * 0.97], [0, h]];
+  const pointed = (w, h) => [[0, 0], [w * 0.95, 0.05], [w, h * 0.3], [w * 0.78, h * 0.58], [w * 0.4, h * 0.84], [w * 0.1, h * 0.98], [0, h]];
+  const toothMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, envMapIntensity: 0.4 });
+  // Inside his head no light from behind reaches them, but they take no shadow, so the rim light behind him would
+  // outline every edge; direct light is let in only where a surface faces the eye.
+  toothMaterial.onBeforeCompile = shader => {
+    shader.fragmentShader = shader.fragmentShader.replace('#include <lights_fragment_end>', `#include <lights_fragment_end>
+float toothFacing = smoothstep(0.2, 0.65, abs(dot(normal, normalize(vViewPosition))));
+reflectedLight.directDiffuse *= toothFacing;
+reflectedLight.directSpecular *= toothFacing * toothFacing;`);
+  };
+  const teeth = new THREE.Group();
+  teeth.visible = false;
+  gaze.head.add(teeth);
+  // [x from the middle, half-width, length, shape].
+  const ROOT = 3.0, FRONT = 13.4, CURVE = 0.3;
+  const TEETH = [[0.4, 0.42, 1.5, square], [0.98, 0.31, 1.32, square], [1.42, 0.27, 1.3, pointed]];
+  const fangs = [];
+  for (const [x, w, h, shape] of TEETH) {
+    const fang = shape === pointed;
+    const geometry = toothGeometry(shape(w, h), { flat: fang ? 0.7 : 0.42, hook: fang ? 0.35 : 0.05 });
+    for (const s of [-1, 1]) {
+      const tooth = new THREE.Mesh(geometry, toothMaterial);
+      const at = s * x;
+      tooth.position.set(0.37 + at, ROOT, FRONT - CURVE * at * at);
+      // Turned to follow the arch, the crowns leaning a little in.
+      tooth.rotation.set(-0.08, Math.atan(2 * CURVE * at), -s * (fang ? 0.07 : 0.02));
+      tooth.castShadow = false;
+      teeth.add(tooth);
+      if (fang) fangs.push(tooth);
+    }
+  }
+  // The back of the throat is painted a flat pink; it takes the dark of a mouth seen into, deepest at its middle.
+  const headMaterial = lucien.root.getObjectByName('Lucien_Head')?.material;
+  if (headMaterial?.map) {
+    headMaterial.onBeforeCompile = shader => {
+      shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+if (vMapUv.x > 0.74 && vMapUv.y > 0.84 && diffuseColor.r > diffuseColor.g * 1.45) {
+  float edge = smoothstep(0.0, 0.05, min(vMapUv.y - 0.86, 0.09 - abs(vMapUv.x - 0.845)));
+  diffuseColor.rgb = mix(vec3(0.075, 0.016, 0.018), vec3(0.018, 0.004, 0.006), edge);
+}`);
+    };
+    headMaterial.customProgramCacheKey = () => 'bloodbound-lucien-mouth';
+    headMaterial.needsUpdate = true;
+  }
+  // The irises are the dark of the eye texture; they take the red, the whites do not.
+  const thirst = { value: 0 };
+  const eyeMaterial = lucien.root.getObjectByName('Lucien_Eyes')?.material;
+  if (eyeMaterial) {
+    eyeMaterial.onBeforeCompile = shader => {
+      shader.uniforms.thirst = thirst;
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>', '#include <common>\nuniform float thirst;')
+        .replace('#include <map_fragment>', `#include <map_fragment>
+float iris = 1.0 - smoothstep(0.32, 0.6, dot(diffuseColor.rgb, vec3(0.3, 0.5, 0.2)));
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.5, 0.012, 0.02), iris * thirst);`)
+        .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += vec3(0.55, 0.015, 0.02) * iris * thirst;');
+    };
+    eyeMaterial.needsUpdate = true;
+  }
+  const mouthMorphs = lidMeshes.map(mesh => ['jawOpen', 'mouthPart', 'upperLipRaise'].map(name => mesh.morphTargetDictionary[name]));
+  function feed({ red = 0, mouth = 0, fang = 0 } = {}) {
+    thirst.value = red;
+    for (const [i, mesh] of lidMeshes.entries()) {
+      const [jaw, part, lip] = mouthMorphs[i];
+      mesh.morphTargetInfluences[jaw] = 0.3 * mouth;
+      mesh.morphTargetInfluences[part] = 0.75 * mouth;
+      mesh.morphTargetInfluences[lip] = 1.0 * mouth;
+    }
+    teeth.visible = mouth > 0.01;
+    for (const tooth of fangs) tooth.scale.set(1 + 0.12 * fang, 1 + 0.75 * fang, 1 + 0.1 * fang);
+  }
+  // Seconds from "Every drop.": he lifts your hand to his mouth, his eyes redden, the fangs come; he holds there; then
+  // he shuts his eyes, the fangs go, his mouth closes, and he turns his face away before he looks back at you.
+  const HUNGER = { lift: 2.6, red: 3.2, mouth: 4.0, fang: 4.5, master: 8.4, away: 9.4, back: 12.2, done: 13.6 };
+  function hungerPose(t = hunger.time) {
+    const H = HUNGER, closing = 1 - ramp(t, H.master, 0.7);
+    return {
+      lift: ramp(t, H.lift, 1.5) * (1 - ramp(t, H.away, 1.8)),
+      red: ramp(t, H.red, 1.0) * (1 - ramp(t, H.master + 0.4, 1.2)),
+      mouth: ramp(t, H.mouth, 0.9) * (1 - ramp(t, H.master + 0.2, 0.7)),
+      fang: ramp(t, H.fang, 0.8) * closing,
+      lean: (0.26 * ramp(t, H.lift + 0.2, 1.6) + 0.2 * ramp(t, H.fang + 0.6, 2.4)) * (1 - ramp(t, H.master + 0.4, 1.6)) + Math.sin(t * 7) * 0.004 * ramp(t, H.fang, 1) * closing,
+      lids: ramp(t, H.master, 0.35) * (1 - ramp(t, H.away + 1.4, 0.5)),
+      away: ramp(t, H.away, 1.0) * (1 - ramp(t, H.back, 1.2)),
+    };
+  }
   function riteGaze(target) {
     const t = rite.time;
-    if (rite.kind === 'gift') return t > 1.0 && t < 2.8 ? target.copy(pendant.group.position) : target.copy(eye).addScaledVector(up, -0.05);
+    if (rite.kind === 'gift') return t > 0.8 && t < GIFT.full + 0.4 ? target.copy(pendant.group.position) : target.copy(eye).addScaledVector(up, -0.05);
     if (t > 1.5 && t < 3.9) return off(target, F.neck, [0.05, 0, 0.02]);
     // Head bowed a little with his brow against yours, then up to your eyes for the last line.
     if (t >= 3.9 && t < rite.release) return rite.gap > 0.02 ? target.copy(eye) : off(target, eye, [-0.4, 0, -0.1]);
@@ -261,7 +382,7 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
   const hangQuaternion = new THREE.Quaternion(), wornQuaternion = new THREE.Quaternion();
   function placePendant(dt) {
     const t = rite.time;
-    pendant.group.visible = rite.kind !== 'gift' || t > 1.25;
+    pendant.group.visible = rite.kind !== 'gift' || t > 0.95;
     if (!pendant.group.visible) return;
     const worn = rite.kind === 'end';
     if (worn) {
@@ -285,6 +406,12 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
     const chest = wornPose(wornQuaternion, wornEnds, wornThrough);
     pendant.group.position.copy(hanging).lerp(chest, on);
     pendant.group.quaternion.slerpQuaternions(hangQuaternion, wornQuaternion, on);
+    // While it fills he holds the vial itself, upright, its face to you; then lets it down onto its chain.
+    const cup = rite.kind === 'gift' ? 1 - ramp(t, GIFT.full, 0.9) : 0;
+    if (cup > 0) {
+      pendant.group.position.lerp(rv[5].copy(right).addScaledVector(up, -0.004).addScaledVector(F.pf, -0.012), cup);
+      pendant.group.quaternion.slerp(orient(rq[0], up, rv[6].copy(F.pf).negate()), cup);
+    }
     // The ends go to the clasp as it closes; on the way round, the chain is laid over the neck rather than through it.
     const clasp = rite.kind === 'wear' ? ramp(t, 3.1, 0.5) : 0;
     ends[0].lerp(wornEnds[0], clasp); ends[1].lerp(wornEnds[1], clasp);
@@ -306,6 +433,7 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
     F.pf.set(x - player.pose.x, 0, z - player.pose.z).normalize();
     rightOf(F.pf, F.pr);
     arms.anchor('neck', F.neck); arms.anchor('nape', F.nape);
+    if (rite.kind === 'gift') catchAt.copy(arms.drip(dripAt)).addScaledVector(up, -0.095).addScaledVector(F.pf, 0.015);
   }
   // Slides him along the line between you to `gap` from the player.
   function closeTo(gap, duration) {
@@ -488,6 +616,7 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
     seen = warned = hunterMoving = false;
     warnEnd = Infinity;
     dash = slide = slash = null;
+    if (hunger) { hunger = null; feed(); lids(0); }
     if (!['gift', 'wear', 'end'].includes(id)) rite = null;
     interact.clear();
     player.limitLook(null);
@@ -508,6 +637,7 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
     lucien.group.visible = false;
     pendant.group.visible = false;
     pendant.setFill(1);
+    pendant.stopPour();
     pendant.setChainEndpoints(null, null);
     pendant.setGlow(0);
     rite = null;
@@ -617,7 +747,8 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
           sound.play('blade-block', 0, 0, 'effects', 0.65);
           ui.shake(0.5);
           const length = say('lucien-warning');
-          after(Math.max(1.4, length + 0.15), throwHunter);
+          // A held beat after the line, the two of them locked, before he throws.
+          after(Math.max(2.8, length + 1.5), throwHunter);
         } };
         sound.play('rescue-whoosh', 0.15, 0, 'effects', 0.7, false, 0.6);
       });
@@ -666,7 +797,7 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
           sound.play('heartbeat', 0, 0, 'effects', 0.3);
         },
         onRelease: () => {
-          if (flow.segment !== 'intimacy' || !reaching) return;
+          if (flow.segment !== 'intimacy' || !reaching || hunger) return;
           reaching = false;
           const wasHeld = contact.goal === 1;
           holdTime = 0;
@@ -693,21 +824,26 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
       player.movable = false;
       interact.clear();
       contact.goal = 0; contact.rate = 4;
-      arms.set('rest', { speed: 3 });
+      arms.set('injured', { speed: 3 });
       player.limitLook({ yaw: yawTo(lucien.group.position.x, lucien.group.position.z), range: 45 * DEG, pitch: 40 * DEG, down: 1.2 });
       lucien.play('idle', { fade: 0.6 });
       gaze.lookAt(gazePoint, 1);
-      // He takes it from inside his coat and holds it up between you by the clasp.
+      // He takes an empty vial from inside his coat and holds it under your hand while the blood runs into it, then
+      // holds it up between you by the clasp.
       rite = { kind: 'gift', time: 0, release: Infinity, gap: 0, gapGoal: 0 };
       bob.ready = false;
+      pendant.setFill(0);
+      pendant.setGlow(0);
       let accepted = false;
-      after(1.25, () => { if (flow.segment === 'gift') sound.play('crystal-bloom', 0, 0, 'effects', 0.4); });
-      // A step in as he holds it out.
-      after(1.4, () => { if (flow.segment === 'gift') closeTo(0.62, 1.3); });
-      after(4.5, () => { if (flow.segment === 'gift' && !accepted) ui.hint(touchDevice() ? '他把项链递到你眼前 · 按准星旁的按钮接受' : '他把项链递到你眼前 · 按 E 接受', 6); });
+      // A step in, and your cut hand comes up over the glass.
+      after(0.3, () => { if (flow.segment === 'gift') closeTo(0.6, 1.3); });
+      after(GIFT.inspect, () => { if (flow.segment === 'gift') arms.set('bleed', { speed: 3.5 }); });
+      after(GIFT.pour, () => { if (flow.segment === 'gift') sound.play('heartbeat', 0, 0, 'effects', 0.35); });
+      after(GIFT.full, () => { if (flow.segment === 'gift') { arms.set('rest', { speed: 3 }); sound.play('crystal-bloom', 0, 0, 'effects', 0.4); } });
+      after(GIFT.offered + 1.5, () => { if (flow.segment === 'gift' && !accepted) ui.hint(touchDevice() ? '他把项链递到你眼前 · 按准星旁的按钮接受' : '他把项链递到你眼前 · 按 E 接受', 6); });
       interact.add({
         id: 'pendant', label: '接受他的项链', radius: 0.14, maxDistance: 1.5,
-        enabled: () => !accepted && rite?.kind === 'gift' && rite.time > 2.6,
+        enabled: () => !accepted && rite?.kind === 'gift' && rite.time > GIFT.offered,
         position: target => target.copy(pendant.group.position),
         onUse: () => {
           if (flow.segment !== 'gift' || accepted) return;
@@ -722,7 +858,7 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
             arms.set('rest', { speed: 3 });
             onAccept();
           });
-          after(1.5, () => flow.advance('gift'));
+          after(1.3, () => flow.advance('gift'));
         },
       });
     },
@@ -731,7 +867,7 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
       player.movable = false;
       interact.clear();
       arms.set('rest', { speed: 3 });
-      player.limitLook({ yaw: yawTo(lucien.group.position.x, lucien.group.position.z), range: 45 * DEG, pitch: 50 * DEG, down: 1.2 });
+      player.limitLook({ yaw: yawTo(lucien.group.position.x, lucien.group.position.z), range: 45 * DEG, pitch: 50 * DEG, down: 1.38 });
       lucien.play('idle', { fade: 0.4 });
       gaze.lookAt(gazePoint, 1);
       // He opens the chain, reaches round your neck and fastens it at the back, then rests his brow on yours.
@@ -740,9 +876,10 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
       closeTo(CLASP_GAP, 1.1);
       after(3.6, () => { if (flow.segment === 'wear') { sound.play('necklace-touch', 0, 0, 'effects', 0.4); ui.shake(0.08); } });
       after(3.9, () => { if (flow.segment === 'wear') closeTo(BROW_GAP, 1.1); });
-      // The three closing lines, each after the last has finished; for the last he draws back to look at you.
-      let delay = 5.4;
-      for (const [id, gap] of [['lose-control', 1.1], ['protect', 1.0], ['not-me', 1.4]]) {
+      // The three closing lines, the first while he opens the chain and each after the last has finished; for the last
+      // he draws back to look at you.
+      let delay = 1.3;
+      for (const [id, gap] of [['lose-control', 0.35], ['protect', 0.3], ['not-me', 0.25]]) {
         const start = delay;
         if (id === 'not-me') after(start - 0.6, () => { if (rite) rite.gapGoal = 0.05; });
         after(start, () => say(id));
@@ -753,13 +890,13 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
         rite.release = rite.time;
         closeTo(0.6, 2.2);
       });
-      after(delay + 1.5, () => flow.advance('wear'));
+      after(delay + 0.9, () => flow.advance('wear'));
     },
 
     end() {
       player.movable = false;
       interact.clear();
-      player.limitLook({ yaw: yawTo(lucien.group.position.x, lucien.group.position.z), range: 60 * DEG, pitch: 50 * DEG, down: 1.2 });
+      player.limitLook({ yaw: yawTo(lucien.group.position.x, lucien.group.position.z), range: 60 * DEG, pitch: 50 * DEG, down: 1.38 });
       gaze.lookAt(gazePoint, 1);
       // The heart lights on your chest; the story closes once you have looked down at it, or after a while if you don't.
       rite = { kind: 'end', time: 0, release: 0, gap: 0, gapGoal: 0, looked: 0, done: false };
@@ -770,6 +907,14 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
   };
   let stagger = null;
   let intimacyReach = () => false;
+  // Where your hand goes as he lifts it towards his mouth.
+  const lifted = new THREE.Vector3();
+  function lift(amount) {
+    meeting(lifted);
+    const { x, z } = lucien.group.position;
+    const forward = facing(lucien, tmp.b);
+    lifted.lerp(tmp.c.set(x, lucien.group.position.y + 1.5, z).addScaledVector(forward, 0.27), amount * 0.75);
+  }
 
   // Where the two hands meet: a little in front of the player, towards him, below his shoulder and on the player's
   // left, in front of his right shoulder, so his arm comes forward from his side with the elbow down.
@@ -895,9 +1040,16 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
         if (contact.goal === 1 && contact.weight > 0.85) {
           holdTime += dt;
           if (holdTime > 1.6 && !spoken.has('every-drop')) {
-            const length = say('every-drop');
-            // Once he has said it the moment is complete; letting go now no longer undoes it.
-            after(length + 1.6, () => flow.advance('intimacy'));
+            say('every-drop');
+            // Once he has said it the moment is his; letting go no longer takes your hand back.
+            hunger = { time: 0 };
+            interact.remove('lucien');
+            arms.set('reach', { point: lifted.copy(meeting(tmp.a)), speed: 5 });
+            // Half a step in as he draws your hand up to him.
+            after(HUNGER.lift, () => closeTo(0.66, 1.8));
+            after(HUNGER.red, () => sound.play('heartbeat', 0, 0, 'effects', 0.55));
+            after(HUNGER.fang + 0.6, () => sound.play('heartbeat', 0, 0, 'effects', 0.7));
+            after(HUNGER.done, () => flow.advance('intimacy'));
           }
         }
       }
@@ -939,14 +1091,16 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
       if (slide.time >= slide.duration) slide = null;
     }
     if (slash) {
-      // Swing through, draw back up to the raised guard, then hold there trembling against his grip.
+      // Swing through, draw back up to the raised guard, then hold there straining against his grip. The strain is
+      // slow and small: his hand is locked to the wrist it holds, so any fast shake would carry both arms with it.
       const action = hunter.action('slash');
       if (action) {
         if (slash.phase === 'swing' && action.time >= 1.05) { slash.phase = 'raise'; action.timeScale = -1.6; }
-        if (slash.phase === 'raise' && action.time <= 0.4) { slash.phase = 'hover'; }
+        if (slash.phase === 'raise' && action.time <= 0.4) { slash.phase = 'hover'; slash.at = clock; }
         if (slash.phase === 'hover' || slash.phase === 'held') {
           action.timeScale = 0;
-          action.time = 0.4 + Math.sin(clock * (slash.phase === 'held' ? 37 : 9)) * (slash.phase === 'held' ? 0.012 : 0.02);
+          const strain = slash.phase === 'held' ? 0.006 : 0.012;
+          action.time = 0.4 + Math.sin((clock - (slash.at ?? clock)) * 2.1) * strain;
           action.paused = false;
         }
       }
@@ -962,6 +1116,18 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
     else if (segment === 'intimacy') gazePoint.copy(camera.position).y -= 0.05;
     else if (segment === 'rescue' && slash) hunterHead.getWorldPosition(gazePoint);
     else if (segment === 'rescue' && flight) hunterHips.getWorldPosition(gazePoint);
+    if (hunger) {
+      hunger.time += dt;
+      const h = hungerPose();
+      lift(h.lift);
+      // On your hand while it rises to him; away over his shoulder while he masters himself; then back to you.
+      if (h.away > 0.01) {
+        const forward = facing(lucien, tmp.a), side = rightOf(forward, tmp.b);
+        const away = tmp.c.copy(lucien.group.position).addScaledVector(forward, 0.6).addScaledVector(side, 1.4).setY(lucien.group.position.y + 1.3);
+        if (hunger.time > HUNGER.back) gazePoint.copy(camera.position).y -= 0.05;
+        gazePoint.lerp(away, h.away);
+      }
+    }
     // On entering the wound, before the arm is in view, he looks at where the arm hangs.
     if (segment === 'wound' && arms.lowered) gazePoint.set(player.pose.x, player.pose.floor + 1.0, player.pose.z);
     if (rite) {
@@ -978,6 +1144,14 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
     }
     hunter.update(dt);
     lucien.update(dt);
+    // The blood runs off your hand into the glass, and the glass fills.
+    const pouring = rite?.kind === 'gift' && rite.time > GIFT.pour && rite.time < GIFT.full - 0.25;
+    pendant.pour(pouring ? arms.drip(dripAt) : null, dt);
+    if (rite?.kind === 'gift') {
+      const filled = THREE.MathUtils.clamp((rite.time - GIFT.pour - 0.15) / (GIFT.full - GIFT.pour), 0, 1);
+      pendant.setFill(filled);
+      pendant.setGlow(filled * 0.3);
+    }
   }
 
   // After the ending card: free to walk again, the heart still on your chest, and the way east open.
@@ -991,5 +1165,5 @@ export function createDirector({ player, flow, interact, lucien, hunter, arms, c
     return true;
   }
 
-  return { enter, update, animate, release, get holdTime() { return holdTime; }, get rite() { return rite; }, contact, gaze };
+  return { enter, update, animate, release, feed, get holdTime() { return holdTime; }, get rite() { return rite; }, contact, gaze };
 }

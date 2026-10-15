@@ -863,7 +863,7 @@ export function createChapel(THREE, options = {}) {
     ...outline(0, 0, spring, width, rise, 0).filter(point => point.x >= -1e-6).reverse().map(point => [width / 2 - point.x, point.y]),
     [width / 2, 0],
   ];
-  const doors = { nave: [], end: null, naveAt: Infinity, endAt: Infinity };
+  const doors = { nave: [], end: null, naveAt: Infinity, endAt: Infinity, endLength: 1.4 };
   const AJAR = .38;
   for (const side of [-1, 1]) {
     // side -1 hangs on the north jamb, side 1 on the south; both open towards +x.
@@ -898,7 +898,7 @@ export function createChapel(THREE, options = {}) {
   function updateDoors(time) {
     const open = swing(doors.naveAt, time, 2.2);
     doors.nave.forEach((pivot, i) => { pivot.rotation.y = pivot.userData.closed * (1 - open * .96) + (i ? -.01 : .01) * Math.sin(open * Math.PI); });
-    const wide = swing(doors.endAt, time, 1.4);
+    const wide = swing(doors.endAt, time, doors.endLength);
     doors.end.rotation.y = doors.end.userData.closed + AJAR + wide * (Math.PI / 2 + .12 - AJAR);
     warmth.intensity = 7 + wide * 10;
   }
@@ -1018,7 +1018,7 @@ export function createChapel(THREE, options = {}) {
     smash(time=0){smashTime=time;impact.trigger(time,[-1,0,.3]);update(time);},
     // Swing the nave doors open, or the end door wide, from `time` on.
     openPassage(time=0){doors.naveAt=Math.min(doors.naveAt,time);},
-    openEnd(time=0){doors.endAt=Math.min(doors.endAt,time);},
+    openEnd(time=0,length=1.4){if(time<doors.endAt)doors.endLength=length;doors.endAt=Math.min(doors.endAt,time);},
     reset(){smashTime=Infinity;doors.naveAt=doors.endAt=Infinity;updateDoors(0);intactPillar.visible=true;fracturedPillar.visible=fallenCapital.visible=false;impact.reset();},
     dispose() {
       disposed=true;

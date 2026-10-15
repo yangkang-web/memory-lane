@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { StoryFlow, readCheckpoint, CHECKPOINT_KEY } from '../src/bloodbound/flow.js';
+import { StoryFlow, readCheckpoint, CHECKPOINT_KEY, readAutoplay, saveAutoplay, AUTOPLAY_KEY } from '../src/bloodbound/flow.js';
 import { resolve, floorHeight, CIRCLES, BOXES, BOUNDS, PASSAGE, PLAYER_RADIUS } from '../src/bloodbound/layout.js';
 
 const memoryStorage = () => {
@@ -29,6 +29,19 @@ test('checkpoints round-trip and malformed saves are discarded', () => {
     assert.equal(readCheckpoint(storage), null, bad);
     assert.equal(storage.map.has(CHECKPOINT_KEY), false);
   }
+});
+
+test('auto-play defaults on, round-trips, and anything else saved is discarded', () => {
+  const storage = memoryStorage();
+  assert.equal(readAutoplay(storage), true);
+  saveAutoplay(storage, false);
+  assert.equal(readAutoplay(storage), false);
+  for (const bad of ['true', '0', '{"on":false}', '']) {
+    storage.setItem(AUTOPLAY_KEY, bad);
+    assert.equal(readAutoplay(storage), true, bad);
+    assert.equal(storage.map.has(AUTOPLAY_KEY), false);
+  }
+  assert.equal(readAutoplay(null), true);
 });
 
 test('walking into any obstacle from any side leaves the body outside it', () => {

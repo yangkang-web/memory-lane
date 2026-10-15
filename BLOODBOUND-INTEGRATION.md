@@ -21,7 +21,7 @@ npm run start:bloodbound
 
 ## 收藏柜项链
 
-回忆中佩戴的项链与收藏柜文件不是同一个模型。场景内使用 `public/assets/bloodbound/heart-pendant.glb`：它来自用户提供的 Meshy AI 生成资产 `Meshy_AI_Heart_Necklace_Pendan_1015054857`，本项目只保留了心形瓶、瓶盖和十字挂扣，贴图缩到 1024，并在 Blender 中导出（538,204 bytes，SHA-256 `ca5be3f60fb768e1706343d70b9b435f885e5f2217355f0bacea295494c56feb`）。运行时的发光与心跳由 `pendant.js` 加上。它的使用授权以用户 Meshy 账户的条款为准，不属于本仓库的 MIT 许可。
+回忆中佩戴的项链与收藏柜文件不是同一个模型。场景内使用 `public/assets/bloodbound/heart-pendant.glb`：它来自用户提供的 Meshy AI 生成资产 `Meshy_AI_Heart_Necklace_Pendan_1015054857`，本项目保留了心形瓶、瓶盖、挂扣和龙虾扣（链条由 `pendant.js` 按模型的细银线运行时绘制），贴图为 2048，由 `scripts/bloodbound-pendant-asset.py` 在 Blender 中导出（1,149,052 bytes，SHA-256 `cdfbe7f76e9b89890739dc2c8dd2e5b75e0fc4562c09f7bac713dfb9a2b28f92`）。运行时的发光与心跳由 `pendant.js` 加上。它的使用授权以用户 Meshy 账户的条款为准，不属于本仓库的 MIT 许可。
 
 下面的 `blood-heart-pendant.glb` 仍是程序建模的收藏版本，外形与场景内的 Meshy 项链不同。若收藏柜需要与回忆中一致的外观，可改用 `heart-pendant.glb`，但需要先确认 Meshy 授权允许这种再分发。
 

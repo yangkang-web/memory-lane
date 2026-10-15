@@ -12,7 +12,8 @@ import { createPlayer } from './player.js';
 import { createInteraction } from './interact.js';
 import { createDirector } from './director.js';
 import { createArms } from './arms.js';
-import { StoryFlow, SEGMENTS, readCheckpoint } from './flow.js';
+import { StoryFlow, SEGMENTS, readCheckpoint, readAutoplay, saveAutoplay } from './flow.js';
+import { createAutopilot } from './autopilot.js';
 import { START, PASSAGE, PLAYER_RADIUS } from './layout.js';
 import { ESTOC } from './props.js';
 import { MemorySound } from './sound.js';
@@ -31,6 +32,8 @@ const touchDevice = matchMedia('(pointer: coarse)').matches;
 const controlsHelp = touchDevice
   ? '左侧拖动移动 · 右侧滑动环顾 · 对准后按屏幕按钮互动'
   : 'WASD 移动 · 鼠标环顾 · E 或左键互动 · 按住 E 伸手 · Space / Esc 菜单 · M 静音';
+const autoHelp = touchDevice ? '自动播放中 · 右上角可打开菜单' : '自动播放中 · Space / Esc 菜单 · M 静音';
+const autoToggle = '<button class="auto-toggle" type="button" data-autoplay aria-pressed="true"><i aria-hidden="true"></i><span>自动播放<small>按时间轴自动走完这段回忆</small></span></button>';
 
 document.querySelector('#app').innerHTML = `
   <div class="memory-stage" data-state="loading">
@@ -41,20 +44,21 @@ document.querySelector('#app').innerHTML = `
     <button class="use-button" type="button" hidden>使用</button>
     <div class="stick" aria-hidden="true" hidden><span></span></div>
     <p class="hint" role="status" hidden></p>
-    <p class="controls-tip" hidden>${controlsHelp}</p>
+    <p class="controls-tip" hidden></p>
     <header class="masthead"><a class="wordmark" href="/">MEMORY LANE<span>A PLACE FOR WHAT REMAINS</span></a><span class="chapter-mark">CHAPTER I <i></i> BLOODBOUND</span>
       <div class="player-tools" hidden><button class="icon-button" id="sound-toggle" aria-label="关闭声音" title="声音 · M">${icon.sound}</button><button class="icon-button" id="menu-toggle" aria-label="打开菜单" title="菜单 · Esc">${icon.menu}</button></div>
     </header>
     <section class="opening" aria-labelledby="memory-title"><div class="opening-content"><p class="overline">THE NIGHT YOU WERE MINE</p><h1 id="memory-title">BLOOD<span>BOUND</span></h1><div class="hairline"></div><p class="opening-quote">他渴望你的血。<br>却选择将它珍藏。</p>
       <button class="enter-button" id="enter-memory" disabled><span>走进这段回忆<small>STEP INSIDE</small></span>${icon.arrow}</button>
+      ${autoToggle}
       <button class="text-button" id="resume-checkpoint" hidden disabled></button>
       <p class="opening-detail">第一人称 · 自由走动 · 建议佩戴耳机</p><p class="provenance">虚构示例 · 改编自《BLOODBOUND — The Night You Were Mine》，不是你的真实经历</p></div>
       <div class="opening-index"><span>01</span><p>月下教堂<br><small>THE CHAPEL</small></p></div><a class="credits-link" href="/assets/bloodbound/credits.html" target="_blank" rel="noopener">制作与素材致谢</a>
     </section>
     <section class="subtitle" aria-live="polite" hidden><span class="speaker"></span><p class="english"></p><p class="chinese"></p></section>
     <section class="pause-panel" role="dialog" aria-modal="true" aria-label="菜单" hidden><p class="overline">THE MEMORY CAN WAIT</p><h2>停留在这一刻</h2><p class="menu-segment"></p>
-      <div class="menu-actions"><button class="solid-button" id="resume-memory">继续 ${icon.play}</button><button class="text-button" id="menu-next">跳到下一段</button><button class="text-button" id="menu-segment-start">回到本段开头</button><button class="text-button" id="menu-restart">从头开始</button></div>
-      <p class="menu-help">${controlsHelp}</p></section>
+      <div class="menu-actions"><button class="solid-button" id="resume-memory">继续 ${icon.play}</button>${autoToggle}<button class="text-button" id="menu-next">跳到下一段</button><button class="text-button" id="menu-segment-start">回到本段开头</button><button class="text-button" id="menu-restart">从头开始</button></div>
+      <p class="menu-help"></p></section>
     <section class="ending" hidden><p class="overline">A PROMISE, KEPT</p><h2>有些承诺，<br>值得再次走近。</h2><p class="ending-quote">“Not even me.”</p><div class="ending-actions"><button class="solid-button" id="next-memory">走向下一段回忆 ${icon.arrow}</button><button class="text-button" id="ending-replay">再走一遍</button></div><p class="ending-note">虚构示例 · 改编自《BLOODBOUND — The Night You Were Mine》 · <a href="/assets/bloodbound/credits.html" target="_blank" rel="noopener">制作与素材致谢</a></p></section>
     <section class="handoff-panel" hidden><p class="overline">THE NEXT CHAPTER</p><h2>下一段回忆，<br>从这里继续。</h2><p>这段示例到此结束。</p><button class="text-button" id="return-memory">返回这段回忆</button></section>
     <footer class="player-footer" hidden><span class="beat-label"></span><div class="progress" aria-hidden="true"><span></span></div></footer>
@@ -136,7 +140,7 @@ async function init() {
   scene.add(atmosphere.group);
   const pendant = createPendant({ wearable: true });
   pendant.group.visible = false;
-  scene.add(pendant.group);
+  scene.add(pendant.group, pendant.light, pendant.drops);
   const sound = new MemorySound();
   const audioPromise = sound.load().catch(error => {
     if (!reviewMode) throw error;
@@ -197,12 +201,14 @@ async function init() {
   let exitAnimation = null;
   // After the ending card, walking out along the passage.
   let walkingOut = false;
+  // When auto-play sets off down the passage.
+  let leaveAt = 0;
   let endOpened = false;
   // The end door swings wide as you come near it.
-  const openEnd = () => {
+  const openEnd = (length = 1.4) => {
     if (endOpened) return;
     endOpened = true;
-    chapel.openEnd(runTime);
+    chapel.openEnd(runTime, length);
     sound.play('door-open', 0, 0, 'effects', .6);
   };
   let completionSent = false;
@@ -219,6 +225,8 @@ async function init() {
   const finishDetail = () => ({ memoryId: 'bloodbound', keepsakeId: 'blood-heart-pendant', completed: true, exit: chapel.group.userData.exit, dialogueSource: 'BLOODBOUND — The Night You Were Mine, 2026-10-14' });
   const event = (name, detail = {}) => dispatchEvent(new CustomEvent(`memorylane:${name}`, { detail }));
 
+  // Made once the director is (it drives the director's scenes); the hints ask whether it is on.
+  let autopilot = null;
   const ui = {
     say(id) {
       const entry = line(id);
@@ -231,7 +239,8 @@ async function init() {
       subtitleUntil = runTime + length + 0.6;
       return length;
     },
-    hint(text, seconds = 5) { $('.hint').textContent = text; $('.hint').hidden = false; hintUntil = runTime + seconds; },
+    // Auto-play does what the hints ask, so it does not show them.
+    hint(text, seconds = 5) { if (autopilot?.active) return; $('.hint').textContent = text; $('.hint').hidden = false; hintUntil = runTime + seconds; },
     shake(amount = 1) { shake = Math.max(shake, amount); },
     matte(on) { stage.dataset.matte = on ? 'on' : 'off'; },
     fade(value, instant = false) { fade.target = value; if (instant) fade.value = value; },
@@ -251,8 +260,28 @@ async function init() {
   const director = createDirector({
     player, flow, interact, lucien, hunter, arms, chapel, pendant, sound, ui,
     onAccept: () => { accepted = true; event('accept', { keepsakeId: 'blood-heart-pendant' }); },
-    onComplete: () => setState('complete'),
+    onComplete: () => (autopilot.active ? leaveOnOwn() : setState('complete')),
   });
+  autopilot = createAutopilot({ player, flow, interact, director, lucien, hunter, pendant, arms });
+  let autoplay = readAutoplay(storage);
+  // The same switch on the title and in the menu; it takes the body over (or hands it back) when the memory plays on.
+  function showAutoplay() {
+    document.querySelectorAll('[data-autoplay]').forEach(button => button.setAttribute('aria-pressed', String(autoplay)));
+    $('.menu-help').textContent = autoplay ? autoHelp : controlsHelp;
+    $('.controls-tip').textContent = autoplay ? autoHelp : controlsHelp;
+  }
+  showAutoplay();
+  document.querySelectorAll('[data-autoplay]').forEach(button => button.addEventListener('click', () => {
+    autoplay = !autoplay;
+    saveAutoplay(storage, autoplay);
+    showAutoplay();
+  }));
+  const takeOver = () => {
+    // Taking the body back mid-memory shows the controls again.
+    if (autopilot.active && !autoplay && launched) { $('.controls-tip').hidden = false; tipUntil = runTime + 9; player.travelled = 0; }
+    autopilot.active = autoplay;
+    if (autoplay) player.releaseLock();
+  };
 
   function setState(next) {
     state = next;
@@ -265,7 +294,7 @@ async function init() {
     $('.pause-panel').hidden = next !== 'paused';
     $('.ending').hidden = next !== 'complete';
     $('.handoff-panel').hidden = next !== 'handoff';
-    $('.reticle').hidden = next !== 'playing';
+    $('.reticle').hidden = next !== 'playing' || autopilot.active;
     player.enabled = next === 'playing';
     interact.enabled = next === 'playing';
     if (next !== 'playing') { $('.stick').hidden = true; $('.use-prompt').hidden = true; $('.use-button').hidden = true; }
@@ -297,12 +326,14 @@ async function init() {
     accepted = ['wear', 'end'].includes(segment);
     exitAnimation = null;
     walkingOut = endOpened = false;
+    leaveAt = 0;
     externalHandoff = false;
     chapterGroup.visible = true;
     launched = true;
     sound.stop();
     sound.startAmbience();
     $('.subtitle').hidden = true;
+    takeOver();
     setState('playing');
     jumping = true;
     flow.go(segment);
@@ -322,6 +353,7 @@ async function init() {
   async function resume() {
     if (state !== 'paused') return;
     await sound.unlock();
+    takeOver();
     setState('playing');
     player.requestLock();
   }
@@ -332,10 +364,23 @@ async function init() {
     sound.startAmbience();
     $('.subtitle').hidden = true;
     accepted = ['wear', 'end'].includes(segment);
+    leaveAt = 0;
+    takeOver();
     setState('playing');
     jumping = true;
     flow.go(segment);
     player.requestLock();
+  }
+  // Auto-play's way on from the end, in place of the ending card: a moment with him, then the nave doors open and the
+  // walk east down the passage to the door at its end.
+  function leaveOnOwn() {
+    if (!completionSent) { completionSent = true; event('complete', finishDetail()); }
+    if (!director.release()) return;
+    walkingOut = true;
+    chapel.openPassage(runTime + 1.2);
+    sound.play('door-open', 1.2, 0, 'effects', .9, false, .5);
+    // A last look at him before the walk out.
+    leaveAt = runTime + 3.6;
   }
   // The ending card's way on: back on your feet beside him, the nave doors swinging open on the passage east.
   async function walkOut() {
@@ -370,9 +415,11 @@ async function init() {
     const { position, doorway } = chapel.group.userData.exit, eye = player.pose.floor + 1.6;
     const path = [camera.position.clone()];
     if (camera.position.x < doorway[0]) path.push(new THREE.Vector3(doorway[0] - .7, eye, doorway[2]), new THREE.Vector3(doorway[0] + .5, eye, doorway[2]));
-    path.push(new THREE.Vector3(position[0] - .5, 1.6, position[2]), new THREE.Vector3(position[0] + 1.2, 1.6, position[2]));
+    // To an arm's length from the end door, where both hands go to it.
+    if (camera.position.x < position[0] - 2.4) path.push(new THREE.Vector3(position[0] - 1.8, 1.6, position[2]));
+    path.push(new THREE.Vector3(position[0] - .55, 1.6, position[2]));
     const curve = new THREE.CatmullRomCurve3(path, false, 'centripetal');
-    exitAnimation = { at: performance.now(), curve, length: Math.max(2400, curve.getLength() / 1.9 * 1000), quaternion: camera.quaternion.clone() };
+    exitAnimation = { at: performance.now(), curve, length: Math.max(1200, curve.getLength() / 1.6 * 1000), quaternion: camera.quaternion.clone(), stand: null };
     if (!['playing', 'paused'].includes(state)) chapel.openPassage(runTime - 3);
     setState('exiting');
     fade.target = 0;
@@ -481,7 +528,7 @@ async function init() {
   setState('ready');
   if (reviewMode) {
     // Development handle for browser checks; review builds only.
-    window.__bloodbound = { player, director, arms, lucien, hunter, camera, flow, interact, scene, renderer, sound };
+    window.__bloodbound = { player, director, arms, lucien, hunter, camera, flow, interact, scene, renderer, sound, pendant, chapel, autopilot };
     $('.review-controls').hidden = false;
     document.querySelectorAll('[data-review-segment]').forEach(button => button.addEventListener('click', safe(() => start(button.dataset.reviewSegment))));
   }
@@ -494,37 +541,56 @@ async function init() {
     const dt = Math.min((now - (lastFrame || now)) / 1000, 0.1);
     lastFrame = now;
     if (exitAnimation) {
-      // An even walk along the path, easing in and out, the view turning from where you looked to the way ahead.
-      const t = Math.min(1, (now - exitAnimation.at) / exitAnimation.length), k = t * t * (3 - 2 * t);
+      // An even walk along the path, easing in and out, the view turning from where you looked to the way ahead; then
+      // both hands on the end door, which swings slowly away, and the step through into the warm light beyond it.
+      const walked = (now - exitAnimation.at) / exitAnimation.length;
+      const t = Math.min(1, walked), k = t * t * (3 - 2 * t);
       const curve = exitAnimation.curve;
-      camera.position.copy(curve.getPointAt(k));
-      const ahead = k < .97 ? curve.getPointAt(Math.min(1, k + .08)) : camera.position.clone().add(new THREE.Vector3(1, 0, 0));
-      // Matrix4.lookAt has a camera's convention, looking down -z.
-      const look = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(camera.position, ahead, camera.up));
-      camera.quaternion.slerpQuaternions(exitAnimation.quaternion, look, Math.min(1, t * 3));
-      const door = chapel.group.userData.exit.position[0];
-      if (camera.position.x > door - 3) openEnd();
-      // The light beyond the door takes the view as you go through it.
-      // then, with the next chapter's card, fades to the dark it is read on.
-      if (state === 'handoff') flash *= Math.exp(-dt * 1.4);
-      else if (camera.position.x > door - .9) flash = Math.max(flash, Math.min(1, (camera.position.x - door + .9) / 1.6));
       runTime += dt;
+      if (walked < 1) {
+        camera.position.copy(curve.getPointAt(k));
+        const ahead = k < .97 ? curve.getPointAt(Math.min(1, k + .08)) : camera.position.clone().add(new THREE.Vector3(1, 0, 0));
+        // Matrix4.lookAt has a camera's convention, looking down -z.
+        const look = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(camera.position, ahead, camera.up));
+        // Turning from him unhurriedly, over the first 1.8 s.
+        const turn = Math.min(1, (now - exitAnimation.at) / 1800);
+        camera.quaternion.slerpQuaternions(exitAnimation.quaternion, look, turn * turn * (3 - 2 * turn));
+      } else {
+        const push = (now - exitAnimation.at - exitAnimation.length) / 1000;
+        const ease = (from, length) => { const u = Math.min(1, Math.max(0, (push - from) / length)); return u * u * (3 - 2 * u); };
+        if (!exitAnimation.stand) {
+          exitAnimation.stand = camera.position.clone();
+          exitAnimation.quaternion = camera.quaternion.clone();
+          arms.set('push', { speed: 4.5 });
+        }
+        if (push > .6) openEnd(2.8);
+        if (push > 2.1 && arms.pose === 'push') arms.set('rest', { speed: 2.2 });
+        // Leaning into the door as it gives, then walking on through.
+        camera.position.copy(exitAnimation.stand).x += ease(.5, .9) * .12 + ease(1.3, 2.7) * 1.7;
+        camera.quaternion.slerpQuaternions(exitAnimation.quaternion, new THREE.Quaternion().setFromEuler(new THREE.Euler(0, -Math.PI / 2, 0, 'YXZ')), ease(0, .6));
+        arms.update(dt, camera, { yaw: -Math.PI / 2, pitch: 0, floor: 0 });
+        // The light beyond the door takes the view as you go through it, then, with the next chapter's card, fades to
+        // the dark it is read on.
+        if (state === 'handoff') flash *= Math.exp(-dt * 1.4);
+        else flash = Math.max(flash, ease(1.25, 2.2));
+        if (push > 3.9 && state === 'exiting') { sound.stop(); fade.target = 1; setState('handoff'); }
+      }
       chapel.update(runTime);
       atmosphere.update(runTime);
       fade.value += (fade.target - fade.value) * (1 - Math.exp(-dt * (state === 'handoff' ? 1.2 : 7)));
       $('.fade').style.opacity = String(fade.value);
       $('.flash').style.background = '#ffe2bb';
       $('.flash').style.opacity = String(flash);
-      if (t >= 1 && state === 'exiting') { sound.stop(); fade.target = 1; setState('handoff'); }
       cinematic.render('scene', 4);
     } else if (launched) {
       if (state === 'playing') {
         runTime += dt;
         flow.update(dt);
         director.update(dt, runTime);
+        autopilot.update(dt);
         if (player.travelled > 1.5 && runTime > tipUntil - 6) tipUntil = Math.min(tipUntil, runTime + 1);
-        if (walkingOut && player.pose.x > PASSAGE.door - 3) openEnd();
         if (walkingOut && player.pose.x > PASSAGE.maxX - PLAYER_RADIUS - .25) exit();
+        if (walkingOut && leaveAt && runTime > leaveAt) { leaveAt = 0; exit(); }
       }
       player.update(state === 'playing' ? dt : 0);
       if (shake > 0.01 && !reducedMotion) {

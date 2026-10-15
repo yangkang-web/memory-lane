@@ -17,13 +17,19 @@ const POSES = {
   injured: { wrist: [-0.1, 1.06, 0.3], pole: [-0.5, 0.75, 0], finger: [0.55, -0.15, 0.8], palm: [0.3, -0.4, -0.2], curl: 0.45 },
   // Raised in front of the eyes, the back of the hand turned to them to show the cut.
   inspect: { wrist: [-0.02, 1.36, 0.36], pole: [-0.5, 0.85, 0.1], finger: [0.9, 0.25, 0.2], palm: [0, -0.55, 0.8], curl: 0.3 },
+  // Held out over the vial he holds, palm down, so the blood runs off the thumb side of the hand into it, in sight past the forearm.
+  bleed: { wrist: [-0.05, 1.43, 0.42], pole: [-0.5, 0.8, 0.1], finger: [0.3, -0.25, 0.9], palm: [0.2, -1, 0.1], curl: 0.3 },
   // Offered towards him, palm down so he can take it from beneath; `wrist` comes from the meeting point.
   reach: { wrist: null, pole: [-0.55, 0.8, 0.1], finger: null, palm: [0, -1, 0], curl: 0.12 },
   // Fingertips raised to touch what he holds out; `wrist` comes from the point, a little short of it.
   touch: { wrist: null, pole: [-0.55, 0.9, 0], finger: null, palm: [0.2, 0.3, 1], curl: 0.2, thumb: 0.2 },
+  // Both palms flat on a door before you, pushing it open; the right arm mirrors this one (see PUSH).
+  push: { wrist: [-0.19, 1.5, 0.5], pole: [-0.6, 1.05, 0.1], finger: [0.1, 1, 0.2], palm: [0.05, -0.2, 1], curl: 0.1, thumb: 0.15 },
 };
-// The right arm only ever hangs.
+// The right arm hangs, unless both hands push.
 const HANG = { wrist: [0.23, 0.87, 0.05], pole: [0.5, 1.15, -0.4], finger: [-0.05, -1, 0.1], palm: [-1, 0, 0.15] };
+const mirror = ([r, u, f]) => [-r, u, f];
+const PUSH = { wrist: mirror(POSES.push.wrist), pole: mirror(POSES.push.pole), finger: mirror(POSES.push.finger), palm: mirror(POSES.push.palm) };
 // Points on the body, from its bones, in the body frame: [right, up, forward] metres.
 const ANCHORS = {
   // Where the pendant lies: on the breastbone, in the open neck of the shirt.
@@ -121,7 +127,8 @@ if (vBind.y > ${collar.toFixed(3)} && abs(vBind.x) < 0.3) discard;
   const wanted = { wrist: new THREE.Vector3(), pole: new THREE.Vector3(), finger: new THREE.Vector3(), palm: new THREE.Vector3(), curl: 0, thumb: 0 };
   const basis = { right: new THREE.Vector3(), up: new THREE.Vector3(0, 1, 0), forward: new THREE.Vector3(), origin: new THREE.Vector3() };
   const world = new THREE.Vector3(), pole = new THREE.Vector3(), finger = new THREE.Vector3(), palm = new THREE.Vector3();
-  let pose = 'rest', rate = 6, settled = true, reachPoint = null;
+  let pose = 'rest', rate = 6, settled = true, reachPoint = null, both = 0;
+  const rightAt = { wrist: new THREE.Vector3(), pole: new THREE.Vector3(), finger: new THREE.Vector3(), palm: new THREE.Vector3() };
   const toBody = (point, target) => {
     const p = world.subVectors(point, basis.origin);
     return target.set(p.dot(basis.right), p.y, p.dot(basis.forward));
@@ -176,6 +183,14 @@ if (vBind.y > ${collar.toFixed(3)} && abs(vBind.x) < 0.3) discard;
       return left.wrist(target).addScaledVector(f, 0.06).addScaledVector(p, 0.02);
     },
     axes() { return left.axes(new THREE.Vector3(), new THREE.Vector3()); },
+    // World point level with the cut on the thumb side of the hand, where its blood runs off and falls.
+    drip(target = new THREE.Vector3()) {
+      const { finger: f, palm: p } = left.axes(finger, palm);
+      left.wrist(target);
+      left.lower.getWorldPosition(world);
+      target.addScaledVector(world.sub(target), CUT).addScaledVector(pole.crossVectors(f, p), -0.042);
+      return target.setY(target.y - 0.015);
+    },
     wrist: target => left.wrist(target),
     // World position of a point on the body (see ANCHORS), offset by [right, up, forward] metres.
     anchor(name, target = new THREE.Vector3(), [r, u, f] = [0, 0, 0]) {
@@ -204,15 +219,17 @@ if (vBind.y > ${collar.toFixed(3)} && abs(vBind.x) < 0.3) discard;
       if (pose === 'rest' && current.wrist.distanceTo(wanted.wrist) < 0.03) settled = true;
       group.visible = true;
       group.updateMatrixWorld(true);
+      both += ((pose === 'push' ? 1 : 0) - both) * k;
+      for (const key of ['wrist', 'pole', 'finger', 'palm']) rightAt[key].fromArray(HANG[key]).lerp(world.fromArray(PUSH[key]), both);
       right.reset();
       right.solve({
-        target: toWorld(HANG.wrist, new THREE.Vector3()),
-        pole: toWorld(HANG.pole, pole),
-        finger: toWorld(HANG.finger, finger, false).normalize(),
-        palm: toWorld(HANG.palm, palm, false).normalize(),
+        target: toWorld(rightAt.wrist.toArray(), new THREE.Vector3()),
+        pole: toWorld(rightAt.pole.toArray(), pole),
+        finger: toWorld(rightAt.finger.toArray(), finger, false).normalize(),
+        palm: toWorld(rightAt.palm.toArray(), palm, false).normalize(),
         twist: 0.6,
       });
-      right.curl(0.25);
+      right.curl(0.25 - both * 0.15, { thumb: 0.175 - both * 0.025 });
       left.reset();
       left.solve({
         target: toWorld(current.wrist.toArray(), new THREE.Vector3()),

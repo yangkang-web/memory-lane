@@ -20,3 +20,18 @@
 @media(max-height:520px){.opening{padding:64px 6vw 40px}.opening .overline{margin-bottom:10px}.opening h1{font-size:44px}.opening h1 span{margin-top:2px}.hairline{margin:12px 0}.opening-quote{font-size:13px;line-height:1.7;margin-bottom:14px}.enter-button{padding:11px 18px}#resume-checkpoint{margin-top:4px;padding:6px 3px}.opening-detail{margin-top:6px}.provenance{margin-top:2px}.opening-index{display:none}.credits-link{left:auto;right:24px;bottom:16px}
 .pause-panel{padding:52px 30px 40px;justify-content:flex-start}.pause-panel .overline{margin-bottom:6px}.pause-panel h2{font-size:22px;line-height:1.5;margin-bottom:14px}.menu-segment{margin:-6px 0 12px}.menu-actions{gap:2px}.menu-actions .solid-button{min-height:40px;margin-bottom:4px}.menu-actions .text-button{padding:6px 3px}.menu-help{display:none}}
 @media(max-height:500px){.use-button{top:calc(50% - 34px);left:calc(50% + 56px)}}
+/* Auto-play switch, on the title and in the pause menu. */
+.auto-toggle{display:flex;align-items:center;gap:11px;margin:14px auto 4px;padding:6px 10px;background:none;border:0;color:#c9b9a3;font:13px "Songti SC",serif;letter-spacing:.14em;cursor:pointer;text-align:left}
+.auto-toggle i{position:relative;flex:none;width:30px;height:16px;border-radius:8px;border:1px solid #6c5a4b;background:#1a1416;transition:background .2s,border-color .2s}
+.auto-toggle i::after{content:"";position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:#7c6c5f;transition:transform .2s,background .2s}
+.auto-toggle[aria-pressed="true"] i{background:#5a1219;border-color:#a33a3f}
+.auto-toggle[aria-pressed="true"] i::after{transform:translateX(14px);background:#f1d8bd}
+.auto-toggle span{display:flex;flex-direction:column;gap:2px}
+.auto-toggle small{font-size:10.5px;letter-spacing:.08em;color:#8c7f73}
+.auto-toggle:hover span,.auto-toggle:focus-visible span{color:#f1e1cb}
+.auto-toggle:focus-visible{outline:1px solid #a33a3f;outline-offset:3px}
+.menu-actions .auto-toggle{margin:2px auto 8px}
+.opening .auto-toggle{margin:16px 0 0;padding-left:2px}
+/* The next chapter's card comes out of the light beyond the door rather than cutting to it. */
+.handoff-panel:not([hidden]){animation:handoff-in 2.4s ease both}
+@keyframes handoff-in{from{opacity:0}to{opacity:1}}

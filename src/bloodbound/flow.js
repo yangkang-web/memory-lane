@@ -78,3 +78,14 @@ export function readCheckpoint(storage) {
   try { storage.removeItem(CHECKPOINT_KEY); } catch {}
   return null;
 }
+
+// Whether the memory plays itself. Stored as exactly "on" or "off"; anything else is removed and the default, on, used.
+export const AUTOPLAY_KEY = 'memory-lane.bloodbound.autoplay';
+export function readAutoplay(storage) {
+  let raw = null;
+  try { raw = storage?.getItem(AUTOPLAY_KEY); } catch { return true; }
+  if (raw === 'on' || raw === 'off') return raw === 'on';
+  if (raw != null) try { storage.removeItem(AUTOPLAY_KEY); } catch {}
+  return true;
+}
+export function saveAutoplay(storage, on) { try { storage?.setItem(AUTOPLAY_KEY, on ? 'on' : 'off'); } catch {} }

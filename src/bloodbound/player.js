@@ -21,6 +21,10 @@ export function createPlayer({ camera, dom, stick, reducedMotion = false }) {
   const player = {
     enabled: false,
     movable: true,
+    // Off while auto-play has the body: keys, mouse and touch no longer move or turn it, and `drive` walks it instead,
+    // a world-space direction scaled 0 … 1.
+    manual: true,
+    drive: null,
     pose,
     // Metres walked; the story uses it to tell an idle player from one who is exploring.
     travelled: 0,
@@ -37,7 +41,7 @@ export function createPlayer({ camera, dom, stick, reducedMotion = false }) {
     // Keep the view within `range` radians of `yaw`. A view outside the window is eased back, not snapped.
     limitLook(next) { limit = next; },
     requestLock() {
-      if (matchMedia('(pointer: coarse)').matches || player.locked) return;
+      if (matchMedia('(pointer: coarse)').matches || player.locked || !player.manual) return;
       try { dom.requestPointerLock?.()?.catch?.(() => {}); } catch {}
     },
     releaseLock() { if (player.locked) document.exitPointerLock(); },
@@ -49,7 +53,7 @@ export function createPlayer({ camera, dom, stick, reducedMotion = false }) {
   const abort = new AbortController();
   const on = (target, type, fn, opts = {}) => target.addEventListener(type, fn, { signal: abort.signal, ...opts });
   const look = (dx, dy, scale) => {
-    if (!player.enabled) return;
+    if (!player.enabled || !player.manual) return;
     pose.yaw -= dx * scale;
     pose.pitch = Math.min(PITCH_LIMIT, Math.max(-PITCH_LIMIT, pose.pitch - dy * scale));
   };
@@ -99,7 +103,12 @@ export function createPlayer({ camera, dom, stick, reducedMotion = false }) {
 
   function update(dt) {
     let ix = 0, iz = 0;
-    if (player.enabled && player.movable) {
+    if (player.enabled && player.movable && !player.manual && player.drive) {
+      // Turned back into the body's frame so it is walked like any other input.
+      const sin = Math.sin(pose.yaw), cos = Math.cos(pose.yaw);
+      ix = player.drive.x * cos - player.drive.z * sin;
+      iz = player.drive.x * sin + player.drive.z * cos;
+    } else if (player.enabled && player.movable && player.manual) {
       if (keys.has('KeyW') || keys.has('ArrowUp')) iz -= 1;
       if (keys.has('KeyS') || keys.has('ArrowDown')) iz += 1;
       if (keys.has('KeyA') || keys.has('ArrowLeft')) ix -= 1;
