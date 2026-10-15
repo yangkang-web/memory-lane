@@ -11,7 +11,10 @@
     "start": "node scripts/start.mjs",
     "build:bloodbound": "vite build --config vite.bloodbound.config.js",
     "start:bloodbound": "node scripts/bloodbound-server.mjs --start",
-    "dev:bloodbound": "vite --config vite.bloodbound.config.js --host 127.0.0.1 --port 4331 --strictPort"
+    "dev:bloodbound": "vite --config vite.bloodbound.config.js --host 127.0.0.1 --port 4331 --strictPort",
+    "dev:curtain-call": "vite --config vite.curtain-call.config.js --host 127.0.0.1 --port 4361 --strictPort",
+    "build:curtain-call": "vite build --config vite.curtain-call.config.js",
+    "preview:curtain-call": "vite preview --config vite.curtain-call.config.js --host 127.0.0.1 --port 4362 --strictPort"
   },
   "dependencies": {
     "@pixiv/three-vrm": "^3.5.5",
