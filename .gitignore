@@ -1,5 +1,7 @@
 node_modules/
 dist/
+dist-bloodbound/
+.bloodbound.pid
 .DS_Store
 *.log
 .server.pid
@@ -9,8 +11,20 @@ dist/
 *.pem
 *.key
 .local/
+__pycache__/
+*.pyc
 private/
 imports/
 saves/
 evidence/*
 !evidence/preview.png
+# Screenshots, renders and packages from local review; not part of the demo.
+output/
+bloodbound-server.log
+# BLOODBOUND working assets the demo does not load: earlier character candidates, user reference images and billing records.
+public/assets/bloodbound/lucien.glb
+public/assets/bloodbound/lucien-*
+public/assets/bloodbound/reference-*.jpg
+public/assets/bloodbound/characters/*
+!public/assets/bloodbound/characters/v3/
+public/assets/bloodbound/audio/usage.json

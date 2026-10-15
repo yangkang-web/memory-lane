@@ -1,0 +1,478 @@
+{
+  "schemaVersion": 1,
+  "model": "elevenlabs/eleven_v4",
+  "voices": {
+    "lucien": {
+      "id": "IKne3meq5aSn9XLyUdCD",
+      "name": "Charlie",
+      "role": "lucien",
+      "description": "Young, deep, confident; Australian English"
+    },
+    "hunter": {
+      "id": "SOYHLrjzK2X1ezoPC6cr",
+      "name": "Harry",
+      "role": "hunter",
+      "description": "Young, rough warrior; American English"
+    }
+  },
+  "voiceSelectionStatus": "Charlie for Lucien and Harry for Hunter; alternatives generated; casting based on official labels and technical checks, subjective listening pending",
+  "lines": [
+    {
+      "id": "hunter-warning",
+      "speaker": "hunter",
+      "text": "He won't make it in time.",
+      "translation": "他来不及救你了。",
+      "direction": "[coldly]",
+      "phase": "danger",
+      "offset": 3.2,
+      "file": "hunter-warning.mp3",
+      "duration": 1.802,
+      "cue": {
+        "phase": "danger",
+        "offset": 3.2,
+        "duration": 1.802,
+        "timing": "phase-relative; runtime must allow measured speech duration and player wait"
+      },
+      "status": "generated",
+      "audioQuality": {
+        "file": "hunter-warning.mp3",
+        "duration": 1.802,
+        "decodedDuration": 1.76,
+        "beforeIntegratedLUFS": -22.27,
+        "integratedLUFS": -20.46,
+        "truePeakDBTP": -4.87,
+        "peakDbFS": -4.877,
+        "clippedSamples": 0,
+        "leadingBelowMinus42dBSeconds": 0.16,
+        "trailingBelowMinus42dBSeconds": 0.2,
+        "bytes": 29300,
+        "sha256": "5a81e9cc669af93fb6607c768bbc9c2cefb709bef17e3df5bf27cd657cac7e5b",
+        "rawSha256": "d24c8fb3c8f2915bcf4d850f1c3cea9e49bc6caad777802e1232685b4f88c0fd"
+      }
+    },
+    {
+      "id": "lucien-warning",
+      "speaker": "lucien",
+      "text": "Don't. Touch. Her.",
+      "translation": "别。碰。她。",
+      "direction": "[restrained anger]",
+      "phase": "rescue",
+      "offset": 1.2,
+      "file": "lucien-warning.mp3",
+      "duration": 2.847,
+      "cue": {
+        "phase": "rescue",
+        "offset": 1.2,
+        "duration": 2.847,
+        "timing": "phase-relative; runtime must allow measured speech duration and player wait"
+      },
+      "status": "generated",
+      "audioQuality": {
+        "file": "lucien-warning.mp3",
+        "duration": 2.847,
+        "decodedDuration": 2.8,
+        "beforeIntegratedLUFS": -29.19,
+        "integratedLUFS": -20.72,
+        "truePeakDBTP": -2.46,
+        "peakDbFS": -2.466,
+        "clippedSamples": 0,
+        "leadingBelowMinus42dBSeconds": 0.2,
+        "trailingBelowMinus42dBSeconds": 0.15,
+        "bytes": 46018,
+        "sha256": "425f9e9e36299846ce16344de79c75a51bd54dc4923f171f4e7ba92d8710a6a4",
+        "rawSha256": "e92c2d1e579e7b2a605cdcca3af6f681a67924f71b4fe0ab10bc6205e103b97f"
+      }
+    },
+    {
+      "id": "bleeding",
+      "speaker": "lucien",
+      "text": "You're bleeding...",
+      "translation": "你流血了……",
+      "direction": "[whispers]",
+      "phase": "intimacy",
+      "offset": 0.8,
+      "file": "bleeding.mp3",
+      "duration": 1.646,
+      "cue": {
+        "phase": "intimacy",
+        "offset": 0.8,
+        "duration": 1.646,
+        "timing": "phase-relative; runtime must allow measured speech duration and player wait"
+      },
+      "status": "generated",
+      "audioQuality": {
+        "file": "bleeding.mp3",
+        "duration": 1.646,
+        "decodedDuration": 1.6,
+        "beforeIntegratedLUFS": -38.46,
+        "integratedLUFS": -20.4,
+        "truePeakDBTP": -3.97,
+        "peakDbFS": -4.006,
+        "clippedSamples": 0,
+        "leadingBelowMinus42dBSeconds": 0.12,
+        "trailingBelowMinus42dBSeconds": 0.0,
+        "bytes": 26792,
+        "sha256": "7101d03dda9d0a850e085f932320d690ad1aac929d2196022a0d91ac08c5f3e4",
+        "rawSha256": "b621959e837fc6e3414a996c45e510d60fb66cbdbf207e6381593366c34e0e8a"
+      }
+    },
+    {
+      "id": "every-drop",
+      "speaker": "lucien",
+      "text": "I can hear it. Every drop.",
+      "translation": "我听得见。每一滴。",
+      "direction": "[whispers]",
+      "phase": "intimacy",
+      "offset": 6.0,
+      "file": "every-drop.mp3",
+      "duration": 2.691,
+      "cue": {
+        "phase": "intimacy",
+        "offset": 6.0,
+        "duration": 2.691,
+        "timing": "phase-relative; runtime must allow measured speech duration and player wait"
+      },
+      "status": "generated",
+      "audioQuality": {
+        "file": "every-drop.mp3",
+        "duration": 2.691,
+        "decodedDuration": 2.64,
+        "beforeIntegratedLUFS": -37.74,
+        "integratedLUFS": -20.44,
+        "truePeakDBTP": -3.36,
+        "peakDbFS": -3.369,
+        "clippedSamples": 0,
+        "leadingBelowMinus42dBSeconds": 0.13,
+        "trailingBelowMinus42dBSeconds": 0.07,
+        "bytes": 43510,
+        "sha256": "68f4f2c4399a641c85db6fd4199027b1260623a167a4429afa64fd90acb0d9a5",
+        "rawSha256": "9ea8ccdc0d7134fd3f4bd16c0f3b37da3f65b0025ab17c679e7b75f29a52a236"
+      }
+    },
+    {
+      "id": "lose-control",
+      "speaker": "lucien",
+      "text": "Even if I lose control of everything else...",
+      "translation": "即使我失去对一切的控制……",
+      "direction": "[softly]",
+      "phase": "gift",
+      "offset": 0.5,
+      "file": "lose-control.mp3",
+      "duration": 2.769,
+      "cue": {
+        "phase": "gift",
+        "offset": 0.5,
+        "duration": 2.769,
+        "timing": "phase-relative; runtime must allow measured speech duration and player wait"
+      },
+      "status": "generated",
+      "audioQuality": {
+        "file": "lose-control.mp3",
+        "duration": 2.769,
+        "decodedDuration": 2.72,
+        "beforeIntegratedLUFS": -33.79,
+        "integratedLUFS": -20.42,
+        "truePeakDBTP": -4.86,
+        "peakDbFS": -4.984,
+        "clippedSamples": 0,
+        "leadingBelowMinus42dBSeconds": 0.09,
+        "trailingBelowMinus42dBSeconds": 0.18,
+        "bytes": 44764,
+        "sha256": "b324b9f4f8daf520ed4a0c8baf37d4e49a17addc151e09117f3b6a28676931ea",
+        "rawSha256": "72e10a6d04b9b834372869a708881598b823d3e26810883b89e233b8eae7c844"
+      }
+    },
+    {
+      "id": "protect",
+      "speaker": "lucien",
+      "text": "I'll never let anyone hurt you again.",
+      "translation": "我也绝不会再让任何人伤害你。",
+      "direction": "[softly, resolute]",
+      "phase": "gift",
+      "offset": 5.8,
+      "file": "protect.mp3",
+      "duration": 2.691,
+      "cue": {
+        "phase": "gift",
+        "offset": 5.8,
+        "duration": 2.691,
+        "timing": "phase-relative; runtime must allow measured speech duration and player wait"
+      },
+      "status": "generated",
+      "audioQuality": {
+        "file": "protect.mp3",
+        "duration": 2.691,
+        "decodedDuration": 2.64,
+        "beforeIntegratedLUFS": -30.13,
+        "integratedLUFS": -20.44,
+        "truePeakDBTP": -4.75,
+        "peakDbFS": -4.748,
+        "clippedSamples": 0,
+        "leadingBelowMinus42dBSeconds": 0.12,
+        "trailingBelowMinus42dBSeconds": 0.45,
+        "bytes": 43510,
+        "sha256": "f0cced08d47a04a29c7f86766f7f4d7e9fec50acc68d502777ebd34da5b1666f",
+        "rawSha256": "88f1bf8e8ed065cbde65acc5b1b4fb0e0bd2da36982b97ae8b41b2b94d3c7652"
+      }
+    },
+    {
+      "id": "not-me",
+      "speaker": "lucien",
+      "text": "Not even me.",
+      "translation": "哪怕那个人是我。",
+      "direction": "[whispers]",
+      "phase": "gift",
+      "offset": 11.0,
+      "file": "not-me.mp3",
+      "duration": 1.489,
+      "cue": {
+        "phase": "gift",
+        "offset": 11.0,
+        "duration": 1.489,
+        "timing": "phase-relative; runtime must allow measured speech duration and player wait"
+      },
+      "status": "generated",
+      "audioQuality": {
+        "file": "not-me.mp3",
+        "duration": 1.489,
+        "decodedDuration": 1.44,
+        "beforeIntegratedLUFS": -36.73,
+        "integratedLUFS": -20.45,
+        "truePeakDBTP": -4.25,
+        "peakDbFS": -4.341,
+        "clippedSamples": 0,
+        "leadingBelowMinus42dBSeconds": 0.14,
+        "trailingBelowMinus42dBSeconds": 0.05,
+        "bytes": 24284,
+        "sha256": "40214f2dbe2ebf0d5674a247c76c9e405c4b58f7f44131e22d8a6d2388538fd7",
+        "rawSha256": "37ef3714b3cf4bbf511bb195d975196f9c0addadf4ac23f1f2fd4e3704d40568"
+      }
+    }
+  ],
+  "ambience": [
+    {
+      "title": "教堂冷风与低声氛围",
+      "loop": true,
+      "gain": 0.4,
+      "duckDuringSpeech": 0.45,
+      "provenance": "Original filtered-noise / sine synthesis; seamless loop should crossfade by 1.8 seconds.",
+      "id": "chapel-air",
+      "file": "chapel-air.mp3",
+      "duration": 24.033,
+      "bytes": 384983,
+      "peakDbFS": -17.39,
+      "rmsDbFS": -29.29,
+      "clippedSamples": 0,
+      "sha256": "728489b6ea2852c9c56459af7e31d8490e68cb5ce33a83e371a7f61be536070d"
+    }
+  ],
+  "sources": [
+    {
+      "type": "dialogue",
+      "url": "https://claude.ai/artifact/8787e8Bv8pouUkDoYUafxt#7b7708cb-e89e.mep3ebf446m.1335",
+      "note": "Online 60-second document, seven original lines verified by the primary agent on 2026-10-15. The downloaded 30-second PDF is an older five-line revision."
+    },
+    {
+      "type": "api",
+      "url": "https://kaon-router-admin.kaonai.com/models",
+      "note": "Live ElevenLabs v4 route schema inspected 2026-10-15; speech is binary response; no v4 speed/style fields."
+    },
+    {
+      "type": "voice-catalog",
+      "url": "https://api.elevenlabs.io/v1/voices",
+      "note": "Public official catalog read without credentials on 2026-10-15. Labels guide candidate casting; they do not establish subjective listening quality."
+    },
+    {
+      "type": "provider-documentation",
+      "url": "https://github.com/elevenlabs/skills/blob/main/text-to-speech/SKILL.md",
+      "note": "Official model/voice settings reference; actual requests use Kaon only."
+    },
+    {
+      "type": "foley",
+      "name": "Kenney — Impact Sounds",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "licenseFile": "licenses/kenney-impact.txt"
+    },
+    {
+      "type": "foley",
+      "name": "Kenney — RPG Audio",
+      "url": "https://kenney.nl/assets/rpg-audio",
+      "license": "CC0-1.0",
+      "licenseFile": "licenses/kenney-rpg.txt"
+    },
+    {
+      "type": "original-synthesis",
+      "script": "scripts/bloodbound-voice-effects.py",
+      "note": "Original procedural wind, low tone, whoosh, heart pulse and crystal harmonics. Lightweight NumPy, no AI inference."
+    }
+  ],
+  "quality": {
+    "subjectiveListening": "not-completed: reviewer tool does not expose audio perception",
+    "timing": "Actual MP3 duration only; missing files have null duration, never estimated as real audio.",
+    "speechMastering": "Two-pass EBU R128 loudness normalization, -20 LUFS target, -2 dBTP ceiling; all rendered MP3 decoded and measured.",
+    "speechChecks": "All speech files have non-silent samples and zero clipping. This does not verify pronunciation, emotion, or exact spoken transcript."
+  },
+  "effects": [
+    {
+      "title": "猎人靠近的石地脚步",
+      "gain": 0.5,
+      "sourceFiles": [
+        "Kenney Impact Sounds: footstep_concrete_000–003.ogg"
+      ],
+      "id": "hunter-footsteps",
+      "file": "hunter-footsteps.mp3",
+      "duration": 3.944,
+      "bytes": 63572,
+      "peakDbFS": -10.47,
+      "rmsDbFS": -42.22,
+      "clippedSamples": 0,
+      "sha256": "56f7d9d60460e755bc177fe99ed0464e161b09fc8fe8615a6ddfe3381776ec69"
+    },
+    {
+      "title": "银刃抽出",
+      "gain": 0.5,
+      "sourceFiles": [
+        "Kenney RPG Audio: drawKnife2.ogg"
+      ],
+      "id": "silver-blade",
+      "file": "silver-blade.mp3",
+      "duration": 1.228,
+      "bytes": 20105,
+      "peakDbFS": -11.36,
+      "rmsDbFS": -33.0,
+      "clippedSamples": 0,
+      "sha256": "580fc2c09f2c9fba39b7af9bdd5e811ae4c08ca1de887232d5262a9f3d14317c"
+    },
+    {
+      "title": "瞬移风切",
+      "gain": 0.45,
+      "provenance": "Original filtered-noise sweep.",
+      "id": "rescue-whoosh",
+      "file": "rescue-whoosh.mp3",
+      "duration": 1.28,
+      "bytes": 20941,
+      "peakDbFS": -11.49,
+      "rmsDbFS": -30.12,
+      "clippedSamples": 0,
+      "sha256": "e42c941682c6543c20a05c6561bc0a31b588c795849111c32b5fd3266bd11485"
+    },
+    {
+      "title": "挡住银刃",
+      "gain": 0.5,
+      "sourceFiles": [
+        "Kenney Impact Sounds: impactMetal_medium_001.ogg",
+        "Kenney RPG Audio: knifeSlice.ogg"
+      ],
+      "id": "blade-block",
+      "file": "blade-block.mp3",
+      "duration": 1.881,
+      "bytes": 30554,
+      "peakDbFS": -8.41,
+      "rmsDbFS": -31.71,
+      "clippedSamples": 0,
+      "sha256": "344f53b974acd6f2e4e584dcab98ffe686ec712c52d7c4315952b933c1be719a"
+    },
+    {
+      "title": "石柱撞击与碎石尾音",
+      "gain": 0.5,
+      "sourceFiles": [
+        "Kenney Impact Sounds: impactMining_000–004.ogg"
+      ],
+      "provenance": "Layered CC0 foley with original low impact; no explosion.",
+      "id": "pillar-impact",
+      "file": "pillar-impact.mp3",
+      "duration": 3.344,
+      "bytes": 53959,
+      "peakDbFS": -6.44,
+      "rmsDbFS": -28.7,
+      "clippedSamples": 0,
+      "sha256": "fa0fa4acc9382a8fe333aef440fc6457ec1b6291d3fb30a27d2539d659e876eb"
+    },
+    {
+      "title": "银刃落地回响",
+      "gain": 0.4,
+      "sourceFiles": [
+        "Kenney Impact Sounds: impactMetal_light_001/002.ogg",
+        "Kenney RPG Audio: metalClick.ogg"
+      ],
+      "id": "blade-fall",
+      "file": "blade-fall.mp3",
+      "duration": 1.985,
+      "bytes": 32225,
+      "peakDbFS": -11.42,
+      "rmsDbFS": -36.11,
+      "clippedSamples": 0,
+      "sha256": "5626ccd28f6ec8956868766901f3939d109da887cadb81f1e9460351f70c52df"
+    },
+    {
+      "title": "近距离心跳",
+      "gain": 0.35,
+      "provenance": "Original two-pulse sine synthesis; three beats.",
+      "id": "heartbeat",
+      "file": "heartbeat.mp3",
+      "duration": 4.493,
+      "bytes": 72350,
+      "peakDbFS": -16.45,
+      "rmsDbFS": -34.3,
+      "clippedSamples": 0,
+      "sha256": "97750058a376efb6730b32fa839f784909cb9872d4c70ab9850159604c378a97"
+    },
+    {
+      "title": "血滴凝成心形水晶",
+      "gain": 0.35,
+      "provenance": "Original restrained harmonic chime; no stock magic flourish.",
+      "id": "crystal-bloom",
+      "file": "crystal-bloom.mp3",
+      "duration": 4.728,
+      "bytes": 76111,
+      "peakDbFS": -14.45,
+      "rmsDbFS": -31.86,
+      "clippedSamples": 0,
+      "sha256": "2b0047b6c0a320c75015b3cc6e55543606c208b07dd4e9f221371d728cc6d20f"
+    },
+    {
+      "title": "衣料与项链轻响",
+      "gain": 0.4,
+      "sourceFiles": [
+        "Kenney RPG Audio: cloth2.ogg, metalClick.ogg"
+      ],
+      "id": "necklace-touch",
+      "file": "necklace-touch.mp3",
+      "duration": 2.194,
+      "bytes": 35569,
+      "peakDbFS": -16.57,
+      "rmsDbFS": -42.82,
+      "clippedSamples": 0,
+      "sha256": "1f498d6ccff064a7cf95ab6828ca972a08a0e0cb8f284eb9039c16794e74d98e"
+    }
+  ],
+  "generationUsage": {
+    "requests": 11,
+    "successes": 11,
+    "model": "elevenlabs/eleven_v4",
+    "inputCharacters": 449,
+    "retries": 0,
+    "apiCostHeaders": "not provided",
+    "billingEvidence": {
+      "source": "https://kaon-router-admin.kaonai.com/usage?range=5m&tab=requests&api_key_id=813",
+      "observedDate": "2026-10-15",
+      "filteredKeyName": "memory-lane-bloodbound-tts-20261015",
+      "displayedRequestCount": 11,
+      "displayedCostPerRequestUSD": "0.0001",
+      "sumOfDisplayedCostsUSD": "0.0011",
+      "precisionNote": "UI shows four decimal places per request; this is the sum of displayed Kaon charges, not a more precise upstream provider invoice.",
+      "detailVerified": {
+        "requestId": "fd4cc2b56965a2468110ff3e9533efdd",
+        "status": "success",
+        "model": "elevenlabs/eleven_v4"
+      }
+    }
+  },
+  "automaticTranscriptionVerification": {
+    "file": "asr-verification.json",
+    "engine": "whisper.cpp v1.9.5 / tiny.en",
+    "normalizedTokensMatch": true,
+    "subjectiveListening": false
+  }
+}

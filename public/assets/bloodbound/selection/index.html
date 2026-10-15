@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BLOODBOUND · 定妆与素材候选</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="./selection.css">
+</head>
+<body>
+  <header class="masthead"><a class="brand" href="#">MEMORY LANE<span>ART DIRECTION / 01</span></a><nav aria-label="选片分类"><a href="#portraits">人物</a><a href="#environments">教堂</a><a href="#assets">3D 素材</a><a href="#models">生成工具</a></nav><span class="edition">BLOODBOUND · 2026.10</span></header>
+  <main>
+    <section class="intro"><div><p class="eyebrow">THE CASTING ROOM</p><h1>定妆与场景候选<span>Choose the feeling.</span></h1><p class="lede">先看人物的气质、发型和衣服，再选教堂的光与质感。<br>点击图片放大，喜欢的可以加入候选。</p></div><aside><strong>06<span>张生成参考</span></strong><p>下方另有 8 组真实 3D 素材来源。<br>生成图是美术参考，未变成 3D 模型。</p><a href="#models">查看模型能力核对 ↗</a></aside></section>
+    <section id="portraits"><div class="section-head"><div><p class="eyebrow">01 / THE CHARACTER</p><h2>你想走近哪一个他？</h2></div><p>主选建议 P1，游戏风备选 P3。<br>三种气质都保留，按你的审美选。</p></div><div id="portrait-grid" class="portrait-grid"><p class="loading">正在载入参考…</p></div><div id="costume" class="costume"></div></section>
+    <section id="environments"><div class="section-head"><div><p class="eyebrow">02 / THE CHAPEL</p><h2>一段回忆的光。</h2></div><p>两种氛围都保留右侧出口。<br>评审更推荐 E2 的冷暖层次。</p></div><div id="environment-grid" class="environment-grid"></div></section>
+    <section id="assets"><div class="section-head"><div><p class="eyebrow">03 / REAL 3D ASSETS</p><h2>可以复用的形体与材质。</h2></div><p>筛查 125 个条目，重点看了 26 个预览。<br>以下是 8 组值得继续核验的素材。</p></div><p class="asset-context">暂未找到贴近定妆图、能直接替换的免费完整人物。这里优先选发型、长外套和建筑部件；每项都说明获取状态、缺失内容与后续工作。</p><div id="asset-grid" class="asset-grid"></div><div class="resource-links"><span>其他来源</span><a href="https://renderpeople.com/free-3d-people/" target="_blank" rel="noopener noreferrer">Renderpeople 扫描人物 ↗</a><a href="https://www.3dscanstore.com/blog/Tutorials/Free-Base-Mesh" target="_blank" rel="noopener noreferrer">3D Scan Store 头部底模 ↗</a></div></section>
+    <section id="models" class="models"><div class="section-head"><div><p class="eyebrow">04 / MODEL CHECK</p><h2>图片与模型，分清楚。</h2></div><a href="https://kaon-router-admin.kaonai.com/models" target="_blank" rel="noopener noreferrer">Kaon 当前目录 ↗</a></div><div class="model-columns"><article><h3>公司 Kaon</h3><p>当前 291 个目录条目中，搜索 3D、Tripo、Meshy、Hunyuan 没有匹配结果。Seedream 5 Pro 标注图片生成与编辑；本页六张参考用它生成。</p><span class="tag">已生成 2D 参考 · 未确认 3D 入口</span></article><article><h3>真正的 3D 生成</h3><p id="generation-status">Microsoft TRELLIS.2 在线试跑在预处理阶段被免费 GPU 额度拒绝（请求 90 秒，剩余 33 秒），尚未生成新的 GLB。Tripo 工作台未登录；腾讯公开演示的贴图生成当前不可用。没有在本机运行 AI。</p><div class="tool-links"><a href="https://huggingface.co/spaces/microsoft/TRELLIS.2" target="_blank" rel="noopener noreferrer">TRELLIS.2 ↗</a><a href="https://studio.tripo3d.ai/workspace/generate" target="_blank" rel="noopener noreferrer">Tripo ↗</a></div></article></div></section>
+    <footer><span>MEMORY LANE / BLOODBOUND</span><p>本页用于选型。未采购付费素材，未替换当前小样，未推进完整剧情。</p><a href="/">返回当前 3D 小样 ↗</a></footer>
+  </main>
+  <aside class="shortlist" aria-label="我的候选"><div><span class="eyebrow">MY SHORTLIST</span><strong id="selected-label">还没有候选</strong></div><button id="copy-selection" disabled>复制候选清单</button><button id="clear-selection" disabled>清空</button></aside>
+  <dialog id="lightbox"><header><span id="lightbox-title"></span><button id="close-lightbox" aria-label="关闭大图">关闭 ×</button></header><div id="lightbox-content"></div><p id="lightbox-note"></p></dialog>
+  <p id="toast" role="status" hidden></p>
+  <script type="module" src="./selection.js"></script>
+</body>
+</html>

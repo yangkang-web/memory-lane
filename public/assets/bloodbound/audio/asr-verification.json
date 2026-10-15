@@ -1,0 +1,121 @@
+{
+  "verifiedAt": "2026-10-15",
+  "engine": "whisper.cpp v1.9.5",
+  "engineCommit": "d1be6fde11ac6e0407606b4e42fe72d34add8037",
+  "engineSource": "https://github.com/ggml-org/whisper.cpp/releases/tag/v1.9.5",
+  "model": "ggml-tiny.en.bin",
+  "modelSource": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin",
+  "modelSha256": "921e4cf8686fdd993dcd081a5da5b6c365bfde1162e72b08d75ac75289920b1f",
+  "threads": 1,
+  "processors": 1,
+  "gpu": false,
+  "providedTextPrompt": false,
+  "source": "7 mastered MP3s concatenated with 1 second gaps; 16 kHz mono PCM",
+  "sourceDuration": 22.6,
+  "expected": "He won't make it in time. Don't. Touch. Her. You're bleeding... I can hear it. Every drop. Even if I lose control of everything else... I'll never let anyone hurt you again. Not even me.",
+  "transcript": "He won't make it in time. Don't. Touch. Her. You're bleeding. I can hear it. Every drop. Even if I lose control of everything else. I'll never let anyone hurt you again. Not even me.",
+  "normalizedTokensMatch": true,
+  "emotionTagsReadOut": false,
+  "segments": [
+    {
+      "timestamps": {
+        "from": "00:00:00,000",
+        "to": "00:00:01,780"
+      },
+      "offsets": {
+        "from": 0,
+        "to": 1780
+      },
+      "text": " He won't make it in time."
+    },
+    {
+      "timestamps": {
+        "from": "00:00:02,860",
+        "to": "00:00:04,660"
+      },
+      "offsets": {
+        "from": 2860,
+        "to": 4660
+      },
+      "text": " Don't. Touch."
+    },
+    {
+      "timestamps": {
+        "from": "00:00:04,760",
+        "to": "00:00:05,600"
+      },
+      "offsets": {
+        "from": 4760,
+        "to": 5600
+      },
+      "text": " Her."
+    },
+    {
+      "timestamps": {
+        "from": "00:00:06,540",
+        "to": "00:00:07,860"
+      },
+      "offsets": {
+        "from": 6540,
+        "to": 7860
+      },
+      "text": " You're bleeding."
+    },
+    {
+      "timestamps": {
+        "from": "00:00:09,140",
+        "to": "00:00:10,500"
+      },
+      "offsets": {
+        "from": 9140,
+        "to": 10500
+      },
+      "text": " I can hear it."
+    },
+    {
+      "timestamps": {
+        "from": "00:00:10,700",
+        "to": "00:00:11,880"
+      },
+      "offsets": {
+        "from": 10700,
+        "to": 11880
+      },
+      "text": " Every drop."
+    },
+    {
+      "timestamps": {
+        "from": "00:00:12,800",
+        "to": "00:00:15,600"
+      },
+      "offsets": {
+        "from": 12800,
+        "to": 15600
+      },
+      "text": " Even if I lose control of everything else."
+    },
+    {
+      "timestamps": {
+        "from": "00:00:16,500",
+        "to": "00:00:18,980"
+      },
+      "offsets": {
+        "from": 16500,
+        "to": 18980
+      },
+      "text": " I'll never let anyone hurt you again."
+    },
+    {
+      "timestamps": {
+        "from": "00:00:20,180",
+        "to": "00:00:21,700"
+      },
+      "offsets": {
+        "from": 20180,
+        "to": 21700
+      },
+      "text": " Not even me."
+    }
+  ],
+  "limitations": "Automatic transcription only. It does not establish subjective vocal emotion, character suitability, mixing, or human listening approval."
+}

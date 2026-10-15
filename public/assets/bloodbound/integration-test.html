@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BLOODBOUND · 团队接入验收</title>
+<style>
+  :root{color-scheme:dark;font:14px/1.5 system-ui,sans-serif;background:#10151c;color:#dbe3ec}
+  *{box-sizing:border-box}body{margin:0}header{padding:16px 24px;border-bottom:1px solid #35404c}
+  h1{font-size:19px;margin:0 0 5px}p{margin:3px 0;color:#aab8c6}a{color:#c9def9}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+  button{padding:7px 12px;border:1px solid #536477;border-radius:5px;background:#23303e;color:inherit;cursor:pointer}
+  button:disabled{opacity:.4;cursor:wait}button:focus-visible,a:focus-visible{outline:2px solid #aacaff;outline-offset:3px}
+  label{display:flex;gap:6px;align-items:center;margin-left:8px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;height:calc(100vh - 153px);min-height:480px}
+  iframe{width:100%;height:100%;border:0;background:#10151c}aside{padding:16px;border-left:1px solid #35404c;overflow:auto}
+  h2{font-size:14px;margin:0 0 8px}#status{color:#b9dfcc}#handoff{padding:12px;background:#22372f;border:1px solid #55886e;margin:10px 0}
+  ol{margin:0;padding-left:20px}li{margin:8px 0;overflow-wrap:anywhere}code{font-size:11px;color:#c5d3e0}pre{font:11px/1.5 monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+  @media(max-width:900px){.layout{grid-template-columns:1fr;height:auto}iframe{height:65vh}aside{border-left:0;border-top:1px solid #35404c}}
+</style>
+<header>
+  <h1>BLOODBOUND · 团队接入验收</h1>
+  <p>独立同源宿主，只验证控制与事件。下一世界尚未接入。<a href="./blood-heart-pendant.glb" download>下载完整项链 GLB</a></p>
+  <div class="controls">
+    <button data-action="enter" disabled>宿主进入</button><button data-action="pause" disabled>宿主暂停</button>
+    <button data-action="resume" disabled>宿主继续</button><button data-action="replay" disabled>宿主重播</button>
+    <button data-action="exit" disabled>宿主请求退出</button><button data-action="inspect" disabled>读取状态与项链</button><button data-action="render" disabled>宿主绘制一帧</button>
+    <button data-action="destroy" disabled>销毁场景</button>
+    <label><input id="intercept" type="checkbox" checked>拦截退出并交给宿主</label>
+  </div>
+</header>
+<div class="layout">
+  <iframe id="memory" src="/bloodbound.html" title="BLOODBOUND 回忆场景" allow="autoplay"></iframe>
+  <aside>
+    <h2 id="status" role="status">等待场景 API…</h2>
+    <div id="handoff" hidden role="status">宿主已接管出口，等待验证场景停止绘制；这里没有真实下一世界。</div>
+    <p>上次读取的状态快照</p><pre id="snapshot"></pre>
+    <h2>实际收到的事件</h2>
+    <ol id="events" aria-live="polite"></ol>
+  </aside>
+</div>
+<script type="module">
+  const frame = document.querySelector('#memory');
+  const status = document.querySelector('#status');
+  const snapshot = document.querySelector('#snapshot');
+  const list = document.querySelector('#events');
+  const buttons = [...document.querySelectorAll('[data-action]')];
+  let sceneWindow;
+  function record(name, detail) {
+    const { context, ...data } = detail;
+    if (context) data.context = {
+      renderer: context.renderer?.isWebGLRenderer,
+      scene: context.scene?.isScene,
+      camera: context.camera?.isCamera,
+      chapter: context.chapter?.isGroup,
+      keepsake: context.keepsake?.isGroup,
+    };
+    const item = document.createElement('li');
+    item.textContent = name;
+    const code = document.createElement('code');
+    code.textContent = ` ${JSON.stringify(data)}`;
+    item.append(code); list.prepend(item);
+  }
+  frame.addEventListener('load', () => {
+    sceneWindow = frame.contentWindow;
+    for (const name of ['ready','enter','statechange','accept','complete','exitrequest','exit']) {
+      sceneWindow.addEventListener(`memorylane:${name}`, event => {
+        if (name === 'exitrequest' && document.querySelector('#intercept').checked) {
+          event.preventDefault();
+          document.querySelector('#handoff').hidden = false;
+        }
+        record(`memorylane:${name}`, { ...event.detail, ...(name === 'exitrequest' ? { prevented: event.defaultPrevented } : {}) });
+        if (name === 'statechange') status.textContent = `场景状态：${event.detail.state}`;
+        if (name === 'exit' && sceneWindow.MemoryLaneBloodbound.getState().state === 'handoff') {
+          const context = event.detail.context;
+          const firstFrame = context.renderer.info.render.frame;
+          setTimeout(() => {
+            const api = sceneWindow.MemoryLaneBloodbound;
+            if (!api) return;
+            const result = {
+              state: api.getState().state,
+              stage: sceneWindow.document.querySelector('.memory-stage')?.dataset.state,
+              rendererFrames: [firstFrame, context.renderer.info.render.frame],
+              stoppedDrawing: context.renderer.info.render.frame === firstFrame,
+              contextMatches: api.getContext().renderer === context.renderer,
+            };
+            record('宿主交接检查', result);
+            document.querySelector('#handoff').textContent = `宿主接管：${result.state} / ${result.stage}；原场景停止绘制：${result.stoppedDrawing}。未接真实下一世界。`;
+          }, 700);
+        } else if (name === 'exit') document.querySelector('#handoff').hidden = true;
+      });
+    }
+    const started = performance.now();
+    const ready = setInterval(() => {
+      if (sceneWindow.MemoryLaneBloodbound) {
+        clearInterval(ready);
+        status.textContent = '场景 API 已就绪';
+        buttons.forEach(button => button.disabled = false);
+      } else if (performance.now() - started > 90000) {
+        clearInterval(ready);
+        status.textContent = '场景尚未就绪，请查看场景内的错误或重新加载';
+      }
+    }, 100);
+  });
+  for (const button of buttons) button.addEventListener('click', async () => {
+    const api = sceneWindow?.MemoryLaneBloodbound;
+    if (!api) return;
+    const action = button.dataset.action;
+    try {
+      if (action === 'inspect') {
+        const keepsake = api.getKeepsake();
+        let meshes = 0;
+        keepsake.traverse(object => { if (object.isMesh) meshes++; });
+        snapshot.textContent = JSON.stringify({ ...api.getState(), keepsake: { isGroup: keepsake.isGroup, meshInstances: meshes, download: '/assets/bloodbound/blood-heart-pendant.glb' } }, null, 2);
+      } else if (action === 'render') {
+        if (sceneWindow.document.querySelector('.memory-stage')?.dataset.state !== 'external-handoff') return;
+        const context = api.getContext();
+        context.renderer.setRenderTarget(null);
+        context.renderer.render(context.scene, context.camera);
+        record('宿主绘制一帧', { frame: context.renderer.info.render.frame, state: api.getState().state });
+      } else {
+        await api[action]();
+        if (action === 'enter' || action === 'replay') document.querySelector('#handoff').hidden = true;
+        if (action === 'destroy') {
+          status.textContent = '场景已销毁，API 已移除';
+          buttons.forEach(button => button.disabled = true);
+        }
+      }
+    } catch (error) {
+      status.textContent = `操作失败：${error.message}`;
+    }
+  });
+</script>
+</html>

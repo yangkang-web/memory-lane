@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "ambience": [
+    {
+      "title": "教堂冷风与低声氛围",
+      "loop": true,
+      "gain": 0.4,
+      "duckDuringSpeech": 0.45,
+      "provenance": "Original filtered-noise / sine synthesis; seamless loop should crossfade by 1.8 seconds.",
+      "id": "chapel-air",
+      "file": "chapel-air.mp3",
+      "duration": 24.033,
+      "bytes": 384983,
+      "peakDbFS": -17.39,
+      "rmsDbFS": -29.29,
+      "clippedSamples": 0,
+      "sha256": "728489b6ea2852c9c56459af7e31d8490e68cb5ce33a83e371a7f61be536070d"
+    }
+  ],
+  "effects": [
+    {
+      "title": "猎人靠近的石地脚步",
+      "gain": 0.5,
+      "sourceFiles": [
+        "Kenney Impact Sounds: footstep_concrete_000–003.ogg"
+      ],
+      "id": "hunter-footsteps",
+      "file": "hunter-footsteps.mp3",
+      "duration": 3.944,
+      "bytes": 63572,
+      "peakDbFS": -10.47,
+      "rmsDbFS": -42.22,
+      "clippedSamples": 0,
+      "sha256": "56f7d9d60460e755bc177fe99ed0464e161b09fc8fe8615a6ddfe3381776ec69"
+    },
+    {
+      "title": "银刃抽出",
+      "gain": 0.5,
+      "sourceFiles": [
+        "Kenney RPG Audio: drawKnife2.ogg"
+      ],
+      "id": "silver-blade",
+      "file": "silver-blade.mp3",
+      "duration": 1.228,
+      "bytes": 20105,
+      "peakDbFS": -11.36,
+      "rmsDbFS": -33.0,
+      "clippedSamples": 0,
+      "sha256": "580fc2c09f2c9fba39b7af9bdd5e811ae4c08ca1de887232d5262a9f3d14317c"
+    },
+    {
+      "title": "瞬移风切",
+      "gain": 0.45,
+      "provenance": "Original filtered-noise sweep.",
+      "id": "rescue-whoosh",
+      "file": "rescue-whoosh.mp3",
+      "duration": 1.28,
+      "bytes": 20941,
+      "peakDbFS": -11.49,
+      "rmsDbFS": -30.12,
+      "clippedSamples": 0,
+      "sha256": "e42c941682c6543c20a05c6561bc0a31b588c795849111c32b5fd3266bd11485"
+    },
+    {
+      "title": "挡住银刃",
+      "gain": 0.5,
+      "sourceFiles": [
+        "Kenney Impact Sounds: impactMetal_medium_001.ogg",
+        "Kenney RPG Audio: knifeSlice.ogg"
+      ],
+      "id": "blade-block",
+      "file": "blade-block.mp3",
+      "duration": 1.881,
+      "bytes": 30554,
+      "peakDbFS": -8.41,
+      "rmsDbFS": -31.71,
+      "clippedSamples": 0,
+      "sha256": "344f53b974acd6f2e4e584dcab98ffe686ec712c52d7c4315952b933c1be719a"
+    },
+    {
+      "title": "石柱撞击与碎石尾音",
+      "gain": 0.5,
+      "sourceFiles": [
+        "Kenney Impact Sounds: impactMining_000–004.ogg"
+      ],
+      "provenance": "Layered CC0 foley with original low impact; no explosion.",
+      "id": "pillar-impact",
+      "file": "pillar-impact.mp3",
+      "duration": 3.344,
+      "bytes": 53959,
+      "peakDbFS": -6.44,
+      "rmsDbFS": -28.7,
+      "clippedSamples": 0,
+      "sha256": "fa0fa4acc9382a8fe333aef440fc6457ec1b6291d3fb30a27d2539d659e876eb"
+    },
+    {
+      "title": "银刃落地回响",
+      "gain": 0.4,
+      "sourceFiles": [
+        "Kenney Impact Sounds: impactMetal_light_001/002.ogg",
+        "Kenney RPG Audio: metalClick.ogg"
+      ],
+      "id": "blade-fall",
+      "file": "blade-fall.mp3",
+      "duration": 1.985,
+      "bytes": 32225,
+      "peakDbFS": -11.42,
+      "rmsDbFS": -36.11,
+      "clippedSamples": 0,
+      "sha256": "5626ccd28f6ec8956868766901f3939d109da887cadb81f1e9460351f70c52df"
+    },
+    {
+      "title": "近距离心跳",
+      "gain": 0.35,
+      "provenance": "Original two-pulse sine synthesis; three beats.",
+      "id": "heartbeat",
+      "file": "heartbeat.mp3",
+      "duration": 4.493,
+      "bytes": 72350,
+      "peakDbFS": -16.45,
+      "rmsDbFS": -34.3,
+      "clippedSamples": 0,
+      "sha256": "97750058a376efb6730b32fa839f784909cb9872d4c70ab9850159604c378a97"
+    },
+    {
+      "title": "血滴凝成心形水晶",
+      "gain": 0.35,
+      "provenance": "Original restrained harmonic chime; no stock magic flourish.",
+      "id": "crystal-bloom",
+      "file": "crystal-bloom.mp3",
+      "duration": 4.728,
+      "bytes": 76111,
+      "peakDbFS": -14.45,
+      "rmsDbFS": -31.86,
+      "clippedSamples": 0,
+      "sha256": "2b0047b6c0a320c75015b3cc6e55543606c208b07dd4e9f221371d728cc6d20f"
+    },
+    {
+      "title": "衣料与项链轻响",
+      "gain": 0.4,
+      "sourceFiles": [
+        "Kenney RPG Audio: cloth2.ogg, metalClick.ogg"
+      ],
+      "id": "necklace-touch",
+      "file": "necklace-touch.mp3",
+      "duration": 2.194,
+      "bytes": 35569,
+      "peakDbFS": -16.57,
+      "rmsDbFS": -42.82,
+      "clippedSamples": 0,
+      "sha256": "1f498d6ccff064a7cf95ab6828ca972a08a0e0cb8f284eb9039c16794e74d98e"
+    }
+  ],
+  "sources": [
+    {
+      "type": "foley",
+      "name": "Kenney — Impact Sounds",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "licenseFile": "licenses/kenney-impact.txt"
+    },
+    {
+      "type": "foley",
+      "name": "Kenney — RPG Audio",
+      "url": "https://kenney.nl/assets/rpg-audio",
+      "license": "CC0-1.0",
+      "licenseFile": "licenses/kenney-rpg.txt"
+    },
+    {
+      "type": "original-synthesis",
+      "script": "scripts/bloodbound-voice-effects.py",
+      "note": "Original procedural wind, low tone, whoosh, heart pulse and crystal harmonics. Lightweight NumPy, no AI inference."
+    }
+  ],
+  "verification": {
+    "decode": "all MP3 files fully decoded with FFmpeg 7.1",
+    "subjectiveListening": "not completed; current reviewer tool cannot expose audio perception"
+  }
+}

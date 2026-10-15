@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BLOODBOUND 角色审查</title>
+<style>
+html,body{margin:0;height:100%;background:#0b0a0c;color:#ddd;font:13px/1.4 system-ui,sans-serif;overflow:hidden}
+canvas{display:block}
+#panel{position:fixed;top:12px;left:12px;width:250px;max-height:calc(100% - 24px);overflow:auto;background:rgba(14,12,16,.82);padding:12px;border-radius:8px}
+#panel h1{font-size:14px;margin:0 0 8px}
+#panel button{margin:2px 2px 2px 0;padding:4px 8px;background:#2a2430;color:#eee;border:1px solid #443a4c;border-radius:4px;cursor:pointer}
+#panel button.on{background:#6b2232}
+#panel label{display:flex;justify-content:space-between;gap:6px;font-size:12px}
+#panel input[type=range]{width:120px}
+#stats,#credit{font-size:11px;color:#9a93a0;margin-top:8px;white-space:pre-line}
+</style>
+</head>
+<body>
+<div id="panel">
+  <h1>角色审查</h1>
+  <div id="chars"></div>
+  <div id="views"></div>
+  <div id="light"></div>
+  <div id="anims"></div>
+  <div id="morphs"></div>
+  <div id="stats"></div>
+  <div id="credit"></div>
+</div>
+<script type="module" src="/src/bloodbound/review.js"></script>
+</body>
+</html>

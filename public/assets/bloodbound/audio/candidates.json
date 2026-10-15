@@ -1,0 +1,132 @@
+{
+  "model": "elevenlabs/eleven_v4",
+  "candidates": [
+    {
+      "id": "IKne3meq5aSn9XLyUdCD",
+      "name": "Charlie",
+      "role": "lucien",
+      "description": "Young, deep, confident; Australian English",
+      "candidate": "charlie",
+      "file": "candidates/charlie.mp3",
+      "duration": 4.049,
+      "bytes": 65244,
+      "sha256": "aa45a852970812cee2bb517bf28730cf9e741cb6765cd9a287996b0447d6358c",
+      "audioQuality": {
+        "file": "candidates/charlie.mp3",
+        "duration": 4.049,
+        "decodedDuration": 4.0,
+        "beforeIntegratedLUFS": -35.49,
+        "integratedLUFS": -20.76,
+        "truePeakDBTP": -2.42,
+        "peakDbFS": -2.484,
+        "clippedSamples": 0,
+        "leadingBelowMinus42dBSeconds": 0.16,
+        "trailingBelowMinus42dBSeconds": 0.06,
+        "bytes": 65244,
+        "sha256": "aa45a852970812cee2bb517bf28730cf9e741cb6765cd9a287996b0447d6358c",
+        "rawSha256": "93ffbd2c77cf6abc00751cfd1c5894b37b0bc824d58a8f0fff88278f8271c858"
+      }
+    },
+    {
+      "id": "cjVigY5qzO86Huf0OWal",
+      "name": "Eric",
+      "role": "lucien",
+      "description": "Smooth, warm; American English",
+      "candidate": "eric",
+      "file": "candidates/eric.mp3",
+      "duration": 4.127,
+      "bytes": 66498,
+      "sha256": "99463e7b1e577daf0b99a02c9b1a28305795731b37b272a21fcaf2990cc88c88",
+      "audioQuality": {
+        "file": "candidates/eric.mp3",
+        "duration": 4.127,
+        "decodedDuration": 4.08,
+        "beforeIntegratedLUFS": -32.5,
+        "integratedLUFS": -20.47,
+        "truePeakDBTP": -2.45,
+        "peakDbFS": -2.529,
+        "clippedSamples": 0,
+        "leadingBelowMinus42dBSeconds": 0.16,
+        "trailingBelowMinus42dBSeconds": 0.2,
+        "bytes": 66498,
+        "sha256": "99463e7b1e577daf0b99a02c9b1a28305795731b37b272a21fcaf2990cc88c88",
+        "rawSha256": "36e37ecffcb6333938bc3cdf176a0b3abc6fc0f5941c25c826b9a84062d56470"
+      }
+    },
+    {
+      "id": "SOYHLrjzK2X1ezoPC6cr",
+      "name": "Harry",
+      "role": "hunter",
+      "description": "Young, rough warrior; American English",
+      "candidate": "harry",
+      "file": "candidates/harry.mp3",
+      "duration": 1.802,
+      "bytes": 29300,
+      "sha256": "f12dc048f24acab5e0b915ab8c6670a1870b88784ff8d539ee692a58305ade60",
+      "audioQuality": {
+        "file": "candidates/harry.mp3",
+        "duration": 1.802,
+        "decodedDuration": 1.76,
+        "beforeIntegratedLUFS": -22.35,
+        "integratedLUFS": -20.46,
+        "truePeakDBTP": -4.52,
+        "peakDbFS": -4.545,
+        "clippedSamples": 0,
+        "leadingBelowMinus42dBSeconds": 0.16,
+        "trailingBelowMinus42dBSeconds": 0.2,
+        "bytes": 29300,
+        "sha256": "f12dc048f24acab5e0b915ab8c6670a1870b88784ff8d539ee692a58305ade60",
+        "rawSha256": "ee1357fdc5d7e033b869bc0a4d81d33f588e099addacd38f1ba728527890ce4c"
+      }
+    },
+    {
+      "id": "pNInz6obpgDQGcFmaJgB",
+      "name": "Adam",
+      "role": "hunter",
+      "description": "Dominant, firm; American English",
+      "candidate": "adam",
+      "file": "candidates/adam.mp3",
+      "duration": 1.802,
+      "bytes": 29300,
+      "sha256": "da92c46559d621e980f3759f8ec1e1b23c25c7a7bef4da4e58b9e7c1c0f48412",
+      "audioQuality": {
+        "file": "candidates/adam.mp3",
+        "duration": 1.802,
+        "decodedDuration": 1.76,
+        "beforeIntegratedLUFS": -22.08,
+        "integratedLUFS": -20.92,
+        "truePeakDBTP": -2.45,
+        "peakDbFS": -2.45,
+        "clippedSamples": 0,
+        "leadingBelowMinus42dBSeconds": 0.16,
+        "trailingBelowMinus42dBSeconds": 0.19,
+        "bytes": 29300,
+        "sha256": "da92c46559d621e980f3759f8ec1e1b23c25c7a7bef4da4e58b9e7c1c0f48412",
+        "rawSha256": "44ad1e65bc8b720c52a90776aa1d1ea3a09004018da93cb1aecc67acc0af74ba"
+      }
+    }
+  ],
+  "status": "awaiting-subjective-listening",
+  "sources": [
+    {
+      "type": "dialogue",
+      "url": "https://claude.ai/artifact/8787e8Bv8pouUkDoYUafxt#7b7708cb-e89e.mep3ebf446m.1335",
+      "note": "Online 60-second document, seven original lines verified by the primary agent on 2026-10-15. The downloaded 30-second PDF is an older five-line revision."
+    },
+    {
+      "type": "api",
+      "url": "https://kaon-router-admin.kaonai.com/models",
+      "note": "Live ElevenLabs v4 route schema inspected 2026-10-15; speech is binary response; no v4 speed/style fields."
+    },
+    {
+      "type": "voice-catalog",
+      "url": "https://api.elevenlabs.io/v1/voices",
+      "note": "Public official catalog read without credentials on 2026-10-15. Labels guide candidate casting; they do not establish subjective listening quality."
+    },
+    {
+      "type": "provider-documentation",
+      "url": "https://github.com/elevenlabs/skills/blob/main/text-to-speech/SKILL.md",
+      "note": "Official model/voice settings reference; actual requests use Kaon only."
+    }
+  ]
+}

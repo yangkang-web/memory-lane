@@ -1,0 +1,297 @@
+{
+  "project": "Memory Lane / BLOODBOUND",
+  "checkedAt": "2026-10-15",
+  "references": [
+    {
+      "id": "P1",
+      "status": "generated-2d-reference",
+      "file": "portrait-romantic.jpg",
+      "title": "柔和浪漫",
+      "kind": "character",
+      "bytes": 291799,
+      "sha256": "c1aa29affe7f5bb7f0889b3a216ce01bf5c0dd04f3e47cee38c60b784a6dc8ae",
+      "model": "kaon/seedream-5-pro",
+      "note": "更自然、亲近。卷发、眼神和开领外套是这一组的主参考。",
+      "recommend": true
+    },
+    {
+      "id": "P2",
+      "status": "generated-2d-reference",
+      "file": "portrait-aristocratic.jpg",
+      "title": "冷峻贵气",
+      "kind": "character",
+      "bytes": 218766,
+      "sha256": "2dc700e21171c601ad886cbc2a5b662458cc7b2423593a510bc8e5970418acf1",
+      "model": "kaon/seedream-5-pro",
+      "note": "成熟、忧郁。眉间和单侧卷发更强调戏剧感。",
+      "recommend": false
+    },
+    {
+      "id": "P3",
+      "status": "generated-2d-reference",
+      "file": "portrait-game-realism.jpg",
+      "title": "精致游戏写实",
+      "kind": "character",
+      "bytes": 236859,
+      "sha256": "53f917c43725d971d38eefb97f6a6c52cd4745399dd65ca57188484fbaa19f09",
+      "model": "kaon/seedream-5-pro",
+      "note": "更精致的游戏半写实风。皮肤和脸型更理想化。",
+      "recommend": true
+    },
+    {
+      "id": "P4",
+      "status": "generated-2d-reference",
+      "file": "fullbody-coat.jpg",
+      "title": "长外套全身造型",
+      "kind": "character",
+      "bytes": 157311,
+      "sha256": "8ac38c31df84c8a11577f6687d02afd86caa6afb7e1b5337bd83877fa3168bd3",
+      "model": "kaon/seedream-5-pro",
+      "note": "看外套长度与全身比例；与 P1–P3 不是严格同脸。",
+      "recommend": false
+    },
+    {
+      "id": "E1",
+      "status": "generated-2d-reference",
+      "file": "chapel-moonlit.jpg",
+      "title": "冷月古石圣堂",
+      "kind": "environment",
+      "bytes": 358813,
+      "sha256": "5bb224d7a389b28a56e3feaa1d75924147582f1a7d933be303049fefcce5a4d7",
+      "model": "kaon/seedream-5-pro",
+      "note": "空间和出口清楚。蓝色光束偏浓，后续应减蓝、减雾。",
+      "recommend": false
+    },
+    {
+      "id": "E2",
+      "status": "generated-2d-reference",
+      "file": "chapel-candlelit.jpg",
+      "title": "冷月与烛光",
+      "kind": "environment",
+      "bytes": 342129,
+      "sha256": "b74f26be1f6cc8be21f7c0fe6570f5cce7c2735b0933c46d1ddbd85d881835fc",
+      "model": "kaon/seedream-5-pro",
+      "note": "冷月与烛光的层次更自然。右侧门洞后续需补纵深。",
+      "recommend": true
+    }
+  ],
+  "assets": [
+    {
+      "id": "A1",
+      "uid": "6a876007572c464da5184eb99af0c5f7",
+      "title": "21 款实时发型合集",
+      "name": "FREE 21 Realtime man Hairstyles collection",
+      "recommend": "混合轮廓 · 需筛选",
+      "note": "官方标题写男士，实际展示使用女性基模，不能直接视为男主适配发型。作者说明带 1K 贴图，可挑选合适轮廓后再适配。",
+      "status": "免费 · CC BY",
+      "kind": "hair",
+      "url": "https://sketchfab.com/3d-models/none-6a876007572c464da5184eb99af0c5f7",
+      "thumb": "https://media.sketchfab.com/models/6a876007572c464da5184eb99af0c5f7/thumbnails/32a97ba835054cce85e730172bbe5e25/232f09a9d2e244cab114fcea5da9a56f.jpeg",
+      "author": "Vincent Freelance",
+      "faces": 915434,
+      "license": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "downloadable": true,
+      "verified": "官方公开元数据与作者说明已核对；模型文件尚未下载或导入验收。"
+    },
+    {
+      "id": "A2",
+      "uid": "a60076ccce524d30867ac88fe994870c",
+      "title": "男士发型集 08",
+      "name": "Male Fashion Hair collection 08 lowpoly haircard",
+      "recommend": "轮廓候选",
+      "note": "较多层次和中长发造型。网格可免费下载，但作者明确注明免费文件不含贴图。",
+      "status": "免费网格 · 缺贴图",
+      "kind": "hair",
+      "url": "https://sketchfab.com/3d-models/none-a60076ccce524d30867ac88fe994870c",
+      "thumb": "https://media.sketchfab.com/models/a60076ccce524d30867ac88fe994870c/thumbnails/fa6bfab157bc44589964bfea0a7a4955/6b301ed97d574d93820ca68a2cc31a45.jpeg",
+      "author": "Vincent Freelance",
+      "faces": 657059,
+      "license": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "downloadable": true,
+      "verified": "官方公开元数据与作者说明已核对；模型文件尚未下载或导入验收。"
+    },
+    {
+      "id": "A3",
+      "uid": "bf63cecf02aa4af7a5768529299c9cca",
+      "title": "男士发型集 07",
+      "name": "Realtime male Fashion Hair collection 07",
+      "recommend": "轮廓候选",
+      "note": "偏分、侧垂和较自然的发束可选。免费文件不含贴图，不能直接当成完整成品。",
+      "status": "免费网格 · 缺贴图",
+      "kind": "hair",
+      "url": "https://sketchfab.com/3d-models/none-bf63cecf02aa4af7a5768529299c9cca",
+      "thumb": "https://media.sketchfab.com/models/bf63cecf02aa4af7a5768529299c9cca/thumbnails/b75b820ed9624ddb8d16cd42958f6d0c/c6d173a566034945afa2e2b8d52a502f.jpeg",
+      "author": "Vincent Freelance",
+      "faces": 667988,
+      "license": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "downloadable": true,
+      "verified": "官方公开元数据与作者说明已核对；模型文件尚未下载或导入验收。"
+    },
+    {
+      "id": "A4",
+      "uid": "bb2d52721c394447904afa41f70ca56c",
+      "title": "敞开的长礼服外套",
+      "name": "1830s Frock Coat (Unbuttoned)",
+      "recommend": "服装候选",
+      "note": "1830 年代长外套，适合参考开襟、驳领和衣摆。需要适配人物身形、材质与蒙皮。",
+      "status": "免费 · CC BY",
+      "kind": "clothing",
+      "url": "https://sketchfab.com/3d-models/none-bb2d52721c394447904afa41f70ca56c",
+      "thumb": "https://media.sketchfab.com/models/bb2d52721c394447904afa41f70ca56c/thumbnails/558312dbd945487b9133d2c83fdfcc5a/b58b66f64de341338b2a910775901cba.jpeg",
+      "author": "Digital Dressmaker",
+      "faces": 36128,
+      "license": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "downloadable": true,
+      "verified": "官方公开元数据与作者说明已核对；模型文件尚未下载或导入验收。"
+    },
+    {
+      "id": "A5",
+      "uid": "993a5bada2bd4f34846051f497eb38b3",
+      "title": "哥特圣堂遗迹",
+      "name": "Collapsed Gothic Chapel Ruin",
+      "recommend": "建筑细节候选",
+      "note": "石拱、断墙与雕刻比规则积木更有质感。适合取局部重组；完整模型约 182 万三角面，需优化。",
+      "status": "免费 · CC BY",
+      "kind": "environment",
+      "url": "https://sketchfab.com/3d-models/none-993a5bada2bd4f34846051f497eb38b3",
+      "thumb": "https://media.sketchfab.com/models/993a5bada2bd4f34846051f497eb38b3/thumbnails/76ffb9a6b2e44b4288d751b52a1572db/22a7bdb072274bfd8a402f8234862c4c.jpeg",
+      "author": "Pigcraft",
+      "faces": 1818874,
+      "license": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "downloadable": true,
+      "verified": "官方公开元数据与作者说明已核对；模型文件尚未下载或导入验收。"
+    },
+    {
+      "id": "A6",
+      "uid": "b9f52abbb3584d57bb0aea2e66320d55",
+      "title": "15 世纪教堂扫描",
+      "name": "Santimbru Church With Interior",
+      "recommend": "真实石材候选",
+      "note": "有内部空间的真实教堂扫描。适合参考磨损和建筑比例；需实际检查内部完整度与贴图。",
+      "status": "免费 · CC BY",
+      "kind": "environment",
+      "url": "https://sketchfab.com/3d-models/none-b9f52abbb3584d57bb0aea2e66320d55",
+      "thumb": "https://media.sketchfab.com/models/b9f52abbb3584d57bb0aea2e66320d55/thumbnails/edf4eafb522941f0a72e155654c3acc7/6ccb0950063a466cafc519c4c12d8dc7.jpeg",
+      "author": "deea_jo",
+      "faces": 334691,
+      "license": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "downloadable": true,
+      "verified": "官方公开元数据与作者说明已核对；模型文件尚未下载或导入验收。"
+    },
+    {
+      "id": "A7",
+      "uid": "4bcd30eb561a4eccb9420cb63d7df83f",
+      "title": "模块化哥特建筑部件",
+      "name": "Modular Gothic Props",
+      "recommend": "空间搭建候选",
+      "note": "包含墙、地板、石拱、柱、屋顶和窗。约 3.8 万三角面；作者采用风格化贴图，需统一到目标质感。",
+      "status": "免费 · CC BY",
+      "kind": "environment",
+      "url": "https://sketchfab.com/3d-models/modular-gothic-props-4bcd30eb561a4eccb9420cb63d7df83f",
+      "thumb": "https://media.sketchfab.com/models/4bcd30eb561a4eccb9420cb63d7df83f/thumbnails/70742650424c40dfab27011d61768b35/e7bbd49760ec4abd962de6e298de7854.jpeg",
+      "author": "Hannah",
+      "faces": 38252,
+      "license": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "downloadable": true,
+      "verified": "官方公开元数据与作者说明已核对；模型文件尚未下载或导入验收。"
+    },
+    {
+      "id": "A8",
+      "uid": "f33b37ef26674af7b9255cf9e2b4302a",
+      "title": "中长发 Hair Cards",
+      "name": "Male Hair Cards Style 1 - Medium Hair",
+      "recommend": "付费备选 · 未采购",
+      "note": "真正面向实时角色的中长发材质资产。当前仅查看官方展示；获取价格和采购尚未确认。",
+      "status": "付费备选",
+      "kind": "hair",
+      "url": "https://sketchfab.com/3d-models/none-f33b37ef26674af7b9255cf9e2b4302a",
+      "thumb": "https://media.sketchfab.com/models/f33b37ef26674af7b9255cf9e2b4302a/thumbnails/8141fe42e4a74947ad26edaf5777d664/ead36e1ae5b7401888efc3806e52677d.jpeg",
+      "author": "CG StudioX",
+      "faces": 31232,
+      "license": {
+        "uri": "https://api.sketchfab.com/v3/licenses/783b685da9bf457d81e829fa283f3567",
+        "label": "Standard",
+        "fullName": "Standard",
+        "requirements": "Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works",
+        "url": "https://sketchfab.com/licenses",
+        "slug": "st"
+      },
+      "downloadable": false,
+      "verified": "官方公开元数据与作者说明已核对；模型文件尚未下载或导入验收。"
+    }
+  ],
+  "kaon": {
+    "url": "https://kaon-router-admin.kaonai.com/models",
+    "catalogCount": 291,
+    "searches": [
+      "3d",
+      "tripo",
+      "meshy",
+      "hunyuan"
+    ],
+    "result": "当前目录搜索未发现直接 3D 建模条目；Seedream 5 Pro 是图片生成/编辑模型。",
+    "output": "生成的六张参考为 JPG 图片，不是 GLB、FBX 或可交互世界。"
+  },
+  "research": {
+    "searchCandidates": 125,
+    "visualShortlist": 26,
+    "finalAssets": 8,
+    "completeCharacter": "尚未找到能直接替换且达到定妆标准的免费完整人物。优先更换发型、服装和人物生成路线。"
+  },
+  "generation3d": {
+    "provider": "Microsoft TRELLIS.2",
+    "status": "blocked-at-preprocessing",
+    "reason": "Free ZeroGPU quota: 90s requested, 33s remaining",
+    "deliveredNewGLB": false,
+    "localInference": false
+  }
+}

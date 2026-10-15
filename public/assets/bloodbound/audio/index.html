@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bloodbound · 声音审听</title>
+  <style>
+    :root{color-scheme:dark;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#101419;color:#e8e5df}
+    body{margin:0}main{max-width:1080px;margin:auto;padding:44px 24px 72px}a{color:#bbcedb}p{line-height:1.7;color:#aeb6bd}h1{font:400 38px Georgia,serif;margin:8px 0}h2{font-size:20px;margin:36px 0 16px}.eyebrow{font-size:11px;letter-spacing:.22em;color:#d4b7a0}.notice{padding:14px 18px;border-left:2px solid #b99a7b;background:#1a2027;font-size:14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}article{padding:20px;border:1px solid #343e48;border-radius:12px;background:#171d24}h3{margin:0 0 10px;font-weight:500;font-size:17px}.en{font:20px/1.5 Georgia,serif;color:#f1ebe2}.translation{margin:8px 0 12px;font-size:14px}audio{width:100%;height:36px;margin-top:10px}.meta{font-size:12px;color:#9faab4}.pending{color:#cfb79e}footer{margin-top:36px;font-size:13px}@media(max-width:650px){.grid{grid-template-columns:1fr}main{padding:28px 18px}h1{font-size:32px}}
+  </style>
+</head>
+<body><main>
+  <span class="eyebrow">MEMORY LANE · BLOODBOUND</span>
+  <h1>声音审听</h1>
+  <p>角色对白、教堂环境与关键动作。点击播放，一次只听一条。</p>
+  <p class="notice" id="status">正在读取声音清单……</p>
+  <section id="candidate-section" hidden><h2>角色音色候选</h2><div class="grid" id="candidates"></div></section>
+  <h2>七句原文对白</h2><div class="grid" id="lines"></div>
+  <h2>环境与动作</h2><div class="grid" id="effects"></div>
+  <footer><a href="README.md">声音说明与验收边界</a> · <a href="manifest.json">音频与字幕清单</a> · <a href="https://kenney.nl/assets/impact-sounds" target="_blank" rel="noopener">Kenney CC0 来源</a></footer>
+</main><script type="module">
+  function add(container,title,subtitle,file,meta){
+    const card=document.createElement('article');
+    const heading=document.createElement('h3');heading.textContent=title;card.append(heading);
+    if(subtitle){const line=document.createElement('p');line.className='translation';line.textContent=subtitle;card.append(line)}
+    const detail=document.createElement('p');detail.className='meta'+(!file?' pending':'');detail.textContent=meta;card.append(detail);
+    if(file){const player=document.createElement('audio');player.controls=true;player.preload='metadata';player.src=file;player.addEventListener('play',()=>{for(const other of document.querySelectorAll('audio'))if(other!==player)other.pause()});card.append(player)}
+    container.append(card);
+  }
+  try{
+    const response=await fetch('./manifest.json');if(!response.ok)throw new Error('清单尚未就绪');
+    const data=await response.json();
+    const ready=data.lines.filter(line=>line.file).length;
+    document.querySelector('#status').textContent=`对白已生成 ${ready}/${data.lines.length} 条。技术检查与主观听感分开记录；未生成的对白不以系统朗读冒充。`;
+    for(const line of data.lines)add(document.querySelector('#lines'),`${line.speaker==='hunter'?'Hunter':'Lucien'} · ${line.text}`,line.translation,line.file,line.file?`${line.duration.toFixed(2)} 秒 · ${line.phase}`:'等待有语音权限的 Kaon 凭据');
+    for(const item of [...data.ambience,...(data.effects||[])])add(document.querySelector('#effects'),item.title,'',item.file,`${item.duration.toFixed(2)} 秒 · ${item.loop?'环境循环':'一次性音效'} · 建议音量 ${item.gain}`);
+    const candidateResponse=await fetch('./candidates.json');
+    if(candidateResponse.ok){const options=await candidateResponse.json();document.querySelector('#candidate-section').hidden=options.candidates.length===0;for(const item of options.candidates)add(document.querySelector('#candidates'),`${item.name} · ${item.role==='lucien'?'Lucien':'Hunter'}`,item.description,item.file,`${item.duration.toFixed(2)} 秒 · 候选音色`)}
+  }catch(error){document.querySelector('#status').textContent='声音清单暂时无法读取，请稍后刷新。'}
+</script></body></html>

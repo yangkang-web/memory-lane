@@ -1,0 +1,176 @@
+[
+  {
+    "asset": "gothic_statue",
+    "source": "https://polyhaven.com/a/gothic_statue",
+    "license": "CC0-1.0",
+    "resolution": "1K",
+    "files": [
+      {
+        "path": "public/assets/bloodbound/chapel-gothic-statue/gothic_statue_1k.gltf",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/gothic_statue/gothic_statue_1k.gltf",
+        "bytes": 2900,
+        "md5": "4fb49ae8f4278a0f5f1c7ca89a416f69"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-gothic-statue/textures/gothic_statue_nor_gl_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gothic_statue/gothic_statue_nor_gl_1k.jpg",
+        "bytes": 1064867,
+        "md5": "ecba6e86dc6dd8195710765f4889c895"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-gothic-statue/textures/gothic_statue_diff_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gothic_statue/gothic_statue_diff_1k.jpg",
+        "bytes": 1037433,
+        "md5": "a8110eba7602d4d3ff00b05abf25397e"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-gothic-statue/textures/gothic_statue_arm_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/gothic_statue/gothic_statue_arm_1k.jpg",
+        "bytes": 960949,
+        "md5": "0403abefbd62dfc03eb6b237d6d82119"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-gothic-statue/gothic_statue.bin",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/gothic_statue/gothic_statue.bin",
+        "bytes": 912484,
+        "md5": "64ff6a07591c56042e01c780dce7685b"
+      }
+    ]
+  },
+  {
+    "asset": "brass_candleholders",
+    "source": "https://polyhaven.com/a/brass_candleholders",
+    "license": "CC0-1.0",
+    "resolution": "1K",
+    "files": [
+      {
+        "path": "public/assets/bloodbound/chapel-brass-candleholders/brass_candleholders_1k.gltf",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/brass_candleholders/brass_candleholders_1k.gltf",
+        "bytes": 14865,
+        "md5": "c813a8f9856bcab38f87da3ca8aef74d"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-brass-candleholders/textures/brass_candleholders_03_arm_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_candleholders/brass_candleholders_03_arm_1k.jpg",
+        "bytes": 866977,
+        "md5": "679498824b44b9745329c07a33a72445"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-brass-candleholders/textures/brass_candleholders_03_nor_gl_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_candleholders/brass_candleholders_03_nor_gl_1k.jpg",
+        "bytes": 773357,
+        "md5": "93384d7e37ff13a50b4cf6ec108bc6d9"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-brass-candleholders/textures/brass_candleholders_flame_diff_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_candleholders/brass_candleholders_flame_diff_1k.jpg",
+        "bytes": 88579,
+        "md5": "e03f12b1e6cb00ebbcf72dbe68370d34"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-brass-candleholders/textures/brass_candleholders_candles_nor_gl_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_candleholders/brass_candleholders_candles_nor_gl_1k.jpg",
+        "bytes": 175178,
+        "md5": "5245cfc43c3e9ac52990b65d7c9e2d2f"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-brass-candleholders/textures/brass_candleholders_candles_arm_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_candleholders/brass_candleholders_candles_arm_1k.jpg",
+        "bytes": 288769,
+        "md5": "7cfc5157dec680365b92b45ae4d1340a"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-brass-candleholders/textures/brass_candleholders_02_arm_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_candleholders/brass_candleholders_02_arm_1k.jpg",
+        "bytes": 753959,
+        "md5": "7f9e6b7d4e7c2f1debfbbc9a062f5dce"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-brass-candleholders/textures/brass_candleholders_01_diff_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_candleholders/brass_candleholders_01_diff_1k.jpg",
+        "bytes": 942661,
+        "md5": "27a666093ce421d4200c1dab13356436"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-brass-candleholders/textures/brass_candleholders_03_diff_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_candleholders/brass_candleholders_03_diff_1k.jpg",
+        "bytes": 945596,
+        "md5": "f78d864f46a832d39c06303ca8aa5da9"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-brass-candleholders/textures/brass_candleholders_01_nor_gl_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_candleholders/brass_candleholders_01_nor_gl_1k.jpg",
+        "bytes": 627197,
+        "md5": "8631362fee28487f801c851b7a9254dc"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-brass-candleholders/textures/brass_candleholders_02_nor_gl_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_candleholders/brass_candleholders_02_nor_gl_1k.jpg",
+        "bytes": 672717,
+        "md5": "5747f3304a49c81ccf1191224f56f4cb"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-brass-candleholders/textures/brass_candleholders_02_diff_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_candleholders/brass_candleholders_02_diff_1k.jpg",
+        "bytes": 983525,
+        "md5": "8cff396b57f26ae7e54e99c5547162f3"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-brass-candleholders/textures/brass_candleholders_candles_diff_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_candleholders/brass_candleholders_candles_diff_1k.jpg",
+        "bytes": 271273,
+        "md5": "0945ff49048efed6df37564563012a7a"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-brass-candleholders/textures/brass_candleholders_01_arm_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/brass_candleholders/brass_candleholders_01_arm_1k.jpg",
+        "bytes": 908699,
+        "md5": "8c97455ce6143e39d8185d7096f8b17b"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-brass-candleholders/brass_candleholders.bin",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/brass_candleholders/brass_candleholders.bin",
+        "bytes": 1189088,
+        "md5": "ea4f625bd0ef542c0026bbcf61370b71"
+      }
+    ]
+  },
+  {
+    "asset": "antique_estoc",
+    "source": "https://polyhaven.com/a/antique_estoc",
+    "license": "CC0-1.0",
+    "resolution": "1K",
+    "files": [
+      {
+        "path": "public/assets/bloodbound/chapel-antique-estoc/antique_estoc_1k.gltf",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/antique_estoc/antique_estoc_1k.gltf",
+        "bytes": 2884,
+        "md5": "ea69fd266eaa44c0b283b02b69674488"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-antique-estoc/textures/antique_estoc_arm_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/antique_estoc/antique_estoc_arm_1k.jpg",
+        "bytes": 895669,
+        "md5": "caa6a1981a7ca3d450858f714bb3f1ab"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-antique-estoc/textures/antique_estoc_nor_gl_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/antique_estoc/antique_estoc_nor_gl_1k.jpg",
+        "bytes": 719026,
+        "md5": "e730863ddea4077defb5e007ac9d2db4"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-antique-estoc/textures/antique_estoc_diff_1k.jpg",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/antique_estoc/antique_estoc_diff_1k.jpg",
+        "bytes": 683853,
+        "md5": "6ad2700bf2642214d888659ecd3ad8ab"
+      },
+      {
+        "path": "public/assets/bloodbound/chapel-antique-estoc/antique_estoc.bin",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/antique_estoc/antique_estoc.bin",
+        "bytes": 226660,
+        "md5": "3b6fe4da7cb5b8dc322729c1980ae158"
+      }
+    ]
+  }
+]

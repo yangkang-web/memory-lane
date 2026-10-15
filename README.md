@@ -24,25 +24,37 @@ Memory Lane turns shared stories into walkable memories. The current prototype i
 
 ![单世界原型预览，截图保留早期项目名称](evidence/preview.png)
 
-## 本地启动
+## 新版入口：BLOODBOUND · 月下教堂
 
-需要 Node.js 22.12+ 与 npm；已在 Node.js 25.9.0 上验证。浏览器需要支持 WebGL2。
+新版是第一人称、实时三维的可探索回忆：在月下教堂里遇险、获救、处理伤口、接受信物，片尾从东侧木门走过石砌走廊，到达通往下一世界的出口。剧情改编自用户提供的《BLOODBOUND — The Night You Were Mine》，是固定的文学样例，不是真实用户聊天。
+
+需要 Node.js 22.12+ 与 npm（已在 Node.js 25.9.0 上验证），浏览器需要支持 WebGL2。
 
 ```sh
-git clone https://github.com/yangkang-web/memory-lane.git
+git clone http://10.110.10.9:3002/memory-lane.git
 cd memory-lane
+npm ci
+npm run build:bloodbound
+npm run start:bloodbound
+```
+
+打开 <http://127.0.0.1:4330/>。macOS 也可以双击 `打开 Bloodbound.command`。服务在后台运行，只监听本机，PID 写在 `.bloodbound.pid`。
+
+开发模式：`npm run dev:bloodbound`，打开 <http://127.0.0.1:4331/bloodbound.html>；加 `?review=1` 可跳转章节并显示帧率。玩法、文件结构和接入方式见 [BLOODBOUND.md](BLOODBOUND.md) 与 [BLOODBOUND-INTEGRATION.md](BLOODBOUND-INTEGRATION.md)，素材来源见体验内的“制作与素材致谢”。
+
+## 单世界原型：六点以后
+
+```sh
 npm ci
 npm run build
 npm start
 ```
 
-打开 http://127.0.0.1:4317/ 。服务在后台运行，仅监听本机。
+打开 <http://127.0.0.1:4327/>。macOS 也可以双击 `打开 Memory Lane.command`。首次启动需要下载 npm 依赖；完成安装后，两个 Demo 运行时都不调用模型 API 或其他付费服务。
 
-macOS 也可以双击 `打开 Memory Lane.command`。首次启动需要下载 npm 依赖；完成安装后，Demo 运行时不调用模型 API 或其他付费服务。
+开发模式：`npm run dev`，同样使用 4327 端口。不要同时运行开发服务和后台服务。后台服务 PID 在 `.server.pid` 中；停止前应确认它仍对应本项目的 `scripts/server.mjs`。
 
-开发模式：`npm run dev`，同样使用 4317 端口。不要同时运行开发服务和后台服务。后台服务 PID 在 `.server.pid` 中；停止前应确认它仍对应本项目的 `scripts/server.mjs`。
-
-## 操作
+## 原型操作
 
 - “进入回忆”开始导览，行走约 64 秒，加上阅读约 90 秒；节点阅读时间由用户控制。
 - WASD 移动；↑↓ 前后走，←→ 转向；按住画面拖动环顾。移动会接管导览。
@@ -57,6 +69,7 @@ macOS 也可以双击 `打开 Memory Lane.command`。首次启动需要下载 np
 ```sh
 npm test
 npm run build
+npm run build:bloodbound
 ```
 
 存档测试覆盖默认值、异常数据、保存重访与存储失败反馈，并校验英文引用在附带章节中存在。单世界原型经过独立 Agent 实际浏览器体验与问题复验。
@@ -69,7 +82,7 @@ npm run build
 - `public/assets/`：随项目提供的素材与原文。
 - `scripts/`：独立本地启动与静态服务。
 
-历史存档键和服务健康标识保留 `memory-realm`，兼容早期本地 Demo；产品名称为 Memory Lane。
+单世界原型的历史存档键保留 `memory-realm`，兼容早期本地 Demo；服务健康标识为 `memory-realm-next`，BLOODBOUND 服务为 `memory-lane-bloodbound-next`。产品名称为 Memory Lane。
 
 ## 下一阶段
 
