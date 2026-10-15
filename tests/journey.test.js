@@ -4,10 +4,11 @@ import {JOURNEY,JOURNEY_SECONDS,BLOODBOUND_CUT,bloodboundBeat} from '../src/jour
 import {resolveExperience,isAppPath} from '../src/routes.js';
 import {createBloodboundSequence} from '../src/bloodbound/sequence.js';
 
-test('journey preserves order, three full-minute stories and thirty seconds of blank space',()=>{
- assert.deepEqual(JOURNEY.map(s=>s.id),['seaside','bloodbound','school','apocalypse','blank']);
- assert.deepEqual(JOURNEY.map(s=>s.seconds),[12,60,60,60,30]);
- assert.equal(JOURNEY_SECONDS,237.1);
+test('journey preserves order, three full-minute stories and thirty seconds of stage',()=>{
+ assert.deepEqual(JOURNEY.map(s=>s.id),['annual','seaside','bloodbound','school','apocalypse','stage']);
+ assert.deepEqual(JOURNEY.map(s=>s.seconds),[11,12,60,60,60,30]);
+ assert.ok(Math.abs(JOURNEY_SECONDS-251.5)<.00001);
+ assert.equal(JOURNEY.find(s=>s.id==='bloodbound').transition,'door');
  for(const stage of JOURNEY){assert.ok(isAppPath(stage.path));assert.equal(resolveExperience(stage.path,'?sequence=1').experience,stage.id);}
  assert.equal(resolveExperience('/journey').experience,'journey');
  assert.equal(isAppPath('/journey/missing.glb'),false);
