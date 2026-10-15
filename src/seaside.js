@@ -9,7 +9,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
 import { createSeasideWorld } from './seaside-world.js';
-import { seasidePose, GAZE_DURATION } from './seaside-motion.js';
+import { seasidePose, GAZE_DURATION, INSPECT_END } from './seaside-motion.js';
 import './seaside.css';
 
 document.title='海边小屋 · Memory Lane';
@@ -21,8 +21,10 @@ document.querySelector('#app').innerHTML=`
   <span class="sea-number">THE TIDE ROOM</span>
   <nav class="sea-controls" aria-label="海边小屋场景控制"><button id="sea-replay">↺ 重看视线</button><button id="sea-look" aria-pressed="false">自由环顾</button><a href="/">返回</a></nav>
   <div class="sea-caption" role="status" aria-live="polite"><span id="sea-status">午后，海风穿过客厅。</span><small>拖动画面环顾 · 方向键转头</small></div>
+  <div class="sea-dialogue" role="status" aria-live="polite" hidden>诶，这不是斯提爵士送我的项链么，<br>真怀念啊。</div>
   <section class="sea-error" hidden><h2>小屋暂时没有打开</h2><p>请使用开启硬件加速、支持 WebGL 的浏览器。</p><a href="/">返回首页</a></section>`;
 const canvas=document.querySelector('#seaside-canvas'),status=document.querySelector('#sea-status'),lookButton=document.querySelector('#sea-look');
+const dialogue=document.querySelector('.sea-dialogue');
 let dispose=()=>{};
 try{
   const renderer=new T.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});
@@ -43,8 +45,8 @@ try{
   status.textContent='正在摆放藏品…';
   world.ready.then(()=>{assetReady=true;previous=performance.now();}).catch(error=>{assetFailed=true;status.textContent='藏品模型未能载入，请刷新重试。';console.error('Seaside collectible could not load',error);});
   const reduce=matchMedia('(prefers-reduced-motion: reduce)'),keys=new Set(),euler=new T.Euler(0,0,0,'YXZ');
-  function setManual(){if(!automatic)return;automatic=false;refocus=null;euler.setFromQuaternion(camera.quaternion,'YXZ');yaw=euler.y;pitch=euler.x;lookButton.setAttribute('aria-pressed','true');lookButton.textContent='聚焦藏品';status.textContent='慢慢看，每一件都有来处。';}
-  function replay(){automatic=true;refocus=null;elapsed=0;previous=performance.now();keys.clear();drag=null;lookButton.setAttribute('aria-pressed','false');lookButton.textContent='自由环顾';status.textContent='午后，海风穿过客厅。';}
+  function setManual(){dialogue.hidden=true;if(!automatic)return;automatic=false;refocus=null;euler.setFromQuaternion(camera.quaternion,'YXZ');yaw=euler.y;pitch=euler.x;lookButton.setAttribute('aria-pressed','true');lookButton.textContent='聚焦藏品';status.textContent='慢慢看，每一件都有来处。';}
+  function replay(){dialogue.hidden=true;automatic=true;refocus=null;elapsed=0;previous=performance.now();keys.clear();drag=null;lookButton.setAttribute('aria-pressed','false');lookButton.textContent='自由环顾';status.textContent='午后，海风穿过客厅。';}
   const listeners=[];function on(target,event,fn,options){target.addEventListener(event,fn,options);listeners.push(()=>target.removeEventListener(event,fn,options));}
   on(document.querySelector('#sea-replay'),'click',replay);
   on(lookButton,'click',()=>{if(automatic)setManual();else{automatic=true;elapsed=GAZE_DURATION;refocus={position:camera.position.clone(),quaternion:camera.quaternion.clone(),fov:camera.fov,time:0};lookButton.setAttribute('aria-pressed','false');lookButton.textContent='自由环顾';}});
@@ -61,6 +63,8 @@ try{
       if(refocus){refocus.time+=dt;const u=reduce.matches?1:Math.min(1,refocus.time/2.8),blend=u*u*(3-2*u),endPosition=camera.position.clone(),endRotation=camera.quaternion.clone();camera.position.copy(refocus.position).lerp(endPosition,blend);camera.quaternion.copy(refocus.quaternion).slerp(endRotation,blend);camera.fov=T.MathUtils.lerp(refocus.fov,pose.fov,blend);if(u===1)refocus=null;}
       camera.updateProjectionMatrix();ao.ssaoMaterial.uniforms.cameraProjectionMatrix.value.copy(camera.projectionMatrix);ao.ssaoMaterial.uniforms.cameraInverseProjectionMatrix.value.copy(camera.projectionMatrixInverse);const caption=assetFailed?'藏品模型未能载入，请刷新重试。':!assetReady?'正在摆放藏品…':pose.done?'07 / 爱心项链':pose.stage==='inspect'?'在柜前，慢慢看。':pose.stage==='focus'?'目光停在这条项链上。':'走近海边小屋的藏品柜。';if(status.textContent!==caption)status.textContent=caption;}
     else{yaw+=((keys.has('ArrowLeft')?1:0)-(keys.has('ArrowRight')?1:0))*dt*.65;pitch=Math.max(-.95,Math.min(.95,pitch+((keys.has('ArrowUp')?1:0)-(keys.has('ArrowDown')?1:0))*dt*.5));camera.rotation.set(pitch,yaw,0,'YXZ');}
+    const subtitleOpacity=automatic&&assetReady&&!refocus?Math.min(T.MathUtils.smoothstep(elapsed,INSPECT_END,INSPECT_END+.35),1-T.MathUtils.smoothstep(elapsed,GAZE_DURATION-.5,GAZE_DURATION-.08)):0;
+    dialogue.hidden=subtitleOpacity<=0;dialogue.style.opacity=subtitleOpacity;
     world.update(reduce.matches?0:now/1000);composer.render();
     if(inSequence&&elapsed>=GAZE_DURATION&&!sequenceDone){sequenceDone=true;sequencePlaying=false;sequenceEvent('done');}
   }sequencePrevious=now;frame=requestAnimationFrame(tick);}
