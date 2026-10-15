@@ -5,7 +5,7 @@ import { createScenePost } from './scene-post.js';
 import { createWalkController } from './walk-controller.js';
 import { WEATHER } from './weather-state.js';
 import { createWeatherRain } from './weather-rain.js';
-import { createApocalypseCinematic } from './apocalypse-cinematic.js';
+import { createLastCompanion } from './last-companion-player.js';
 import './map.css';
 
 document.title = '失落市中心 · Memory Lane';
@@ -16,7 +16,7 @@ document.querySelector('#app').innerHTML = `
   <div id="map-overlay" hidden>
   <header class="map-header">
     <div><a href="/" class="map-back">← MEMORY LANE</a><div class="map-eyebrow">WORLD STUDY — 01</div><h1 id="location-title">静默居所</h1><p class="map-subtitle" id="location-subtitle">A ROOM THAT REMEMBERS</p></div>
-    <div class="map-top-right"><div class="map-weather"><span></span><strong>晴 · 少云 · 小雨</strong><i> / </i> 无人区</div><button id="story-start" disabled>▶ 60 秒剧情</button><button id="walk-route">走到街上 ↗</button><span id="walk-status" role="status"></span></div>
+    <div class="map-top-right"><div class="map-weather"><span></span><strong>晴 · 少云 · 小雨</strong><i> / </i> 无人区</div><button id="story-start" disabled>▶ 最后一次并肩 · 60 秒剧情</button><button id="walk-route">走到街上 ↗</button><span id="walk-status" role="status"></span></div>
   </header>
   <nav class="map-views" aria-label="地图视角">
     <button data-view="walk" aria-pressed="true">屋内漫游</button>
@@ -72,15 +72,25 @@ if(world) {
   controls.maxPolarAngle=Math.PI/2-.015;controls.maxTargetRadius=90;controls.screenSpacePanning=false;
   let activeView='walk',inside=true,following=false,disposed=false,assetsLoaded=false;
   const rain=createWeatherRain(world.scene);
-  let cinematic;
+  let narrative;
   let weatherTime=0,lastWeatherFrame=performance.now();
   const views={water:{position:[1.2,1.7,22],target:[4,.1,12]},hero:{position:[-9,5.8,59],target:[16.5,7.2,48]},street:{position:[7.8,6.2,52],target:[-3,5,-24]},overview:{position:[99,150,138],target:[0,2,-25]}};
   function render(){if(!disposed&&assetsLoaded){
     const now=performance.now(),dt=Math.min(.25,Math.max(0,(now-lastWeatherFrame)/1000));lastWeatherFrame=now;weatherTime+=dt;
-    const state=WEATHER;world.lighting.applyWeather(state,activeView==='overview');
+    const state=WEATHER;world.lighting.setAtmosphere(narrative?.active?(narrative.state.t>=395?'evening':'morning'):'day');world.lighting.applyWeather(state,activeView==='overview');
     renderer.toneMappingExposure=state.exposure;world.setWetness(state.wetness);
+    if(narrative?.active){
+      const story=narrative.state,below=story.underground?THREE.MathUtils.clamp((-camera.position.y-1)/4,0,1):0;
+      world.lighting.sun.intensity=(story.sunset?state.sun:1.35)*(1-below);world.lighting.fill.intensity=(story.sunset?state.fill:1.15)*(1-below)+.10*below;
+      world.scene.environmentIntensity=(story.sunset?state.environment:.48)*(1-below)+.05*below;world.lighting.haze=below?.08:story.sunset?.45:.58;
+      world.scene.fog.color.set(below?'#080d10':story.sunset?'#b7a18b':'#c3c7c6');
+      world.scene.fog.near=below?6:story.sunset?80:22;world.scene.fog.far=below?32:story.sunset?260:150;
+      if(story.sunset){world.lighting.sun.color.set('#ffc184');world.lighting.fill.color.set('#a9bdc4');}else{world.lighting.sun.color.set('#e3e9e6');world.lighting.fill.color.set('#cbd4d3');}
+      renderer.toneMappingExposure=below?1.05:1.1;renderer.shadowMap.needsUpdate=true;
+    }else{world.lighting.sun.color.set('#fff0d9');world.lighting.fill.color.set('#c7dce9');}
+
     if(world.lighting.update(camera))renderer.shadowMap.needsUpdate=true;
-    world.water.update(weatherTime,state);rain.update(camera,state,weatherTime);
+    world.water.update(weatherTime,state);rain.update(camera,narrative?.active&&narrative.state.storeOnly?{...state,rain:0}:state,weatherTime);
     post.render();
   }}
   function updatePlace() {
@@ -96,11 +106,11 @@ if(world) {
     onLocation(value){inside=value;updatePlace();},
     onRouteState(value,message=''){following=value;$('#walk-status').textContent=message||(value?'沿门口走过去，WASD 可接管':'');updatePlace();},
   });
-  cinematic=createApocalypseCinematic({scene:world.scene,camera,obstacles:world.obstacles,render,
-    onStart(){walker.setEnabled(false);controls.enabled=false;controls.stopListenToKeyEvents();activeView='cinematic';inside=false;$('#app').classList.add('cinematic');$('#app').classList.remove('walking');renderer.shadowMap.needsUpdate=true;},
-    onExit(){activeView='walk';$('#app').classList.remove('cinematic');viewButtons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view==='walk')));renderer.shadowMap.needsUpdate=true;resetView();storyButton.focus();},
+  narrative=createLastCompanion({world,camera,render,
+    onStart(){walker.setEnabled(false);controls.enabled=false;controls.stopListenToKeyEvents();activeView='cinematic';$('#app').classList.add('cinematic');$('#app').classList.remove('walking');},
+    onExit(){activeView='walk';$('#app').classList.remove('cinematic');viewButtons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view==='walk')));renderer.shadowMap.needsUpdate=true;resetView();canvas.focus();},
   });
-  storyButton.addEventListener('click',cinematic.start);
+  const startStory=()=>narrative.start(0);storyButton.addEventListener('click',startStory);
   function resetView() {
     walker.stop();
     const walking=activeView==='walk';controls.enabled=!walking;controls.stopListenToKeyEvents();
@@ -126,14 +136,14 @@ if(world) {
   viewButtons.forEach(button=>button.addEventListener('click',selectView));window.addEventListener('resize',resize);
   resetView();resize();
   routeButton.disabled=true;$('#walk-status').textContent='正在装载街区材质…';
-  world.assetsReady.then(()=>{if(!disposed){assetsLoaded=true;routeButton.disabled=false;storyButton.disabled=false;$('#walk-status').textContent='';render();rain.capture(renderer);render();}}).catch(error=>{if(!disposed){assetsLoaded=true;routeButton.disabled=false;storyButton.disabled=false;render();rain.capture(renderer);console.error('Scene textures failed to load',error);$('#walk-status').textContent='部分场景贴图未加载，请刷新页面重试';}});
+  Promise.all([world.assetsReady,narrative.ready]).then(()=>{if(!disposed){assetsLoaded=true;routeButton.disabled=false;storyButton.disabled=false;$('#walk-status').textContent='';render();rain.capture(renderer);render();}}).catch(error=>{if(!disposed){assetsLoaded=true;routeButton.disabled=false;storyButton.disabled=false;render();rain.capture(renderer);console.error('Scene textures failed to load',error);$('#walk-status').textContent='部分场景贴图未加载，请刷新页面重试';}});
   // Rain also remains visible outside the windows while the camera is indoors.
   const weatherTick=setInterval(()=>{
     if(document.hidden){lastWeatherFrame=performance.now();return;}
-    if(assetsLoaded&&!disposed&&!cinematic.active&&(WEATHER.rain>.005||((activeView!=='walk'||!inside)&&world.water.visibleFrom(camera))))render();
+    if(assetsLoaded&&!disposed&&!narrative.active&&(WEATHER.rain>.005||((activeView!=='walk'||!inside)&&world.water.visibleFrom(camera))))render();
   },1000/30);
   if(import.meta.hot)import.meta.hot.dispose(()=>{
-    clearInterval(weatherTick);rain.dispose();cinematic.dispose();storyButton.removeEventListener('click',cinematic.start);
+    clearInterval(weatherTick);rain.dispose();narrative.dispose();storyButton.removeEventListener('click',startStory);
     disposed=true;walker.dispose();controls.dispose();world.dispose();post.dispose();renderer.dispose();
     window.removeEventListener('resize',resize);resetButton.removeEventListener('click',resetView);routeButton.removeEventListener('click',walker.followRoute);
     viewButtons.forEach(button=>button.removeEventListener('click',selectView));

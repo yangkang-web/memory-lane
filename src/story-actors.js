@@ -1,70 +1,128 @@
 import * as T from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { weatheredSurface } from './story-surfaces.js';
 
-export function createStoryAssets(scene,camera){
-  const root=new T.Group();root.name='Last door / cinematic cast';root.visible=false;scene.add(root);
-  const mats={};for(const [name,color]of Object.entries({skin:'#b59c7e',dead:'#829080',jacket:'#526052',pants:'#333c39',boots:'#222827',metal:'#343c3c',wood:'#725641',cloth:'#857e66',strap:'#473e30',eyes:'#202924',badge:'#bb9f62'}))mats[name]=new T.MeshStandardMaterial({color,roughness:.9,metalness:name==='metal'?.45:0});
-  function box(parent,w,h,d,mat,x=0,y=0,z=0){const m=new T.Mesh(new T.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);parent.add(m);return m;}
-  function ellipsoid(parent,w,h,d,mat,x,y,z){const m=new T.Mesh(new T.SphereGeometry(1,12,10),mat);m.scale.set(w,h,d);m.position.set(x,y,z);parent.add(m);return m;}
-  function limb(parent,length,radius,mat){const m=new T.Mesh(new T.CapsuleGeometry(radius,length-radius*2,5,10),mat);m.position.y=-length/2;parent.add(m);return m;}
-  function gun(parent){const g=new T.Group();parent.add(g);box(g,.09,.12,.35,mats.metal,0,0,-.08);box(g,.09,.1,.24,mats.wood,0,-.01,.18);box(g,.065,.075,.31,mats.wood,0,-.01,-.37);box(g,.035,.035,.25,mats.metal,0,.02,-.61);box(g,.045,.16,.08,mats.metal,0,-.11,-.03).rotation.x=.2;box(g,.025,.035,.025,mats.metal,0,.075,-.48);return g;}
-  const shadowCanvas=document.createElement('canvas');shadowCanvas.width=shadowCanvas.height=64;const c=shadowCanvas.getContext('2d'),gradient=c.createRadialGradient(32,32,3,32,32,31);gradient.addColorStop(0,'#00000080');gradient.addColorStop(1,'#00000000');c.fillStyle=gradient;c.fillRect(0,0,64,64);
-  const shadowMap=new T.CanvasTexture(shadowCanvas),shadowMat=new T.MeshBasicMaterial({map:shadowMap,transparent:true,depthWrite:false});
-  function actor(zombie=false,index=0){
-    const g=new T.Group(),body=new T.Group();g.add(body);root.add(g);
-    const jacket=zombie?new T.MeshStandardMaterial({color:['#74604d','#67716c','#77715b'][index%3],roughness:1}):mats.jacket;
-    const skin=zombie?mats.dead:mats.skin;
-    ellipsoid(body,.27,.36,.17,jacket,0,1.14,0);ellipsoid(body,.23,.15,.16,mats.pants,0,.85,0);
-    const head=new T.Group();head.position.set(0,1.63,0);body.add(head);ellipsoid(head,.135,.185,.13,skin,0,0,-.015);
-    for(const side of [-1,1]){ellipsoid(head,.025,.043,.024,skin,side*.135,-.005,0);ellipsoid(head,.024,.013,.011,mats.eyes,side*.049,.026,-.133);}
-    ellipsoid(head,.024,.043,.032,skin,0,-.005,-.143);box(head,.063,.014,.012,mats.strap,0,-.07,-.136);
-    if(!zombie){ellipsoid(head,.141,.09,.137,mats.cloth,0,.117,0);box(body,.1,.13,.035,mats.badge,-.13,1.32,-.165);box(body,.31,.43,.16,mats.strap,0,1.17,.19);for(const side of [-1,1])box(body,.035,.53,.025,mats.strap,side*.17,1.19,-.155);}
-    else {for(let i=0;i<5;i++)box(body,.12,.035,.018,mats.strap,(i%2?1:-1)*.13,.98+i*.07,-.16).rotation.z=.3;head.rotation.z=(index%2?1:-1)*.12;}
-    const arms=[],legs=[];
-    for(const side of [-1,1]){
-      const arm=new T.Group();arm.position.set(side*.28,1.43,0);body.add(arm);limb(arm,.33,.085,jacket);
-      const elbow=new T.Group();elbow.position.y=-.32;arm.add(elbow);limb(elbow,.31,.065,jacket);ellipsoid(elbow,.06,.075,.055,skin,0,-.32,0);arms.push(arm);
-      const leg=new T.Group();leg.position.set(side*.13,.84,0);body.add(leg);limb(leg,.43,.105,mats.pants);
-      const knee=new T.Group();knee.position.y=-.42;leg.add(knee);limb(knee,.35,.078,mats.pants);box(knee,.17,.13,.28,mats.boots,0,-.34,-.055);legs.push(leg);
+export function createStoryActors(scene,camera){
+  const root=new T.Group();root.name='Cinematic / Lin and infected';root.visible=false;scene.add(root);
+  function fabric(color,metalness=0){const c=document.createElement('canvas');c.width=c.height=128;const ctx=c.getContext('2d');ctx.fillStyle=color;ctx.fillRect(0,0,128,128);for(let i=0;i<7000;i++){const x=(i*73)%128,y=(i*97+Math.floor(i/128)*3)%128;ctx.fillStyle=i%3?'#181b1622':'#d6c9ae22';ctx.fillRect(x,y,1,i%7?1:4);}const map=new T.CanvasTexture(c);map.colorSpace=T.SRGBColorSpace;map.wrapS=map.wrapT=T.RepeatWrapping;return new T.MeshStandardMaterial({map,roughness:metalness?.6:.92,metalness});}
+  const mats={skin:weatheredSurface('skin'),dead:weatheredSurface('dead'),jacket:fabric('#536355'),pants:fabric('#353e3c'),boots:fabric('#242826'),metal:fabric('#39413f',.65),wood:fabric('#725641'),cloth:fabric('#8b8167'),strap:fabric('#473d30'),hair:fabric('#282b26'),wound:fabric('#59513e'),eyes:new T.MeshStandardMaterial({color:'#3a382c',roughness:.52}),white:new T.MeshStandardMaterial({color:'#8b8979',roughness:.7}),clouded:new T.MeshStandardMaterial({color:'#a2aaa0',roughness:.48}),deadIris:new T.MeshStandardMaterial({color:'#667166',roughness:.65}),nails:new T.MeshStandardMaterial({color:'#8d8270',roughness:.85}),badge:fabric('#b9aa78')};
+  const originals=new Set();
+  function mesh(parent,geo,mat,x=0,y=0,z=0){const m=new T.Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);originals.add(geo);return m;}
+  function box(parent,w,h,d,mat,x=0,y=0,z=0){return mesh(parent,new RoundedBoxGeometry(w,h,d,1,Math.min(w,h,d)*.1),mat,x,y,z);}
+  function ellipsoid(parent,w,h,d,mat,x=0,y=0,z=0){const m=mesh(parent,new T.SphereGeometry(1,16,12),mat,x,y,z);m.scale.set(w,h,d);return m;}
+  function capsule(parent,length,r1,r2,mat){return mesh(parent,new T.CylinderGeometry(r1,r2,length,12,1),mat,0,-length/2,0);}
+  function gun(parent){const g=new T.Group();parent.add(g);box(g,.075,.1,.33,mats.metal,0,0,-.06);box(g,.075,.1,.23,mats.wood,0,-.015,.18);box(g,.066,.065,.27,mats.wood,0,-.01,-.35);mesh(g,new T.CylinderGeometry(.017,.019,.25,12),mats.metal,0,.012,-.59).rotation.x=Math.PI/2;box(g,.047,.14,.075,mats.metal,0,-.1,-.05).rotation.x=.14;box(g,.026,.03,.024,mats.metal,0,.065,-.49);box(g,.013,.013,.10,mats.metal,.052,.01,-.05);const muzzle=new T.Object3D();muzzle.position.set(0,.012,-.73);g.add(muzzle);g.userData.muzzle=muzzle;return g;}
+  function hand(parent,skin,side){
+    const g=new T.Group();parent.add(g);ellipsoid(g,.039,.053,.022,skin,0,-.033,0);
+    const fingers=[];
+    for(let i=0;i<4;i++){
+      const finger=new T.Group();finger.position.set(-.027+i*.018,-.071,-.001);g.add(finger);
+      const length=.036-(i===3?.008:0);capsule(finger,length,.0085,.007,skin);
+      const tip=new T.Group();tip.position.y=-length;finger.add(tip);capsule(tip,.024,.007,.0055,skin);ellipsoid(tip,.006,.009,.006,skin,0,-.025,0);ellipsoid(tip,.0045,.007,.001,mats.nails,0,-.021,.006);ellipsoid(finger,.009,.009,.008,skin,0,-.004,0);
+      fingers.push({finger,tip});
     }
-    const weapon=zombie?null:gun(body);if(weapon)weapon.position.set(.09,1.18,-.38);
-    const shadow=new T.Mesh(new T.PlaneGeometry(1.25,1.25),shadowMat);shadow.rotation.x=-Math.PI/2;shadow.position.y=.012;g.add(shadow);
-    return {root:g,body,weapon,
-      pose(time,moving,aim,death=0){
-        const stride=Math.sin(time*(zombie?7:10))*(moving?(zombie?.38:.62):.025);
-        legs[0].rotation.x=stride;legs[1].rotation.x=-stride;
-        arms.forEach((a,i)=>{a.rotation.x=zombie?.85+Math.sin(time*6+i)*.18:aim?1.1:(i?stride:-stride)*.7;a.rotation.z=(i?1:-1)*(zombie?.16:.06);});
-        if(weapon)weapon.rotation.x=aim?0:.25;
-        body.position.y=moving?Math.abs(Math.sin(time*10))*.035:Math.sin(time*2)*.008;
-        body.rotation.x=zombie?.12:0;body.rotation.z=zombie?Math.sin(time*3)*.04:0;
-        if(death>0){const f=Math.min(1,death/.8);body.rotation.x=f*Math.PI*.49;body.position.y=.17*f;arms.forEach(a=>a.rotation.x=.3);}
-      }};
+    const thumb=new T.Group();thumb.position.set(-side*.035,-.023,0);thumb.rotation.z=-side*.65;g.add(thumb);capsule(thumb,.033,.013,.009,skin);ellipsoid(thumb,.009,.02,.009,skin,0,-.042,-.004);
+    g.userData.fingers=fingers;g.userData.thumb=thumb;
+    g.userData.grip=(value,thumbClosure=0)=>{g.userData.gripValue=value;g.userData.thumbClosure=thumbClosure;fingers.forEach(({finger,tip},i)=>{finger.rotation.x=.12+value*(1.08+i*.025);tip.rotation.x=.12+value*.95;});thumb.rotation.x=value*.7;thumb.rotation.z=side*(-.65+thumbClosure*1.35);};g.userData.grip(0);
+    return g;
   }
-  const companion=actor(false),enemies=Array.from({length:5},(_,i)=>actor(true,i));
+  function sculptedHead(parent,skin,zombie){
+    const geometry=new T.SphereGeometry(1,40,32),positions=geometry.attributes.position;
+    const bell=(x,y,cx,cy,sx,sy)=>Math.exp(-(((x-cx)/sx)**2+((y-cy)/sy)**2));
+    for(let i=0;i<positions.count;i++){
+      let x=positions.getX(i)*.127,y=positions.getY(i)*.178,z=positions.getZ(i)*.119;
+      if(y<-.055)x*=1-(-y-.055)*1.45;
+      if(z<0){const front=Math.min(1,-z/.065);
+        z-=front*(.055*bell(x,y,0,-.013,.021,.052)+.013*bell(x,y,0,-.039,.029,.019));
+        for(const side of [-1,1]){z+=front*.018*bell(x,y,side*.048,.018,.031,.025);z-=front*.007*bell(x,y,side*.048,.052,.038,.012);z-=front*.005*bell(x,y,side*.07,-.041,.026,.024);}
+        z+=front*.008*bell(x,y,0,-.077,.04,.011);
+        if(zombie){
+          for(const side of [-1,1]){z+=front*.019*bell(x,y,side*.073,-.055,.031,.04);z-=front*.009*bell(x,y,side*.074,-.015,.025,.021);}
+          z+=front*.003*Math.sin(x*99+y*63)*Math.sin(y*77);
+          if(y<-.025)x*=1-Math.min(.13,(-y-.025)*1.4);
+        }
+      }
+      positions.setXYZ(i,x,y,z-.008);
+    }
+    geometry.computeVertexNormals();const colors=[];for(let i=0;i<positions.count;i++){const x=positions.getX(i),y=positions.getY(i),z=positions.getZ(i);const stain=zombie?Math.max(0,Math.sin(x*71+y*93)*Math.cos(z*81+y*37))*.24:Math.max(0,Math.sin(x*88+y*41))*.035;let hollow=0;if(z<-.065){for(const side of [-1,1])hollow+=.28*bell(x,y,side*.047,.015,.026,.024)+.13*bell(x,y,side*.07,-.05,.023,.035);hollow+=.12*bell(x,y,0,-.078,.04,.018);}colors.push(1-stain-hollow,.98-stain-hollow,.94-stain*.8-hollow);}geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));const surface=skin.clone();surface.vertexColors=true;return mesh(parent,geometry,surface);
+  }
+  function arm(parent,side,skin,sleeve,firstPerson=false){const shoulder=new T.Group();shoulder.position.set(side*(firstPerson?.27:.255),firstPerson?-.42:1.42,firstPerson?.10:0);parent.add(shoulder);const upper=firstPerson?.33:.32,lower=firstPerson?.32:.30;capsule(shoulder,upper,.082,.065,sleeve);ellipsoid(shoulder,.082,.09,.082,sleeve,0,0,0);const elbow=new T.Group();elbow.position.y=-upper;shoulder.add(elbow);ellipsoid(elbow,.065,.075,.065,sleeve);capsule(elbow,lower,.062,.045,sleeve);const cuff=mesh(elbow,new T.CylinderGeometry(.047,.046,.035,16),mats.strap,0,-lower+.018,0);const palm=hand(elbow,skin,side);palm.position.y=-lower;
+    function reach(point,poleOverride=null){const d=point.clone().sub(shoulder.position),dist=Math.min(upper+lower-.005,Math.max(.06,d.length()));d.normalize();const pole=poleOverride||(firstPerson?new T.Vector3(side*.4,-1,.12):new T.Vector3(side,.15,.2));const bend=pole.clone().addScaledVector(d,-pole.dot(d)).normalize();const along=(upper*upper-lower*lower+dist*dist)/(2*dist),height=Math.sqrt(Math.max(0,upper*upper-along*along)),mid=d.clone().multiplyScalar(along).addScaledVector(bend,height);shoulder.quaternion.setFromUnitVectors(new T.Vector3(0,-1,0),mid.clone().normalize());const fore=d.multiplyScalar(dist).sub(mid).applyQuaternion(shoulder.quaternion.clone().invert()).normalize();elbow.quaternion.setFromUnitVectors(new T.Vector3(0,-1,0),fore);palm.rotation.set(-.5,0,0);}
+    shoulder.traverse(o=>{if(o.isMesh)o.userData.contactSkin=true;});
+    return {shoulder,elbow,palm,reach};
+  }
+  function batchRigid(group){for(const child of [...group.children])if(child.isGroup)batchRigid(child);const batches=new Map();for(const child of [...group.children])if(child.isMesh){child.updateMatrix();const geo=child.geometry.index?child.geometry.toNonIndexed():child.geometry.clone();geo.applyMatrix4(child.matrix);const list=batches.get(child.material)||[];list.push(geo);batches.set(child.material,list);child.removeFromParent();}for(const [mat,parts]of batches){const m=new T.Mesh(mergeGeometries(parts),mat);m.castShadow=m.receiveShadow=true;group.add(m);parts.forEach(p=>p.dispose());}}
+  function actor(zombie=false,index=0){
+    const g=new T.Group(),body=new T.Group();g.add(body);root.add(g);g.name=zombie?`infected-${index}`:'Lin';
+    const jacket=zombie?fabric(['#74634f','#64716b','#75715e','#4c595f'][index%4]):mats.jacket,skin=zombie?mats.dead:mats.skin;
+    // Tapered jacket silhouette, shoulder seams, collar, cargo pockets and worn boot soles.
+    const profile=[[.16,.85],[.19,.91],[.21,1.12],[.25,1.35],[.22,1.45],[.105,1.48]].map(p=>new T.Vector2(...p));const torso=mesh(body,new T.LatheGeometry(profile,20),jacket);torso.scale.z=.68;
+    ellipsoid(body,.21,.14,.15,mats.pants,0,.84,0);capsule(body,.12,.055,.065,skin).position.y=1.57;
+    for(const side of [-1,1]){box(body,.125,.14,.045,jacket,side*.125,1.24,-.145);box(body,.135,.028,.05,mats.strap,side*.125,1.30,-.169);box(body,.085,.13,.027,jacket,side*.07,1.42,-.12).rotation.z=side*.4;box(body,.04,.035,.035,mats.metal,side*.13,.87,-.147);}
+    box(body,.014,.48,.014,mats.strap,0,1.17,-.17);
+    const head=new T.Group();head.position.set(0,1.63,0);body.add(head);sculptedHead(head,skin,zombie);if(zombie)head.scale.set(.96+(index%3)*.025,1+(index%2)*.035,1);const eyes=[];
+    for(const side of [-1,1]){
+      ellipsoid(head,.021,.036,.018,skin,side*.124,-.004,0);
+      ellipsoid(head,.015,zombie?.0045:.0055,.006,zombie?mats.clouded:mats.white,side*.047,.018,-.111);
+      const pupil=new T.Group();pupil.position.set(side*.047,.017,-.117);head.add(pupil);ellipsoid(pupil,zombie?.003:.004,.004,.0025,zombie?mats.deadIris:mats.eyes);eyes.push({pupil,side});
+      for(const upper of [-1,1]){const lid=new T.CatmullRomCurve3([new T.Vector3(side*.047-.017,.017,-.106),new T.Vector3(side*.047,.018+upper*.005,-.117),new T.Vector3(side*.047+.017,.018,-.105)]);mesh(head,new T.TubeGeometry(lid,10,upper>0?.003:.002,6),skin);}
+      const brow=new T.CatmullRomCurve3([new T.Vector3(side*.025,zombie?.026:.034,-.116),new T.Vector3(side*.047,zombie?.035:.04,-.115),new T.Vector3(side*.074,.039,-.105)]);
+      mesh(head,new T.TubeGeometry(brow,8,.004,6),skin);
+      ellipsoid(head,.004,.002,.003,mats.wound,side*.012,-.044,-.165);
+    }
+    const mouth=new T.CatmullRomCurve3([new T.Vector3(-.026,zombie?-.087:-.076,-.126),new T.Vector3(0,zombie?-.079:-.081,-.136),new T.Vector3(.026,zombie?-.084:-.076,-.126)]);mesh(head,new T.TubeGeometry(mouth,12,.0025,6),mats.wound);
+    const lip=new T.CatmullRomCurve3([new T.Vector3(-.021,zombie?-.091:-.082,-.126),new T.Vector3(0,zombie?-.084:-.086,-.134),new T.Vector3(.021,zombie?-.089:-.082,-.126)]);mesh(head,new T.TubeGeometry(lip,10,.003,6),skin);
+    if(!zombie){ellipsoid(head,.13,.055,.122,mats.hair,0,.128,.005);box(body,.09,.12,.025,mats.badge,-.13,1.26,-.18);box(body,.30,.41,.16,mats.cloth,0,1.17,.205);box(body,.24,.12,.09,mats.strap,0,.99,.29);for(const side of [-1,1])box(body,.036,.52,.025,mats.strap,side*.17,1.20,-.16);}
+    else{for(let i=0;i<7;i++){const tear=box(body,.05+(i%3)*.018,.025,.014,mats.wound,(i%2?1:-1)*.15,.99+i*.061,-.15);tear.rotation.z=(i%2?1:-1)*.5;}if(index%3!==0){const hair=mesh(head,new T.SphereGeometry(1,24,16,0,Math.PI*2,0,1.4),mats.hair,0,.058,.008);hair.scale.set(.128,.125,.123);}head.rotation.z=(index%2?1:-1)*.12;}
+    const jaw=new T.Group();head.add(jaw);ellipsoid(jaw,.025,.017,.006,mats.eyes,0,-.083,-.135);for(let i=0;i<6;i++)box(jaw,.005,.006+(i%2)*.002,.004,mats.white,-.018+i*.007,-.073,-.142);jaw.visible=false;
+    const arms=[arm(body,-1,skin,jacket),arm(body,1,skin,jacket)],legs=[];
+    for(const side of [-1,1]){const hip=new T.Group();hip.position.set(side*.125,.84,0);body.add(hip);capsule(hip,.42,.105,.078,mats.pants);box(hip,.09,.16,.035,mats.pants,side*.08,-.2,0);const knee=new T.Group();knee.position.y=-.42;hip.add(knee);ellipsoid(knee,.078,.079,.077,mats.pants);capsule(knee,.33,.075,.056,mats.pants);box(knee,.15,.12,.27,mats.boots,0,-.33,-.055);box(knee,.155,.026,.28,mats.hair,0,-.391,-.055);for(let j=0;j<4;j++)box(knee,.09,.008,.012,mats.cloth,0,-.29-j*.012,-.17);const foot=new T.Object3D();g.add(foot);legs.push({hip,knee,foot});}
+    const weapon=zombie?null:gun(body);if(weapon)weapon.position.set(.12,1.21,-.33);
+    const shoulderAnchor=new T.Object3D();shoulderAnchor.position.set(.17,1.36,-.17);body.add(shoulderAnchor);
+    batchRigid(body);
+    function pose(t,state='run',death=0){
+      const phase=g.userData.motionTime??t;g.userData.contactRun=false;g.userData.flightHeight=0;body.scale.set(1,1,1);
+      jaw.scale.set(1,1,1);jaw.visible=zombie&&['run','crawl'].includes(state);body.position.set(0,0,0);body.rotation.set(0,0,0);head.rotation.x=zombie?.13:0;head.rotation.y=0;head.rotation.z=zombie?(index%2?1:-1)*.12:0;eyes.forEach(({pupil,side})=>pupil.position.x=side*.047);
+      const moving=['run','walk','crawl','squeeze','climb'].includes(state),rate=state==='walk'?8:12,stride=moving?Math.sin(phase*rate)*(state==='walk'?.45:.8):.025*Math.sin(phase*2);
+      legs.forEach((l,i)=>{l.hip.rotation.set(i?-stride:stride,0,0);l.knee.rotation.x=Math.max(0,(i?stride:-stride))*.85;});
+      arms.forEach((a,i)=>{a.shoulder.rotation.set(zombie?.85:(i?stride:-stride)*.7,0,(i?1:-1)*.04);a.elbow.rotation.set(-.25,0,0);a.palm.rotation.set(-.5,0,0);a.palm.userData.grip(.1);});
+      body.position.y=moving?Math.abs(Math.sin(phase*rate))*(state==='run'?.065:.025):Math.sin(phase*2)*.008;
+      if(zombie&&state==='run'){body.rotation.x=.23;arms.forEach((a,i)=>{a.shoulder.rotation.x=(i?-stride:stride)*.95+.25;a.elbow.rotation.x=-1.05-Math.max(0,i?stride:-stride)*.35;a.palm.userData.grip(.45);});legs.forEach((l,i)=>{l.hip.rotation.x=(i?-stride:stride)*1.22;l.knee.rotation.x=-Math.max(0,i?stride:-stride)*1.15;});}
+      if(weapon){weapon.visible=!['crawl','pull','climb','squeeze','hold','latch','down','dragged','rise'].includes(state);weapon.rotation.x=state==='aim'?0:.28;}
+      if(state==='aim'){arms[1].reach(new T.Vector3(.14,1.19,-.38));arms[0].reach(new T.Vector3(.06,1.2,-.68));}
+      if(state==='wave'||state==='beckon'){arms[1].shoulder.rotation.set(1.1,0,-1.3);arms[1].elbow.rotation.x=-.6+Math.sin(phase*8)*.4;}
+      if(state==='crawl'){body.rotation.x=-Math.PI*.47;body.position.y=.21;legs.forEach((l,i)=>{l.hip.rotation.x=Math.sin(phase*7+i*3)*.28;l.knee.rotation.x=.4;});arms.forEach((a,i)=>{a.shoulder.rotation.x=2.2+Math.sin(phase*7+i*3)*.3;a.elbow.rotation.x=-.7;});}
+      if(state==='pull'||state==='hold'||state==='latch'){body.position.y=state==='pull'?-.16:0;body.rotation.x=-.1;legs.forEach(l=>l.knee.rotation.x=.35);arms[0].reach(new T.Vector3(-.15,1.2,-.6));}
+      if(state==='kick'){legs[1].hip.rotation.x=1.2;legs[1].knee.rotation.x=-.25;body.rotation.x=-.13;}
+      if(state==='squeeze'){arms.forEach(a=>a.shoulder.rotation.x=.9);body.rotation.z=.09;}
+      if(state==='fall'){body.rotation.z=.5*Math.sin(phase*11);arms.forEach((a,i)=>a.shoulder.rotation.z=(i?1:-1)*1.5);legs[1].hip.rotation.x=.7;}
+      if(state==='climb'){legs[1].hip.rotation.x=1.2;legs[1].knee.rotation.x=-.8;arms.forEach(a=>a.shoulder.rotation.x=2.1);}
+      if(state==='down'||state==='dragged'||death>0){const f=death>0?Math.min(1,death/.45):1;body.rotation.x=f*Math.PI*.48;body.position.y=.16*f;legs.forEach((l,i)=>{l.hip.rotation.x=(i?-.16:.2)*f;l.knee.rotation.x=.25*f;});arms.forEach((a,i)=>{a.shoulder.rotation.z=(i?1:-1)*.6*f;a.shoulder.rotation.x=.3;});if(weapon)weapon.visible=false;}
+      if(state==='rise'){body.rotation.x=.5;body.position.y=-.3;legs.forEach(l=>{l.hip.rotation.x=.5;l.knee.rotation.x=-.8;});}
+      if(zombie&&state==='run'){body.rotation.x=-.15;body.rotation.z=Math.sin(phase*5+index)*.04;}
+    }
+    function reachWorld(side,target){body.updateWorldMatrix(true,false);const local=body.worldToLocal(target.clone());arms[side>0?1:0].reach(local);}
+    return {root:g,body,head,jaw,arms,legs,weapon,shoulderAnchor,pose,reachWorld,eyeLook(value){eyes.forEach(({pupil,side})=>pupil.position.x=side*.047+T.MathUtils.clamp(value,-1,1)*.006);}};
+  }
+  const companion=actor(),enemies=Array.from({length:9},(_,i)=>actor(true,i));
   const rig=new T.Group();rig.visible=false;camera.add(rig);scene.add(camera);
-  const rifle=gun(rig);rifle.position.set(.17,-.28,-.48);rifle.scale.setScalar(.85);
-  ellipsoid(rig,.065,.075,.11,mats.skin,.17,-.34,-.46);ellipsoid(rig,.065,.07,.1,mats.skin,.10,-.31,-.78);
-  for(const [x,y,z]of [[.23,-.52,-.25],[-.03,-.49,-.47]]){const arm=ellipsoid(rig,.085,.23,.09,mats.jacket,x,y,z);arm.rotation.x=-.65;}
-  rig.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.depthTest=false;o.material.depthWrite=false;o.renderOrder=20;}});
-  const flashMat=new T.MeshBasicMaterial({color:'#ffd48b',transparent:true,opacity:1,depthWrite:false,blending:T.AdditiveBlending});
-  const flash=new T.Mesh(new T.OctahedronGeometry(.10),flashMat);root.add(flash);flash.visible=false;
-  const tracer=new T.Mesh(new T.CylinderGeometry(.009,.009,1,5),new T.MeshBasicMaterial({color:'#d5bd7c',transparent:true,opacity:.48,depthWrite:false}));root.add(tracer);tracer.visible=false;
-  const impact=new T.Group();root.add(impact);for(let i=0;i<8;i++)ellipsoid(impact,.025,.025,.025,mats.cloth,0,0,0);impact.visible=false;
-  // A reachable refuge in the open central lane. The gate has a real aperture.
-  const shelter=new T.Group();shelter.position.set(0,0,92);root.add(shelter);
-  const concrete=new T.MeshStandardMaterial({color:'#6e796c',roughness:.95});
-  box(shelter,8,.15,11,concrete,0,.025,4.6);box(shelter,8,.18,11,concrete,0,3.25,4.6);
-  for(const x of [-4,4])box(shelter,.25,3.2,11,concrete,x,1.6,4.6);
-  box(shelter,8,3.2,.25,concrete,0,1.6,10);for(const x of [-2.8,2.8])box(shelter,2.4,3.2,.28,concrete,x,1.6,0);
-  box(shelter,3.2,.5,.3,mats.metal,0,3,0);
-  const door=new T.Group();door.position.set(-1.6,0,0);shelter.add(door);box(door,3.2,2.75,.15,mats.metal,1.6,1.4,0);
-  for(let i=0;i<12;i++)box(door,3.1,.035,.04,mats.cloth,1.6,.25+i*.21,-.09);
-  const signCanvas=document.createElement('canvas');signCanvas.width=512;signCanvas.height=128;const sc=signCanvas.getContext('2d');sc.fillStyle='#172c27';sc.fillRect(0,0,512,128);sc.strokeStyle='#90b78b';sc.lineWidth=6;sc.strokeRect(6,6,500,116);sc.fillStyle='#d7e8c3';sc.textAlign='center';sc.font='bold 36px sans-serif';sc.fillText('NORTH STATION',256,57);sc.font='22px sans-serif';sc.fillText('SAFE ZONE  /  04',256,97);
-  const signMap=new T.CanvasTexture(signCanvas);signMap.colorSpace=T.SRGBColorSpace;const sign=new T.Mesh(new T.PlaneGeometry(3.3,.82),new T.MeshBasicMaterial({map:signMap}));sign.position.set(0,3.8,-.2);sign.rotation.y=Math.PI;shelter.add(sign);
-  const green=new T.MeshStandardMaterial({color:'#a3d995',emissive:'#6dff9c',emissiveIntensity:2});box(shelter,.28,.17,.2,green,0,2.91,-.25);
-  const lamp=new T.PointLight('#ffd69c',15,12,2);lamp.position.set(0,2.8,5);shelter.add(lamp);
-  box(shelter,.6,.09,.4,new T.MeshBasicMaterial({color:'#ffe3ac'}),0,2.95,5);
-  for(let i=0;i<5;i++)box(shelter,.65,.5,.6,mats.wood,2.9,.35+(i%2)*.5,3+i*.8);
-  box(shelter,1.7,.18,.65,mats.wood,-2.7,.55,6);for(const z of [5.8,6.2])box(shelter,.1,.5,.1,mats.metal,-2.7,.26,z);
-  function dispose(){root.removeFromParent();rig.removeFromParent();const geometries=new Set(),materials=new Set(),textures=new Set();for(const group of [root,rig])group.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)materials.add(o.material);});materials.forEach(m=>{for(const v of Object.values(m))if(v?.isTexture)textures.add(v);m.dispose();});geometries.forEach(g=>g.dispose());textures.forEach(t=>t.dispose());}
-  return {root,companion,enemies,rig,rifle,flash,tracer,impact,door,dispose};
+  const rifle=gun(rig);rifle.position.set(.17,-.27,-.42);rifle.scale.setScalar(.8);
+  const playerArms=[arm(rig,-1,mats.skin,mats.jacket,true),arm(rig,1,mats.skin,mats.jacket,true)];
+  const strap=box(rig,.055,.5,.025,mats.strap,-.28,-.4,-.32);strap.rotation.z=-.3;strap.visible=false;
+  const boots=new T.Group();rig.add(boots);for(const side of [-1,1]){box(boots,.14,.12,.25,mats.boots,side*.14,-.45,-.55);const shin=capsule(boots,.4,.085,.07,mats.pants);shin.position.set(side*.14,-.45,-.43);shin.rotation.x=-Math.PI/2;}boots.visible=false;
+  const flash=new T.Mesh(new T.OctahedronGeometry(.11),new T.MeshBasicMaterial({color:'#ffe3a0',transparent:true,blending:T.AdditiveBlending,depthWrite:false}));root.add(flash);flash.visible=false;
+  const muzzleLight=new T.PointLight('#ffc478',0,5,2);root.add(muzzleLight);
+  const tracer=new T.Mesh(new T.CylinderGeometry(.006,.006,1,5),new T.MeshBasicMaterial({color:'#dbc592',transparent:true,opacity:.45,depthWrite:false}));root.add(tracer);tracer.visible=false;
+  function firstPerson(t,action,recoil=0,target=null){
+    rig.visible=t>18&&t<60;rig.position.set(Math.sin(t*8)*.004,-Math.abs(Math.sin(t*8))*.006,recoil*.065);rig.rotation.set(recoil*.06,0,0);
+    rifle.visible=!['pull','climb','squeeze','rescue','slam'].includes(action);rifle.rotation.set(action==='crawl'?.28:0,action==='squeeze'?-.7:0,action==='lower'?.35:0);rifle.position.y=-.27-(action==='lower'?Math.min(1,(t-58.5)/1.5)*.55:0);
+    playerArms[1].reach(new T.Vector3(.17,-.31,-.43));playerArms[0].reach(new T.Vector3(.04,-.28,-.7));
+    if(['pull','climb','rescue','slam'].includes(action)){const local=target?camera.worldToLocal(target.clone()):new T.Vector3(-.1,-.1,-.62);playerArms[0].reach(local);playerArms[1].reach(local.clone().add(new T.Vector3(.16,-.15,.08)));}
+    if(action==='squeeze'){playerArms[0].reach(new T.Vector3(-.25,-.1,-.22));playerArms[1].reach(new T.Vector3(.3,-.32,-.2));}
+    strap.visible=action==='squeeze';strap.rotation.z=-.3+Math.sin(t*15)*.12;boots.visible=t>28.5&&t<30;
+    if(action==='lower')playerArms.forEach((a,i)=>a.reach(new T.Vector3(i?.2:-.2,-.6,-.15)));
+  }
+  function dispose(){root.removeFromParent();rig.removeFromParent();const gs=new Set(originals),ms=new Set(Object.values(mats)),ts=new Set();for(const group of [root,rig])group.traverse(o=>{if(o.geometry)gs.add(o.geometry);if(o.material)ms.add(o.material);});ms.forEach(m=>{for(const v of Object.values(m))if(v?.isTexture)ts.add(v);m.dispose();});gs.forEach(g=>g.dispose());ts.forEach(t=>t.dispose());}
+  return {root,companion,enemies,rig,rifle,playerArms,flash,tracer,muzzleLight,boots,firstPerson,dispose};
 }

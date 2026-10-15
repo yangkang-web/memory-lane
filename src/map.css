@@ -97,3 +97,14 @@ button:disabled { opacity: .45; cursor: default; }
   .walking .map-footer { bottom: 216px; }
   .walking .walk-pad { bottom: 136px; }
 }
+
+.narrative-player { position: absolute; inset: 0; z-index: 8; pointer-events: none; color: #e8e8d9; }
+.narrative-title { position: absolute; top: 10%; width: 100%; text-align: center; text-shadow: 0 2px 14px #000; }
+.narrative-title small { font-size: 12px; letter-spacing: 8px; }.narrative-title h2 { font: 32px 'Songti SC',serif; letter-spacing: 6px; }
+.narrative-subtitles { position: absolute; bottom: 14%; left: 10%; right: 10%; text-align: center; text-shadow: 0 2px 5px #000,0 0 16px #000; z-index: 3; }
+.narrative-subtitles b { font-size: 12px; color: #c3d3b5; letter-spacing: 3px; }.narrative-subtitles p { font-size: clamp(16px,2vw,23px); line-height: 1.6; margin: 8px 0; }
+.narrative-controls { position: absolute; bottom: 20px; left: 3%; right: 3%; display: flex; align-items: center; gap: 13px; padding: 6px 12px; background: #13221caa; border: 1px solid #aab9a538; border-radius: 4px; pointer-events: auto; z-index: 5; font-size: 11px; backdrop-filter: blur(8px); }
+.narrative-controls input { min-width: 60px; flex: 1; accent-color: #c7d0b8; }.narrative-controls select { color: #dde4d0; background: #24382e; border: 1px solid #82927b; padding: 5px; }.narrative-controls output { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.narrative-shade { position: absolute; inset: 0; background: #000; z-index: 2; opacity: 0; }.narrative-injury { position: absolute; inset: 0; background: radial-gradient(ellipse at center,transparent 50%,#54271a); pointer-events: none; }
+.narrative-ending { position: absolute; inset: 0; z-index: 4; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: auto; }.narrative-ending p { font: 26px 'Songti SC',serif; letter-spacing: 4px; }.narrative-ending small { color: #8e978e; margin-bottom: 40px; }.narrative-ending button { margin: 6px; border-color: #85927a77; }
+@media(max-width:700px){.narrative-controls{flex-wrap:wrap;gap:5px;bottom:10px;}.narrative-controls input{order:2;flex-basis:65%;}.narrative-controls label{font-size:0;}.narrative-controls button{padding:8px;font-size:10px;}.narrative-subtitles{bottom:19%;left:5%;right:5%;}.narrative-title h2{font-size:24px;}}
