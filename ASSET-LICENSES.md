@@ -72,3 +72,17 @@ Locally bundled Poly Haven assets, all [CC0](https://polyhaven.com/license):
 Download URLs and original checksums are in `public/assets/models/sources.json`; tree geometry was subsequently optimized, so its bundled checksum differs from the original. Models are placed, scaled and lit for this fictional scene. The printworks facade, fire escape, vehicle damage, open doors and contact-occlusion shader are original authored work. They are not extracted from The Last of Us Part II.
 
 Offline optimization utility: `scripts/art/optimize-tree.mjs`; meshoptimizer by Arseny Kapoulkine, MIT, installed only in a temporary authoring directory. To rebuild, obtain the original source glTF/buffer from the manifest and pass the path to `meshopt_simplifier.js`. The delivered runtime assets are already optimized.
+
+## Seaside cigarette (user supplied, local demo)
+
+- Supplied by the user from Downloads: `Cigarette_1015071228_image-to-3d-texture_fbx.zip`. Archive filenames identify `Meshy_AI_Lit_Cigarette_1015071228_image-to-3d-texture`.
+- Used at `public/assets/seaside/cigarette.glb`; replaces the procedural cigarette-case placeholder. Original model includes a static smoke mesh.
+- Local processing: FBX to GLB, 206,316 to 103,158 triangles, aligned for shelf presentation, original base color/normal maps at 2K and metallic/roughness at 1K. Conversion script: `scripts/art/convert-seaside-cigarette.py`.
+- No license document was included in the supplied archive. User authorized use in this local demo; no claim of CC0/MIT or redistribution rights is made for this asset. No new asset purchases, API calls or uploads.
+
+## Seaside necklace and letter (user supplied, local demo)
+
+- User supplied `Meshy_AI_Heart_Necklace_Pendan_1015054857_texture_fbx.zip` and `love_letter_envelope_1015072436_image-to-3d-texture_fbx.zip` from Downloads, and explicitly requested both on the cigarette's sides. Archive names identify Meshy AI exports.
+- Local outputs: `public/assets/seaside/heart-necklace.glb` (left, 3,196 triangles) and `public/assets/seaside/love-letter.glb` (right, 80,000 triangles, reduced from 166,612). Original base color and normal maps at 2K, metallic/roughness at 1K.
+- Conversion: `scripts/art/convert-seaside-collectible.py`; original UVs retained, runtime orientation/scale adjusted for display. Backboard, plinths and envelope easel are original procedural geometry.
+- Neither archive includes a license document. Used only in this user-authorized local demo; no CC0/MIT or redistribution claim is made for these assets. No purchases, uploads or API calls.
