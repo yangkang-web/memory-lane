@@ -132,11 +132,11 @@ export function createSeasideWorld(scene){
   let disposed=false;
   function disposeObject(object){const geometries=new Set(),materials=new Set(),textures=new Set();object.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of o.material?[].concat(o.material):[]){materials.add(m);for(const v of Object.values(m))if(v?.isTexture)textures.add(v);}});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());object.removeFromParent();}
   const loader=new GLTFLoader();
-  const cigaretteReady=loader.loadAsync('/assets/seaside/cigarette.glb').then(({scene:asset})=>{
+  const cigaretteReady=loader.loadAsync('/assets/seaside/cigarette-butt.glb').then(({scene:asset})=>{
     if(disposed){disposeObject(asset);return;}
-    asset.name='Meshy AI Lit Cigarette / user supplied';
-    // The source includes a smoke plume; align the cigarette body rather than the plume's bounds.
-    asset.rotation.z=-.64;
+    asset.name='Meshy AI Cigarette Butt / user supplied';
+    // New user asset retains its authored shape and surface maps.
+    asset.rotation.z=0;
     const bounds=new T.Box3().setFromObject(asset,true),size=bounds.getSize(new T.Vector3()),scale=.39/size.x;
     asset.scale.setScalar(scale);bounds.setFromObject(asset,true);const center=bounds.getCenter(new T.Vector3());
     asset.position.set(-center.x,.065-bounds.min.y,-center.z);

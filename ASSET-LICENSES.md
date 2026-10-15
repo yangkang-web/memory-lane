@@ -76,7 +76,7 @@ Offline optimization utility: `scripts/art/optimize-tree.mjs`; meshoptimizer by 
 ## Seaside cigarette (user supplied, local demo)
 
 - Supplied by the user from Downloads: `Cigarette_1015071228_image-to-3d-texture_fbx.zip`. Archive filenames identify `Meshy_AI_Lit_Cigarette_1015071228_image-to-3d-texture`.
-- Used at `public/assets/seaside/cigarette.glb`; replaces the procedural cigarette-case placeholder. Original model includes a static smoke mesh.
+- Earlier revision: `public/assets/seaside/cigarette.glb` replaced the procedural cigarette-case placeholder and included a static smoke mesh. It has now been superseded by the cigarette-butt model below; the original download remains untouched.
 - Local processing: FBX to GLB, 206,316 to 103,158 triangles, aligned for shelf presentation, original base color/normal maps at 2K and metallic/roughness at 1K. Conversion script: `scripts/art/convert-seaside-cigarette.py`.
 - No license document was included in the supplied archive. User authorized use in this local demo; no claim of CC0/MIT or redistribution rights is made for this asset. No new asset purchases, API calls or uploads.
 
@@ -86,3 +86,10 @@ Offline optimization utility: `scripts/art/optimize-tree.mjs`; meshoptimizer by 
 - Local outputs: `public/assets/seaside/heart-necklace.glb` (left, 3,196 triangles) and `public/assets/seaside/love-letter.glb` (right, 80,000 triangles, reduced from 166,612). Original base color and normal maps at 2K, metallic/roughness at 1K.
 - Conversion: `scripts/art/convert-seaside-collectible.py`; original UVs retained, runtime orientation/scale adjusted for display. Backboard, plinths and envelope easel are original procedural geometry.
 - Neither archive includes a license document. Used only in this user-authorized local demo; no CC0/MIT or redistribution claim is made for these assets. No purchases, uploads or API calls.
+
+### Cigarette-butt replacement and central necklace
+
+- User supplied `Cigarette_Butt_1015085107_image-to-3d-texture_fbx.zip`; archive identifies `Meshy_AI_Cigarette_Butt_1015085107_image-to-3d-texture`. Runtime file: `public/assets/seaside/cigarette-butt.glb`, replacing the old cigarette and smoke model.
+- Local conversion via `scripts/art/convert-seaside-collectible.py`: 2,651,754 source triangles reduced to 80,000 for this shelf display; base color/normal maps at 2K and metallic/roughness at 1K. This is a reduced-detail derivative, not full source geometry. Original archive and textures remain in Downloads unchanged.
+- No license document is included in the archive. Authorized for this local demo by the user; no redistribution license is asserted.
+- Layout updated to cigarette butt on the left, necklace in the center as the first focus target, and letter on the right.
