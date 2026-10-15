@@ -108,3 +108,9 @@ button:disabled { opacity: .45; cursor: default; }
 .narrative-shade { position: absolute; inset: 0; background: #000; z-index: 2; opacity: 0; }.narrative-injury { position: absolute; inset: 0; background: radial-gradient(ellipse at center,transparent 50%,#54271a); pointer-events: none; }
 .narrative-ending { position: absolute; inset: 0; z-index: 4; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: auto; }.narrative-ending p { font: 26px 'Songti SC',serif; letter-spacing: 4px; }.narrative-ending small { color: #8e978e; margin-bottom: 40px; }.narrative-ending button { margin: 6px; border-color: #85927a77; }
 @media(max-width:700px){.narrative-controls{flex-wrap:wrap;gap:5px;bottom:10px;}.narrative-controls input{order:2;flex-basis:65%;}.narrative-controls label{font-size:0;}.narrative-controls button{padding:8px;font-size:10px;}.narrative-subtitles{bottom:19%;left:5%;right:5%;}.narrative-title h2{font-size:24px;}}
+
+/* Spoken dialogue remains visible in the continuous film, including over its final blackout. */
+.narrative-subtitles[hidden]{display:none}
+.sequence-mode .narrative-subtitles{bottom:max(28px,6vh);left:5%;right:5%;padding:10px 16px;color:#fffaf0;background:radial-gradient(ellipse,#090d1266,transparent 70%)}
+.sequence-mode .narrative-subtitles p{font-size:clamp(17px,1.65vw,23px);font-weight:500;line-height:1.7;margin:4px 0 0}
+.sequence-mode .narrative-subtitles b{font-size:12px;letter-spacing:.12em;color:#d9decd}
