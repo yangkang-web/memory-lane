@@ -1,11 +1,11 @@
 import * as T from 'three';
-import { ROAD_FRACTURES, fractureOutline, SINKHOLE } from './ruin-layout.js';
+import { ROAD_FRACTURES, fractureOutline, SINKHOLE, EXIT_SHAFT } from './ruin-layout.js';
 import { rect } from './walk-layout.js';
 
 export function fracturedAvenue({mesh,asphalt,soil,concrete,range,obstacles}) {
   const shape=new T.Shape();shape.moveTo(-11.5,-380);shape.lineTo(11.5,-380);shape.lineTo(11.5,380);shape.lineTo(-11.5,380);shape.closePath();
   for(const fracture of ROAD_FRACTURES){const hole=new T.Path();fractureOutline(fracture).forEach(([x,z],i)=>i?hole.lineTo(x,-z):hole.moveTo(x,-z));hole.closePath();shape.holes.push(hole);}
-  const sink=new T.Path();SINKHOLE.forEach(([x,z],i)=>i?sink.lineTo(x,-z):sink.moveTo(x,-z));sink.closePath();shape.holes.push(sink);
+  for(const outline of [SINKHOLE,EXIT_SHAFT]){const sink=new T.Path();outline.forEach(([x,z],i)=>i?sink.lineTo(x,-z):sink.moveTo(x,-z));sink.closePath();shape.holes.push(sink);}
   const top=new T.ShapeGeometry(shape);top.rotateX(-Math.PI/2);const uv=top.attributes.uv,p=top.attributes.position;
   // Original road maps already repeat 23/3 by 760/3; keep their real-world scale.
   for(let i=0;i<uv.count;i++)uv.setXY(i,(p.getX(i)+11.5)/23,(p.getZ(i)+380)/760);
@@ -39,7 +39,7 @@ export function growRuins({buildings,card,ivy,grass,moss,ferns,mesh,bark,range,r
     // An irregular colony: narrow old stems below, broad overlapping foliage above.
     for(let stem=0;stem<7;stem++) {
       const top=base+height*range(.7,1),points=[];
-      for(let y=base;y<=top;y+=.38){const zz=z+Math.sin(y*.65+phase+stem)*width*.16+(stem-3)*width*.1;points.push([x+side*.09,y,zz]);}
+      for(let y=base;y<=top;y+=.38){let zz=z+Math.sin(y*.65+phase+stem)*width*.16+(stem-3)*width*.1;if(x>15&&x<17&&y<2.9&&zz>42.65&&zz<45.35)zz=stem<3?42.5:45.5;points.push([x+side*.09,y,zz]);}
       if(points.length>2)vine(points,.018+random()*.015);
     }
     const count=Math.ceil(height*width*42);
@@ -61,7 +61,7 @@ export function growRuins({buildings,card,ivy,grass,moss,ferns,mesh,bark,range,r
   // Hanging growth spills over the broken floors and the shop canopy.
   for(const [x,y,z,length,span]of [[18.6,11.25,39,3.8,3],[18.3,14.85,45,4.3,2],[15.15,3.25,44,1.3,7.5],[14.4,7.6,58,2.5,3.6],[-16.8,4.8,44,2.6,2.8]]) {
     for(let strand=0;strand<18;strand++) {
-      const zz=z+(strand/17-.5)*span,drop=length*range(.45,1),points=[];
+      const zz=z+(strand/17-.5)*span,drop=x>14&&x<17&&zz>42.65&&zz<45.35?Math.min(.3,length):length*range(.45,1),points=[];
       for(let t=0;t<=1;t+=.08){const px=x+Math.sin(t*4+strand)*.12,py=y-drop*t,pz=zz+Math.sin(t*6+strand)*.12;points.push([px,py,pz]);for(let j=0;j<3;j++)card(ivy,px+range(-.08,.08),py+range(-.07,.07),pz+range(-.2,.2),range(.2,.38),range(.24,.43),range(-.4,.4),-Math.PI/2+range(-.5,.5),range(-.7,.7));}
       vine(points,.014);
     }

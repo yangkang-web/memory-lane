@@ -3,7 +3,7 @@ import { Reflector } from 'three/addons/objects/Reflector.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 export const WATER_LEVEL=.088;
-export const PUDDLES=[[4,13,3.2,6.3],[-3,-19,2.6,7],[4,46,2.7,4.8],[-7,-68,1.8,4]];
+export const PUDDLES=[[4,13,3.2,6.3],[-3,-19,2.6,7],[4,46,2.7,4.8],[-7,-68,1.8,4],[0,100,3.4,4.4]];
 
 // All pools share a single horizontal reflection capture, rather than re-rendering
 // the city for each puddle. Patch UVs keep a separate, soft shoreline per pool.
@@ -17,7 +17,7 @@ export function puddleGeometry() {
 export function createStreetWater(scene) {
   const water=new Reflector(puddleGeometry(),{textureWidth:1024,textureHeight:1024,multisample:0,clipBias:.001,shader:{
     name:'Shallow street water',
-    uniforms:{tDiffuse:{value:null},textureMatrix:{value:null},color:{value:new T.Color('#8fa4a4')},time:{value:0},wetness:{value:.12},rain:{value:0}},
+    uniforms:{tDiffuse:{value:null},textureMatrix:{value:null},color:{value:new T.Color('#8fa4a4')},time:{value:0},wetness:{value:.12},rain:{value:0},collapse:{value:0}},
     vertexShader:`
       uniform mat4 textureMatrix;
       attribute float patchSeed;
@@ -26,11 +26,12 @@ export function createStreetWater(scene) {
         worldPosition=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}
     `,
     fragmentShader:`
-      uniform sampler2D tDiffuse;uniform float time,wetness,rain;
+      uniform sampler2D tDiffuse;uniform float time,wetness,rain,collapse;
       varying vec2 patchUv;varying float seed;varying vec4 reflectionUv;varying vec3 worldPosition;
       float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
       float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+1.),f.x),f.y);}
       void main(){
+        if(seed>14.&&collapse>=1.)discard;
         vec2 footprint=patchUv/(.55+.45*wetness);
         float shore=length(footprint)+.13*(noise(patchUv*4.+seed)-.5)+.055*(noise(patchUv*19.+seed)-.5);
         float wet=1.-smoothstep(.72,.99,shore);
@@ -61,7 +62,7 @@ export function createStreetWater(scene) {
         // Alpha blending transmits the actual lit asphalt, cracks and lane paint underneath.
         vec3 pigment=vec3(.032,.043,.038);
         vec3 radiance=(pigment*damp+reflection*reflected*(1.-damp))/max(alpha,.001);
-        gl_FragColor=vec4(radiance+vec3(.035)*ring*pool,alpha);
+        gl_FragColor=vec4(radiance+vec3(.035)*ring*pool,alpha*(seed>14.?1.-collapse:1.));
       }
     `
   }});
@@ -71,6 +72,7 @@ export function createStreetWater(scene) {
   water.renderOrder=2;scene.add(water);
   const direction=new T.Vector3(),toward=new T.Vector3();
   return {
+    setCollapse(amount){water.material.uniforms.collapse.value=amount;},
     update(seconds,state){water.material.uniforms.time.value=seconds;if(state){water.material.uniforms.wetness.value=state.wetness;water.material.uniforms.rain.value=state.rain;}},
     visibleFrom(camera){camera.getWorldDirection(direction);return PUDDLES.some(([x,z])=>{toward.set(x,WATER_LEVEL,z).sub(camera.position);return toward.length()<38&&toward.normalize().dot(direction)>.45;});},
     dispose(){water.getRenderTarget().dispose();},

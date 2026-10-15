@@ -21,14 +21,34 @@ export function createWorldLighting(scene) {
   }
   context.putImageData(pixels,0,0);
   const sky=new T.CanvasTexture(canvas);sky.colorSpace=T.SRGBColorSpace;sky.mapping=T.EquirectangularReflectionMapping;
+  const morningCanvas=document.createElement('canvas');morningCanvas.width=1024;morningCanvas.height=512;
+  const morningContext=morningCanvas.getContext('2d'),morningPixels=morningContext.createImageData(1024,512);
+  for(let y=0;y<512;y++)for(let x=0;x<1024;x++){
+    const phi=(x/1024-.5)*Math.PI*2,theta=y/512*Math.PI,dy=Math.cos(theta),dx=Math.sin(theta)*Math.cos(phi),dz=Math.sin(theta)*Math.sin(phi);
+    const horizon=Math.pow(1-Math.abs(dy),2),cloud=noise(dx*3,dy*3,dz*3)*.045;
+    const grey=dy>0?.57+horizon*.19+cloud:.39+horizon*.16;
+    const i=(y*1024+x)*4;for(let c=0;c<3;c++)morningPixels.data[i+c]=255*grey*[.98,1,1.015][c];morningPixels.data[i+3]=255;
+  }
+  morningContext.putImageData(morningPixels,0,0);const morningSky=new T.CanvasTexture(morningCanvas);morningSky.colorSpace=T.SRGBColorSpace;morningSky.mapping=T.EquirectangularReflectionMapping;
   scene.background=sky;scene.environment=sky;scene.environmentIntensity=.65;
   scene.fog=new T.Fog('#b4c6d0',95,320);
   const fill=new T.HemisphereLight('#c7dce9','#666853',1.25);scene.add(fill);
   const sun=new T.DirectionalLight('#fff0d9',4.8);sun.position.copy(sunOffset);sun.castShadow=true;
   sun.shadow.mapSize.set(4096,4096);sun.shadow.normalBias=.035;sun.shadow.bias=-.00008;
   Object.assign(sun.shadow.camera,{left:-65,right:65,top:65,bottom:-65,near:1,far:240});sun.shadow.camera.updateProjectionMatrix();scene.add(sun,sun.target);
-  let lastX=Infinity,lastZ=Infinity,lastSpan=0;
+  const sunsetCanvas=document.createElement('canvas');sunsetCanvas.width=1024;sunsetCanvas.height=512;
+  const sunsetContext=sunsetCanvas.getContext('2d'),sunsetPixels=sunsetContext.createImageData(1024,512),eveningDirection=new T.Vector3(-78,19,32).normalize();
+  for(let y=0;y<512;y++)for(let x=0;x<1024;x++){
+    const phi=(x/1024-.5)*Math.PI*2,theta=y/512*Math.PI,dy=Math.cos(theta),dx=Math.sin(theta)*Math.cos(phi),dz=Math.sin(theta)*Math.sin(phi);
+    const horizon=Math.pow(1-Math.abs(dy),3),alignment=Math.max(0,dx*eveningDirection.x+dy*eveningDirection.y+dz*eveningDirection.z),glow=Math.pow(alignment,24)*.25+Math.pow(alignment,1800)*1.5;
+    const rgb=dy>0?[.19+horizon*.53,.27+horizon*.26,.36+horizon*.02]:[.20,.22,.18];
+    const cloud=T.MathUtils.smoothstep(noise(dx*4,dy*4,dz*4),.65,.8)*Math.max(0,dy)*.15;
+    const i=(y*1024+x)*4;for(let c=0;c<3;c++)sunsetPixels.data[i+c]=Math.min(255,255*(rgb[c]+glow*[1,.6,.25][c]+cloud));sunsetPixels.data[i+3]=255;
+  }
+  sunsetContext.putImageData(sunsetPixels,0,0);const sunsetSky=new T.CanvasTexture(sunsetCanvas);sunsetSky.colorSpace=T.SRGBColorSpace;sunsetSky.mapping=T.EquirectangularReflectionMapping;
+  let lastX=Infinity,lastZ=Infinity,lastSpan=0,atmosphere='day';
   return {sky,sun,fill,sunDirection,haze:.55,scatter:1,
+    setAtmosphere(value){if(atmosphere===value)return;atmosphere=value;const evening=value==='evening',morning=value==='morning';sunOffset.set(...(evening?[-78,19,32]:morning?[-60,38,25]:[-38,83,46]));sunDirection.copy(sunOffset).normalize();scene.background=scene.environment=evening?sunsetSky:morning?morningSky:sky;scene.fog.color.set(evening?'#b7a18b':morning?'#c3c7c6':'#b4c6d0');lastX=Infinity;},
     applyWeather(state,overview=false){sun.intensity=state.sun;fill.intensity=state.fill;scene.environmentIntensity=state.environment;
       scene.fog.near=state.fogNear*(overview?1.8:1);scene.fog.far=state.fogFar*(overview?1.7:1);this.haze=state.haze;this.scatter=state.sun/4.8;},
     update(camera){const overview=camera.position.y>45,span=overview?180:65;
@@ -37,6 +57,6 @@ export function createWorldLighting(scene) {
       lastX=x;lastZ=z;lastSpan=span;sun.target.position.set(x,0,z);sun.position.copy(sun.target.position).add(sunOffset);
       Object.assign(sun.shadow.camera,{left:-span,right:span,top:span,bottom:-span});sun.shadow.camera.updateProjectionMatrix();sun.target.updateMatrixWorld();sun.updateMatrixWorld();return true;
     },
-    dispose(){sky.dispose();sun.shadow.map?.dispose();},
+    dispose(){sky.dispose();morningSky.dispose();sunsetSky.dispose();sun.shadow.map?.dispose();},
   };
 }

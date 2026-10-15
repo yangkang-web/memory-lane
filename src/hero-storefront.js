@@ -12,7 +12,8 @@ export function createHeroStorefront({scene,mesh,box,material,texture,wall,cemen
   const stains=texture(512,512,(c,w,h)=>{for(let i=0;i<180;i++){const x=range(0,w),y=range(0,70),r=range(2,16),end=range(70,h),g=c.createLinearGradient(x,y,x,end);g.addColorStop(0,'#202c2480');g.addColorStop(.6,'#37443330');g.addColorStop(1,'#37443300');c.fillStyle=g;c.fillRect(x,y,r,end-y);}});
   const damp=material('#837d68',{map:stains,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2});
   // An inset room behind the collapsed shop window. Floors, ceiling and partitions are visible.
-  box(30,10.8,.2,dark,0,5.4,-2.9,group);
+  box(30,7.4,.2,dark,0,7.1,-2.9,group);
+  for(const [x,w]of [[-11.15,7.7],[5.15,19.7]])box(w,3.4,.2,dark,x,1.7,-2.9,group);
   box(18,7.2,.2,dark,6,14.4,-2.9,group);
   for(let row=0;row<5;row++) {
     if(row<3)box(30,.18,3,stone,0,row*3.6,-1.4,group);
@@ -27,7 +28,7 @@ export function createHeroStorefront({scene,mesh,box,material,texture,wall,cemen
   for(let row=0;row<5;row++) {
     const y=row*3.6;
     for(let col=0;col<5;col++) {
-      const x=-12+col*6,broken=row===0&&col===1,ww=broken?4.6:3.6,lo=y+.48,hi=y+2.95;
+      const x=-12+col*6,broken=row===0&&col===1,ww=broken?4.6:3.6,lo=broken?0:y+.48,hi=y+2.95;
       if(row>=3&&col<2) {
         // The facade is actually absent here; a stepped fracture exposes floor sections.
         const remaining=row===3?(col===0?.45:1.8):0;
@@ -42,10 +43,10 @@ export function createHeroStorefront({scene,mesh,box,material,texture,wall,cemen
       if(broken) {
         // Snapped brick teeth, loose sill fragments and bent reinforcing rods.
         for(let i=1;i<edge.length-1;i++){const [xx,yy]=edge[i];const b=box(.29,.16,.5,i%3?wall:stone,xx,yy,.05,group);b.rotation.z=(i%3-1)*.16;}
-        for(const dx of [-1.4,.45,1.6])rod([x+dx,.3,.05],[x+dx+.25,1,.2],.018);
+        for(const dx of [-2.1,2.1])rod([x+dx,.3,.05],[x+dx+.25,1,.2],.018);
         for(let i=0;i<23;i++){const b=mesh(new T.DodecahedronGeometry(1,0),i%3?wall:stone,x+range(-2.6,2.6),range(.09,.22),range(.4,1.15),group);b.scale.set(range(.13,.45),range(.07,.16),range(.1,.3));b.rotation.set(.2,range(0,6),range(-.2,.2));}
-        box(3.3,.12,.7,timber,x,.95,-1.65,group);for(const dx of [-1.3,1.3])box(.1,.9,.1,iron,x+dx,.45,-1.65,group);
-        for(let i=0;i<4;i++)box(.35,.3,.25,i%2?dark:stone,x-1+i*.6,1.13,-1.65,group);
+        box(3.3,.12,.7,timber,x-4,.95,-1.65,group);for(const dx of [-1.3,1.3])box(.1,.9,.1,iron,x-4+dx,.45,-1.65,group);
+        for(let i=0;i<4;i++)box(.35,.3,.25,i%2?dark:stone,x-5+i*.6,1.13,-1.65,group);
       } else {
         for(const dx of [-ww/2,0,ww/2])box(.065,hi-lo,.09,iron,x+dx,(lo+hi)/2,-.07,group);
         for(const yy of [lo,lo+(hi-lo)*.5,hi])box(ww,.065,.09,iron,x,yy,-.07,group);

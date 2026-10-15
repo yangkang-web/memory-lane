@@ -10,7 +10,7 @@ import { dressStreet } from './street-dressing.js';
 import { createFacadeBuilder } from './building-facades.js';
 import { loadHeroNature, HERO_TREES } from './hero-nature.js';
 import { fracturedAvenue, growRuins } from './urban-decay.js';
-import { nearFracture, SINKHOLE } from './ruin-layout.js';
+import { nearFracture, SINKHOLE, EXIT_SHAFT } from './ruin-layout.js';
 
 // Original geometry with bundled CC0 surface maps. No extracted game assets or runtime remote services.
 export function createDowntown() {
@@ -112,11 +112,16 @@ export function createDowntown() {
 
   // Ground and streets continue well beyond the walkable district and the fog horizon.
   // Soil is open below the collapse, so the fall never passes through a solid ground plane.
-  for(const side of [-1,1])box(596.5,.5,1200,soil,side*301.75,-.36,0);
-  box(7,.5,656,soil,0,-.36,-272);box(7,.5,535,soil,0,-.36,332.5);
+  box(596.5,.5,1200,soil,-301.75,-.36,0);
+  box(590.7,.5,1200,soil,304.65,-.36,0);box(3.3,.5,1200,soil,5.15,-.36,0);
+  box(2.5,.5,726.2,soil,8.05,-.36,-236.9);box(2.5,.5,460,soil,8.05,-.36,370);
+  box(7,.5,696,soil,0,-.36,-252);box(7,.5,495,soil,0,-.36,352.5);
   const coverShape=new T.Shape(SINKHOLE.map(([x,z])=>new T.Vector2(x,-z))),coverGeometry=new T.ShapeGeometry(coverShape);coverGeometry.rotateX(-Math.PI/2);
   const cp=coverGeometry.attributes.position,cu=coverGeometry.attributes.uv;for(let i=0;i<cu.count;i++)cu.setXY(i,(cp.getX(i)+11.5)/23,(cp.getZ(i)+380)/760);
   const sinkholeCover=new T.Mesh(coverGeometry,asphalt);sinkholeCover.position.y=.045;sinkholeCover.receiveShadow=true;sinkholeCover.castShadow=true;scene.add(sinkholeCover);
+  const exitShape=new T.Shape(EXIT_SHAFT.map(([x,z])=>new T.Vector2(x,-z))),exitGeometry=new T.ShapeGeometry(exitShape);exitGeometry.rotateX(-Math.PI/2);
+  const ep=exitGeometry.attributes.position,eu=exitGeometry.attributes.uv;for(let i=0;i<eu.count;i++)eu.setXY(i,(ep.getX(i)+11.5)/23,(ep.getZ(i)+380)/760);
+  const exitCover=new T.Mesh(exitGeometry,asphalt);exitCover.position.y=.045;exitCover.receiveShadow=exitCover.castShadow=true;scene.add(exitCover);
   fracturedAvenue({mesh,asphalt,soil,concrete,range,obstacles});
   const crossRoad=asphalt.clone();
   for(const key of ['map','normalMap','roughnessMap']){crossRoad[key]=asphalt[key].clone();crossRoad[key].repeat.set(760/3,19/3);}
@@ -273,7 +278,9 @@ export function createDowntown() {
     [30,-91,27,30,53],[29,-51,25,34,40],[30,-12,27,28,32],[30,50,27,30,26],[30,86,27,28,44],
     [-67,-80,31,30,62],[-65,-39,28,32,47],[-64,-2,27,29,37],[-66,55,30,36,54],
     [67,-84,29,33,64],[65,-41,27,31,48],[66,-2,28,29,46],[65,56,28,34,37]];
-  blocks.forEach((b,i)=>{if(i!==3)buildings.push(building(...b,i));});
+  // Keep the adjacent lot separable for the short cinematic's starting house.
+  const cinematicLot=new T.Group();cinematicLot.name='Cinematic dwelling lot';scene.add(cinematicLot);
+  blocks.forEach((b,i)=>{if(i===3)return;const before=new Set(scene.children),start=objects.length;buildings.push(building(...b,i));if(i===4){for(const child of [...scene.children])if(!before.has(child))cinematicLot.add(child);for(const object of objects.slice(start))object.userData.cinematicLot=true;}});
   // Reserve the front lot for the enterable house; a narrow brick wing stands behind it.
   buildings.push(building(-36,51,13,33,23,16));
   obstacles.push(rect(15.1,38.8,2.5,5.3));
@@ -322,7 +329,7 @@ export function createDowntown() {
     for(let i=0;i<1700;i++){const a=range(0,Math.PI*2),r=Math.sqrt(random())*118;c.fillStyle=pick(['#4c5c32aa','#677347aa','#394b2c88']);c.beginPath();c.ellipse(128+Math.cos(a)*r,128+Math.sin(a)*r,range(1,8),range(1,5),0,0,Math.PI*2);c.fill();}
   });
   const leaves=[],grass=[],ivy=[],moss=[],ferns=[];
-  function card(list,x,y,z,sx,sy,rx=0,ry=0,rz=0){list.push({x,y,z,sx,sy,rx,ry,rz});}
+  function card(list,x,y,z,sx,sy,rx=0,ry=0,rz=0){if(x>-26&&x<-11&&z>78&&z<91&&y<5)return;if(x>12.8&&x<18&&z>42.65&&z<45.35&&y>.35&&y<2.9)return;list.push({x,y,z,sx,sy,rx,ry,rz});}
   function tree(x,z,height=10) {
     if(HERO_TREES.some(t=>t[0]===x&&t[1]===z))return;
     obstacles.push(rect(x,z,.65,.65));
@@ -368,7 +375,7 @@ export function createDowntown() {
     for(let i=0;i<110;i++){const h=range(.3,.9);card(grass,x+range(-2,2),.06+h/2,z+range(-3.8,3.8),.8,h,0,range(0,Math.PI));}
   }
   for(const b of buildings.slice(0,10)) {
-    if(b.x===30&&b.z===50)continue;
+    if(b.x===30&&b.z===50||b.x===-30&&b.z===85)continue;
     for(let strand=0;strand<(b.ivyHeight?9:0);strand++) {
       const z=b.z+range(-b.d*.44,b.d*.44),top=b.ivyHeight*range(.25,.95),bottom=.3;
       const x=b.streetX+(b.x>0?-.09:.09),points=[];
@@ -384,7 +391,7 @@ export function createDowntown() {
     }
     for(let i=0;i<(b.roofPlants?35:0);i++)card(grass,b.x+range(-b.w/2,b.w/2),b.h+1,b.z+range(-b.d/2,b.d/2),1.1,1.3,0,range(0,Math.PI));
   }
-  growRuins({buildings,card,ivy,grass,moss,ferns,mesh,bark,range,random});
+  growRuins({buildings:buildings.filter(b=>!(b.x===-30&&b.z===85)),card,ivy,grass,moss,ferns,mesh,bark,range,random});
   function instances(items,map,{alphaTest=.3,roughness=1}={}) {
     const isGrass=items===grass,isFern=items===ferns;
     const geometry=isGrass?grassGeometry(random):isFern?fernGeometry():new T.PlaneGeometry(1,1);
@@ -441,7 +448,7 @@ export function createDowntown() {
   scene.updateMatrixWorld(true);
   const batches=new Map(),oldGeometry=new Set();
   for(const object of objects) {
-    if(object.material.transparent)continue;
+    if(object.material.transparent||object.userData.cinematicLot)continue;
     const list=batches.get(object.material)||[];
     const geometry=object.geometry.index?object.geometry.toNonIndexed():object.geometry.clone();
     list.push(geometry.applyMatrix4(object.matrixWorld));batches.set(object.material,list);
@@ -455,7 +462,9 @@ export function createDowntown() {
   oldGeometry.forEach(g=>g.dispose());
 
   const nature=loadHeroNature(scene,obstacles);
-  const home=createAbandonedHome(scene,{normal:localTexture('concrete_wall_007_nor_gl',false,[3,2]),rough:localTexture('concrete_wall_007_rough',false,[3,2])});
+  const homeRoot=new T.Group();homeRoot.name='Walkable Sunflowers dwelling';scene.add(homeRoot);
+  const home=createAbandonedHome(homeRoot,{normal:localTexture('concrete_wall_007_nor_gl',false,[3,2]),rough:localTexture('concrete_wall_007_rough',false,[3,2])});
+  home.root=homeRoot;home.cinematicLot=cinematicLot;home.doorMesh.name='Sunflowers broken door';
   obstacles.push(...home.obstacles);
 
   function dispose() {
@@ -467,5 +476,5 @@ export function createDowntown() {
   }
   const wetSurfaces=[asphalt,crossRoad,pavement].map(mat=>({mat,color:mat.color.clone(),roughness:mat.roughness}));
   function setWetness(amount){for(const {mat,color,roughness}of wetSurfaces){mat.color.copy(color).multiplyScalar(1-amount*.19);mat.roughness=roughness-amount*.29;}}
-  return {scene,dispose,home,obstacles,lighting,water,setSinkhole(open){sinkholeCover.visible=!open;},setWetness,assetsReady:Promise.all([...pendingTextures,home.artworkReady,nature.ready])};
+  return {scene,dispose,home,obstacles,lighting,water,setStoryExit(open){exitCover.visible=!open;},setSinkhole(open){sinkholeCover.visible=!open;},setWetness,assetsReady:Promise.all([...pendingTextures,home.artworkReady,nature.ready])};
 }

@@ -1,4 +1,5 @@
-export const SINKHOLE=[[-2.8,56.4],[2.8,56.7],[3.4,58.8],[2.9,63.7],[-2.4,64.3],[-3.2,60.8]];
+export const EXIT_SHAFT=[[6.8,126.2],[9.3,126.2],[9.3,140],[6.8,140]];
+export const SINKHOLE=[[-2.8,96.4],[2.8,96.7],[3.4,98.8],[2.9,103.7],[-2.4,104.3],[-3.2,100.8]];
 // Shared authored locations: damage, plant growth and walkability agree in metres.
 export const ROAD_FRACTURES=[
   {points:[[-11.1,55],[-8.7,54.3],[-6.3,52.6],[-3.4,53.1],[-.3,51.3],[2.8,51.8],[5.7,49.5],[8.7,50.2],[11.1,48.7]],width:.46},

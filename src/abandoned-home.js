@@ -173,6 +173,8 @@ export function createAbandonedHome(scene,surfaceMaps={}) {
   for(const z of [39.57,42.03]){box(.035,2.95,.08,wood,-17.245,1.775,z);box(.035,2.95,.025,darkWood,-17.266,1.775,z-.055);}
 
 
+  door.traverse(o=>{if(o.isMesh){o.userData.storyDoor=true;o.castShadow=true;o.receiveShadow=true;}});
+
   // A broken south-facing window: mullions, surviving triangular glass, two nailed boards.
   for(const x of [-24.22,-22.25,-20.28])box(.08,2,.12,darkWood,x,2.35,46);
   for(const y of [1.38,2.3,3.35])box(4.1,.08,.14,darkWood,-22.25,y,46);
@@ -264,10 +266,10 @@ export function createAbandonedHome(scene,surfaceMaps={}) {
   scene.updateMatrixWorld(true);
   const batches=new Map(),old=new Set();
   for(const m of objects) {
-    if(m.material.transparent)continue;
+    if(m.material.transparent||m.userData.storyDoor)continue;
     const list=batches.get(m.material)||[];const geometry=m.geometry.index?m.geometry.toNonIndexed():m.geometry.clone();list.push(geometry.applyMatrix4(m.matrixWorld));batches.set(m.material,list);old.add(m.geometry);m.removeFromParent();
   }
   for(const [material,parts]of batches){const m=new T.Mesh(mergeGeometries(parts),material);m.castShadow=true;m.receiveShadow=true;scene.add(m);parts.forEach(p=>p.dispose());}
   old.forEach(g=>g.dispose());
-  return { ...HOME, obstacles:HOME_OBSTACLES, artworkReady:Promise.all([artworkReady,plasterReady]) };
+  return { ...HOME, doorMesh:door, obstacles:HOME_OBSTACLES, artworkReady:Promise.all([artworkReady,plasterReady]) };
 }

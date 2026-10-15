@@ -90,7 +90,7 @@ export function createFacadeBuilder({scene,mesh,box,material,texture,localTextur
   }
   return function detailedShell(x,z,w,d,h,y,kind,wall) {
     const hero=x===30&&z===50&&y<.5;
-    if(hero){box(w-4.1,10.8,d-1.1,dark,x+1.5,y+5.4,z);box(w-8.5,h-10.8,d-1.1,dark,x+3.75,y+10.8+(h-10.8)/2,z);}
+    if(hero){box(w-4.1,7.4,d-1.1,dark,x+1.5,y+7.1,z);box(w-4.1,3.4,16.4,dark,x+1.5,y+1.7,56.25);box(w-8.5,h-10.8,d-1.1,dark,x+3.75,y+10.8+(h-10.8)/2,z);}
     else box(w-1.1,h,d-1.1,dark,x,y+h/2,z);
     const side=x>0?-1:1,front=z<19?1:-1;
     if(hero)createHeroStorefront({scene,mesh,box,material,texture,wall:red,cement,timber,iron,dark,glazing,range});

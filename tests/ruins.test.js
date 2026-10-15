@@ -16,6 +16,12 @@ test('raised root slabs preserve the complete doorway approach',()=>{
   for(let i=1;i<HOME.route.length;i++){const a=HOME.route[i-1],b=HOME.route[i];for(let n=0;n<=30;n++)assert(canOccupy(a.x+(b.x-a.x)*n/30,a.z+(b.z-a.z)*n/30,obstacles));}
   assert(obstacles.length>0);assert.equal(canOccupy(10.1,46.8,obstacles),false);
 });
+test('story collapse and maintenance stairs have actual openings in the road',()=>{
+  assert.equal(surfaceAt(0,100),false);
+  for(const z of [127,130,134,138,139.5])assert.equal(surfaceAt(8,z),false);
+  assert.equal(surfaceAt(5,133),true);
+  assert.equal(surfaceAt(10,133),true);
+});
 test('fractured road meshes have finite vertices and normals',()=>{
   for(const mesh of meshes)for(const key of ['position','normal','uv'])assert([...mesh.geometry.attributes[key].array].every(Number.isFinite));
 });
