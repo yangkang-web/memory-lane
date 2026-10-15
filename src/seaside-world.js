@@ -124,11 +124,11 @@ export function createSeasideWorld(scene){
   // Chart tube and stacked field notebooks.
   for(let i=0;i<3;i++){const b=box(cabinet,.36,.035,.21,i%2?blue:linen,1.1,1.32+i*.04,.12,.003);b.rotation.y=.06*i;}
   // User-supplied textured cigarette; isolated from the display plinth.
-  const hero=new T.Group();hero.name='hero-collectible / user cigarette';hero.position.set(0,1.315,.19);cabinet.add(hero);
-  box(hero,.55,.035,.34,teak,0,0,0);
-  const supports=[-.12,.12].map(x=>({x,stem:cyl(hero,.012,.016,1,brass,x,0,0),rest:box(hero,.035,.009,.05,brass,x,.061,0,.004)}));
+  const cigaretteDisplay=new T.Group();cigaretteDisplay.name='User cigarette butt display';cigaretteDisplay.position.set(-.67,1.315,.19);cabinet.add(cigaretteDisplay);
+  box(cigaretteDisplay,.55,.035,.34,teak,0,0,0);
+  const supports=[-.12,.12].map(x=>({x,stem:cyl(cigaretteDisplay,.012,.016,1,brass,x,0,0),rest:box(cigaretteDisplay,.035,.009,.05,brass,x,.061,0,.004)}));
   supports.forEach(({stem})=>{stem.scale.y=.042;stem.position.y=.038;});
-  label(cabinet,'07  /  CIGARETTE',0,1.238,.378,.3);
+  label(cabinet,'06  /  CIGARETTE',-.67,1.238,.378,.3);
   let disposed=false;
   function disposeObject(object){const geometries=new Set(),materials=new Set(),textures=new Set();object.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of o.material?[].concat(o.material):[]){materials.add(m);for(const v of Object.values(m))if(v?.isTexture)textures.add(v);}});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());object.removeFromParent();}
   const loader=new GLTFLoader();
@@ -141,17 +141,18 @@ export function createSeasideWorld(scene){
     asset.scale.setScalar(scale);bounds.setFromObject(asset,true);const center=bounds.getCenter(new T.Vector3());
     asset.position.set(-center.x,.065-bounds.min.y,-center.z);
     asset.traverse(o=>{if(o.isMesh){o.castShadow=o.receiveShadow=true;for(const m of [].concat(o.material)){m.color.multiplyScalar(.8);if(m.map)m.map.anisotropy=8;if(m.normalMap)m.normalScale.set(.55,.55);}}});
-    hero.add(asset);root.updateMatrixWorld(true);
+    cigaretteDisplay.add(asset);root.updateMatrixWorld(true);
     // Fit each cradle to the underside of the authored, slightly irregular body.
     for(const {x,stem,rest} of supports){
-      const origin=hero.localToWorld(new T.Vector3(x,.018,0)),direction=new T.Vector3(0,1,0).transformDirection(hero.matrixWorld);
+      const origin=cigaretteDisplay.localToWorld(new T.Vector3(x,.018,0)),direction=new T.Vector3(0,1,0).transformDirection(cigaretteDisplay.matrixWorld);
       const hit=new T.Raycaster(origin,direction,0,.4).intersectObject(asset,true)[0];
-      if(hit){const top=hero.worldToLocal(hit.point).y,height=Math.max(.01,top-.018-.009);stem.scale.y=height;stem.position.y=.018+height/2;rest.position.y=top-.0045;}
+      if(hit){const top=cigaretteDisplay.worldToLocal(hit.point).y,height=Math.max(.01,top-.018-.009);stem.scale.y=height;stem.position.y=.018+height/2;rest.position.y=top-.0045;}
     }
   });
-  // Two user-supplied keepsakes replace the compass and rolled chart.
+  let hero;
+  // The necklace is the central focal collectible; the letter remains on the right.
   function loadKeepsake({file,name,x,width,rotationX,backing=false}){
-    const display=new T.Group();display.name=name+' display';display.position.set(x,1.32,.12);cabinet.add(display);
+    const display=new T.Group();display.name=name+' display';if(backing)hero=display;display.position.set(x,1.32,.12);cabinet.add(display);
     box(display,.50,.025,.30,teak,0,0,0);
     if(backing){
       box(display,.48,.54,.025,teak,0,.282,-.07);
@@ -161,7 +162,7 @@ export function createSeasideWorld(scene){
       box(display,.30,.018,.06,brass,0,.026,.06,.004);
       const brace=box(display,.025,.27,.025,teak,0,.14,-.06);brace.rotation.x=-.25;
     }
-    label(cabinet,backing?'06  /  HEART':'08  /  LETTER',x,1.238,.378,.31);
+    label(cabinet,backing?'07  /  HEART':'08  /  LETTER',x,1.238,.378,.31);
     return loader.loadAsync('/assets/seaside/'+file).then(({scene:asset})=>{
       if(disposed){disposeObject(asset);return;}
       asset.name=name;asset.rotation.x=rotationX;
@@ -175,7 +176,7 @@ export function createSeasideWorld(scene){
   }
   const ready=Promise.all([
     cigaretteReady,
-    loadKeepsake({file:'heart-necklace.glb',name:'User heart necklace',x:-.67,width:.42,rotationX:Math.PI/2,backing:true}),
+    loadKeepsake({file:'heart-necklace.glb',name:'User heart necklace',x:0,width:.42,rotationX:Math.PI/2,backing:true}),
     loadKeepsake({file:'love-letter.glb',name:'User love letter envelope',x:.67,width:.46,rotationX:-.12}),
   ]);
   // Warm pool of light over the hero, with an actual shadow under the stand.

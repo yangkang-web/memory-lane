@@ -3,11 +3,11 @@ const mix=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
 export const GAZE_DURATION=12;
 export const APPROACH_END=3.2;
 export const INSPECT_END=8;
-export const HERO_POSITION=[3.48,1.39,-.8];
+export const HERO_POSITION=[3.55,1.61,-.8];
 const cabinetPosition=[1.65,1.6,-.7],cabinetLook=[3.48,1.54,-.8];
-const finalPosition=[2.6,1.54,-.65];
+const finalPosition=[2.55,1.63,-.8];
 // Approach first. Only once stationary in front of the cabinet does one gentle gaze
-// cycle begin; the final move settles on the actual cigarette, without a cut.
+// cycle begin; the final move settles on the central necklace, without a cut.
 export function seasidePose(time,reducedMotion=false){
   const t=Math.max(0,time);
   if(reducedMotion)return {position:[...finalPosition],look:[...HERO_POSITION],fov:40,focus:1,stage:'focus',done:true};
