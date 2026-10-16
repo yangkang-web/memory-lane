@@ -40,5 +40,5 @@
 .journey-skip:hover,.journey-skip:focus-visible{opacity:1;outline:none}
 .journey-skip[hidden]{display:none}
 @media (prefers-reduced-motion: reduce){.journey-touch{animation:none}}
-/* Play mode: the start panel sits in the middle of the screen; the end panel stays in the corner, clear of the curtain-call title. */
-.journey[data-mode="play"]:is([data-state="loading"],[data-state="ready"]) .journey-gate{inset:50% auto auto 50%;transform:translate(-50%,-50%)}
+/* Play mode: while the worlds load, the panel waits in the middle of the screen. */
+.journey[data-mode="play"][data-state="loading"] .journey-gate{inset:50% auto auto 50%;transform:translate(-50%,-50%)}
