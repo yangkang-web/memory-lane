@@ -18,7 +18,7 @@ import { createAutopilot } from './autopilot.js';
 import { START, PASSAGE, PLAYER_RADIUS } from './layout.js';
 import { ESTOC } from './props.js';
 import { MemorySound } from './sound.js';
-import { dialogue, line } from './story.js';
+import { dialogue, line, narration } from './story.js';
 import './style.css';
 
 const icon = {
@@ -278,8 +278,21 @@ async function init() {
       $('.english').textContent = entry.text;
       $('.chinese').textContent = entry.translation;
       $('.subtitle').hidden = false;
+      $('.subtitle').classList.remove('narration');
       subtitleUntil = runTime + length + 0.6;
       return length;
+    },
+    // Narration takes the subtitle's place without a voice; whoever speaks next takes it back.
+    narrate(id, seconds) {
+      const entry = narration.find(item => item.id === id);
+      $('.speaker').textContent = '';
+      $('.english').textContent = entry.text;
+      $('.chinese').textContent = entry.translation;
+      const subtitle = $('.subtitle');
+      subtitle.classList.add('narration');
+      subtitle.hidden = false;
+      subtitle.style.animation = 'none'; void subtitle.offsetWidth; subtitle.style.animation = '';
+      subtitleUntil = runTime + seconds;
     },
     // Auto-play does what the hints ask, so it does not show them.
     hint(text, seconds = 5) { if (autopilot?.active) return; $('.hint').textContent = text; $('.hint').hidden = false; hintUntil = runTime + seconds; },
@@ -660,7 +673,7 @@ async function init() {
       if (runTime > subtitleUntil) $('.subtitle').hidden = true;
       if (runTime > hintUntil) $('.hint').hidden = true;
       if (runTime > tipUntil) $('.controls-tip').hidden = true;
-      sound.duck(!$('.subtitle').hidden);
+      sound.duck(!$('.subtitle').hidden && !$('.subtitle').classList.contains('narration'));
       fade.value += (fade.target - fade.value) * (1 - Math.exp(-dt * 7));
       flash *= Math.exp(-dt * 5);
       $('.fade').style.opacity = String(fade.value);

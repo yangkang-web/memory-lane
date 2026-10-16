@@ -36,3 +36,8 @@
 .handoff-panel:not([hidden]){animation:handoff-in 2.4s ease both}
 @keyframes handoff-in{from{opacity:0}to{opacity:1}}
 .sequence-mode .memory-stage[data-state=ready] .film-shade{opacity:.2}
+/* Narration: no voice and no speaker, set apart from what is said by a quieter, warmer, spaced voice. */
+.subtitle.narration .speaker{display:none}
+.subtitle.narration .english{color:#e4d6bd;letter-spacing:.03em;opacity:.95}
+.subtitle.narration .chinese{color:#c9bca6}
+.subtitle.narration{animation:subtitle-in .9s ease both}

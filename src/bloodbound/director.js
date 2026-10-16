@@ -682,6 +682,7 @@ diffuseColor.rgb = mix(diffuseColor.rgb, grain * vec3(0.62, 0.16, 0.16), iris * 
 
   const segments = {
     explore() {
+      after(0.8, () => { if (flow.segment === 'explore') ui.narrate('arrival', 6.4); });
       after(20, () => { if (flow.segment === 'explore') ui.hint('祭坛那边有光'); });
       after(45, () => { if (flow.segment === 'explore') ui.hint('祭坛那边有光 · 沿着中殿往前走'); });
     },
@@ -844,7 +845,9 @@ diffuseColor.rgb = mix(diffuseColor.rgb, grain * vec3(0.62, 0.16, 0.16), iris * 
       after(0.3, () => { if (flow.segment === 'gift') closeTo(0.6, 1.3); });
       after(GIFT.inspect / (PACE.gift ?? 1), () => { if (flow.segment === 'gift') arms.set('bleed', { speed: 3.5 }); });
       after(GIFT.pour / (PACE.gift ?? 1), () => { if (flow.segment === 'gift') sound.play('heartbeat', 0, 0, 'effects', 0.35); });
+      after(GIFT.pour / (PACE.gift ?? 1), () => { if (flow.segment === 'gift') ui.narrate('pour', (GIFT.full - GIFT.pour) / (PACE.gift ?? 1) - 0.1); });
       after(GIFT.full / (PACE.gift ?? 1), () => { if (flow.segment === 'gift') { arms.set('rest', { speed: 3 }); sound.play('crystal-bloom', 0, 0, 'effects', 0.4); } });
+      after(GIFT.full / (PACE.gift ?? 1), () => { if (flow.segment === 'gift') ui.narrate('full', brisk ? 2.4 : 3.6); });
       after(GIFT.offered / (PACE.gift ?? 1) + 1.5, () => { if (flow.segment === 'gift' && !accepted) ui.hint(touchDevice() ? '他把项链递到你眼前 · 按准星旁的按钮接受' : '他把项链递到你眼前 · 按 E 接受', 6); });
       interact.add({
         id: 'pendant', label: '接受他的项链', radius: 0.14, maxDistance: 1.5,
@@ -1054,6 +1057,9 @@ diffuseColor.rgb = mix(diffuseColor.rgb, grain * vec3(0.62, 0.16, 0.16), iris * 
             after(HUNGER.lift, () => closeTo(0.66, 1.8));
             after(HUNGER.red, () => sound.play('heartbeat', 0, 0, 'effects', 0.55));
             after(HUNGER.fang + 0.6, () => sound.play('heartbeat', 0, 0, 'effects', 0.7));
+            // What the player cannot hear him think: the want, and the holding back.
+            after(HUNGER.fang, () => { if (flow.segment === 'intimacy') ui.narrate('fangs', HUNGER.master - HUNGER.fang - 0.2); });
+            after(HUNGER.master, () => { if (flow.segment === 'intimacy') ui.narrate('restraint', HUNGER.done - HUNGER.master - 0.4); });
             after(HUNGER.done, () => flow.advance('intimacy'));
           }
         }

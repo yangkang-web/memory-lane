@@ -21,7 +21,7 @@ document.querySelector('#app').innerHTML=`
   <span class="sea-number">THE TIDE ROOM</span>
   <nav class="sea-controls" aria-label="海边小屋场景控制"><button id="sea-replay">↺ 重看视线</button><button id="sea-look" aria-pressed="false">自由环顾</button><a href="/">返回</a></nav>
   <div class="sea-caption" role="status" aria-live="polite"><span id="sea-status">午后，海风穿过客厅。</span><small>拖动画面环顾 · 方向键转头</small></div>
-  <div class="sea-dialogue" role="status" aria-live="polite" hidden>诶，这不是斯提爵士送我的项链么，<br>真怀念啊。</div>
+  <div class="sea-dialogue" role="status" aria-live="polite" hidden>诶，这不是 Lucien 爵士送我的项链么，<br>真怀念啊。</div>
   <section class="sea-error" hidden><h2>小屋暂时没有打开</h2><p>请使用开启硬件加速、支持 WebGL 的浏览器。</p><a href="/">返回首页</a></section>`;
 const canvas=document.querySelector('#seaside-canvas'),status=document.querySelector('#sea-status'),lookButton=document.querySelector('#sea-look');
 const dialogue=document.querySelector('.sea-dialogue');

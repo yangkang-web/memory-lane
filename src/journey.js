@@ -6,11 +6,13 @@ import {worldWipeAt} from './world-wipe.js';
 import './journey.css';
 
 document.title='Memory Lane · 连续回忆';
-document.querySelector('#app').innerHTML=`<main class="journey" data-state="loading"><div class="journey-worlds"></div><canvas class="journey-effect" hidden></canvas><canvas class="journey-fracture" hidden></canvas><section class="journey-gate"><small>MEMORY LANE</small><h1>每一件信物，<br>通往一个世界。</h1><p class="journey-status">正在准备年度回忆…</p><button class="journey-start" disabled>准备中</button><a href="/">返回场景选择</a><p class="journey-credit">虚构故事 · 含惊悚、受伤场景 · 建议佩戴耳机<br>播放时无界面，按 Esc 暂停 · 约 ${Math.floor(JOURNEY_SECONDS/60)} 分 ${Math.round(JOURNEY_SECONDS%60)} 秒<br><a href="/assets/bloodbound/credits.html" target="_blank" rel="noopener">吸血鬼素材致谢</a> · <a href="/school" target="_blank" rel="noopener">校园故事</a> · <a href="/apocalypse" target="_blank" rel="noopener">末世与画作来源</a></p></section></main>`;
+document.querySelector('#app').innerHTML=`<main class="journey" data-state="loading"><div class="journey-worlds"></div><canvas class="journey-effect" hidden></canvas><canvas class="journey-fracture" hidden></canvas><div class="journey-card" role="status" aria-live="polite"><p class="journey-card-en"><em></em><span></span></p><p class="journey-card-zh" lang="zh-CN"><span></span><span></span></p></div><section class="journey-gate"><small>MEMORY LANE</small><h1>每一件信物，<br>通往一个世界。</h1><p class="journey-status">正在准备年度回忆…</p><button class="journey-start" disabled>准备中</button><a href="/">返回场景选择</a><p class="journey-credit">虚构故事 · 含惊悚、受伤场景 · 建议佩戴耳机<br>播放时无界面，按 Esc 暂停 · 约 ${Math.floor(JOURNEY_SECONDS/60)} 分 ${Math.round(JOURNEY_SECONDS%60)} 秒<br><a href="/assets/bloodbound/credits.html" target="_blank" rel="noopener">吸血鬼素材致谢</a> · <a href="/school" target="_blank" rel="noopener">校园故事</a> · <a href="/apocalypse" target="_blank" rel="noopener">末世与画作来源</a></p></section></main>`;
 const root=document.querySelector('.journey'),worlds=root.querySelector('.journey-worlds'),gate=root.querySelector('.journey-gate'),button=root.querySelector('button'),status=root.querySelector('.journey-status');
 const fxCanvas=root.querySelector('.journey-effect'),fractureCanvas=root.querySelector('.journey-fracture');
 const effects=createJourneyEffects(fxCanvas),fracture=createWorldFracture(fractureCanvas),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const sound=createJourneySound();
+const card=root.querySelector('.journey-card');let cardLinger=0;
+function showCard(spec){const [a,b]=card.querySelectorAll('.journey-card-en>*'),[c,d]=card.querySelectorAll('.journey-card-zh>*');a.textContent=spec.en[0];b.textContent=spec.en[1];c.textContent=spec.zh[0];d.textContent=spec.zh[1];card.dataset.kind=spec.kind;card.classList.add('shown');}
 const slots=new Map();let index=0,started=false,paused=false,transition=null,frame=0,last=0,disposed=false,busy=false,failed=false,stageComplete=false;
 function resize(){effects.resize(innerWidth,innerHeight);fracture.resize(innerWidth,innerHeight,devicePixelRatio);}
 addEventListener('resize',resize);resize();
@@ -59,12 +61,12 @@ async function advance(){
   const a=previous.api.capture(),b=next.api.capture(),stage=JOURNEY[index];
   effects.capture(a,b,stage.transition,reduced);fracture.capture(a,b);
   sound.play(stage.transition,stage.transitionSeconds);
-  transition={elapsed:0,duration:stage.transitionSeconds*1000,kind:stage.transition,previous,next};
+  transition={elapsed:0,duration:stage.transitionSeconds*1000,kind:stage.transition,card:stage.card,previous,next};
   fxCanvas.hidden=false;effects.draw(0);last=performance.now();state(paused?'paused':'transition');
  }catch(error){fail(error);}finally{busy=false;}
 }
 async function finishTransition(){
- sound.stop();const old=transition;transition=null;index++;stageComplete=false;reveal(old.next);fxCanvas.hidden=fractureCanvas.hidden=true;fracture.clear();
+ sound.stop();const old=transition;transition=null;if(old.card&&card.classList.contains('shown'))cardLinger=old.card.until*1000-old.duration;index++;stageComplete=false;reveal(old.next);fxCanvas.hidden=fractureCanvas.hidden=true;fracture.clear();
  old.previous.api.dispose?.();old.previous.iframe.remove();slots.delete(index-1);
  try{await old.next.api.start();if(paused)await old.next.api.pause();state(paused?'paused':'playing');void load(index+1);}catch(error){fail(error);}
 }
@@ -73,8 +75,11 @@ function tick(now){
  if(transition&&!paused&&!document.hidden){
   transition.elapsed+=Math.max(0,now-last);const {elapsed,duration,kind}=transition,p=Math.min(1,elapsed/duration);
   if(kind==='fracture'&&!reduced){effects.draw(p>=1?1:0);fracture.draw(worldWipeAt(elapsed),elapsed);}else effects.draw(p);
+  const spec=transition.card;
+  if(spec&&elapsed>=spec.at*1000&&elapsed<spec.until*1000&&!card.classList.contains('shown'))showCard({...spec,kind});
+  if(spec&&elapsed>=spec.until*1000)card.classList.remove('shown');
   if(p>=1)void finishTransition();
- }
+ }else if(cardLinger>0&&!paused&&!document.hidden&&(cardLinger-=Math.max(0,now-last))<=0)card.classList.remove('shown');
  last=now;frame=requestAnimationFrame(tick);
 }
 addEventListener('message',event=>{
