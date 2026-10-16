@@ -78,3 +78,14 @@
 
 @keyframes reply-appear{from{opacity:0;transform:translateY(8px)}}
 .story-player .story-phone-invite{top:48%;min-width:190px;min-height:165px;background:transparent;border:0;box-shadow:none;justify-content:flex-start;animation:none;text-shadow:0 1px 8px #fff;color:#435b49}.story-phone-invite .phone-glimmer{animation:phone-wake 2.4s ease-in-out infinite;border-radius:50%;background:#fff9e8dd;padding:4px 12px}.story-phone-invite>span:nth-child(2){background:#fffdf2e6;padding:8px 12px;border-radius:20px}.story-phone-invite small{display:none}
+
+/* Bilingual subtitles in the Bloodbound manner: speaker, the English line, its Chinese beneath.
+   Lighter tones and a tight shadow keep them readable over the sunlit classroom. */
+.story-caption,.story-reading .story-caption,.story-ending .story-caption,.story-idle .story-caption,.story-idle.story-reading .story-caption,.story-idle.story-ending .story-caption{bottom:15%;left:15%;right:15%;width:auto;max-width:none;transform:none;padding:0;color:#eee9e2;text-shadow:0 1px 2px #000d,0 2px 10px #000,0 0 30px #000;animation:story-subtitle-in .25s ease both}
+.story-caption span{display:block;font:9px/1.6 Georgia,serif;letter-spacing:.24em;text-transform:uppercase;color:#e2d4ba;margin-bottom:7px}
+.story-caption #story-line{font:italic clamp(17px,1.5vw,23px)/1.45 Georgia,"Times New Roman",serif;letter-spacing:.01em;margin:0;color:#eee9e2}
+.story-caption #story-line-zh{font:13px/1.8 "Songti SC","STSong",serif;letter-spacing:.13em;color:#e3e8ec;margin:9px 0 0}
+.story-caption #story-line-zh:empty{display:none}
+@keyframes story-subtitle-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:650px){.story-caption,.story-idle .story-caption,.story-idle.story-reading .story-caption{left:8%;right:8%;bottom:17%;width:auto}.story-caption #story-line{font-size:17px}.story-caption #story-line-zh{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.story-caption{animation:none!important}}

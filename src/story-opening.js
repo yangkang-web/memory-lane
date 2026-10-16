@@ -53,7 +53,8 @@ export function openingFrame({stage='invite',elapsed=0}={}){
   extract:film?openingRamp(t,14.2,17.7):0,
   fade:film?openingRamp(t,4.8,5.8)*(1-openingRamp(t,6.2,7.5)):0,
   transition:film&&t>=4.8&&t<7.5?'第二天 · 清晨':'',
-  text:film?(t<5?'他把第一封情书，轻轻放在你的课桌上。':t<10.8?'第二天，你走进教室，回到窗边的座位。':t<14.2?'拆开蜡封，打开只写给你的信。':'你慢慢抽出信纸，展开来看。'):'',
+  text:film?(t<5?'He sets the first love letter gently on your desk.':t<10.8?'The next day, you walk back to your seat by the window.':t<14.2?'You break the wax seal on a letter written only for you.':'Slowly, you draw out the page and unfold it.'):'',
+  translation:film?(t<5?'他把第一封情书，轻轻放在你的课桌上。':t<10.8?'第二天，你走进教室，回到窗边的座位。':t<14.2?'拆开蜡封，打开只写给你的信。':'你慢慢抽出信纸，展开来看。'):'',
   aperture:.0015+(film?.002*openingRamp(t,10.5,12):0),maxblur:.003+(film?.004*openingRamp(t,10.5,12):0),
   focus:leaving?.7+openingRamp(t,0,1.6):film&&t<6?1.7:film?3-2.34*openingRamp(t,9.2,12):.7,portrait:0,letter:film&&t>=11,fov:52};
 }

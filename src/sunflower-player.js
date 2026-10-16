@@ -12,7 +12,7 @@ export function mountSunflowerPlayer(world,{onEnter,onExit}){
  panel.innerHTML=`<div class="story-tint"></div><div class="story-fade"></div><p class="story-transition" aria-live="polite"></p><p class="story-daydream">A daydream · you imagine him here</p>
  <header class="story-header"><div><small id="story-number">01 / 04</small><strong id="story-chapter"></strong></div><button id="story-exit" aria-label="Exit story">Exit ✕</button></header>
  <div class="story-start"><span class="story-flower">✺</span><small>WESTBRIDGE · A SPRING MEMORY</small><h1>Always toward you.</h1><p>A promise. A sealed letter.<br>The little things he never forgot.</p><button id="story-play" disabled>Preparing your story…</button><span>约59秒 · 一封只写给你的信</span></div>
- <div class="story-caption" hidden><span id="story-speaker"></span><p id="story-line"></p></div>
+ <div class="story-caption" hidden><span id="story-speaker"></span><p id="story-line"></p><p id="story-line-zh" lang="zh-CN"></p></div>
  <div class="story-controls"><button id="story-pause" aria-label="Pause story" disabled>Pause</button><button id="story-replay" aria-label="Replay story" disabled>Replay</button><input id="story-progress" type="range" min="0" max="${STORY_DURATION}" step="0.1" value="0" aria-label="Story progress in seconds" disabled><output id="story-time">0:00 / ${formatTime(STORY_DURATION)}</output><button id="story-mute" aria-label="Mute story" aria-pressed="false">Sound on</button></div>
  <p id="story-notice" role="status" hidden></p><audio id="story-audio" preload="auto" src="/assets/voices/sunflower-story-short.wav"></audio>`;app.append(panel);
  const $=s=>panel.querySelector(s),audio=$('#story-audio'),intro=$('.story-start'),play=$('#story-play'),pause=$('#story-pause'),progress=$('#story-progress'),caption=$('.story-caption');
@@ -29,6 +29,8 @@ export function mountSunflowerPlayer(world,{onEnter,onExit}){
 
  const openingStory=mountStoryOpening(panel,{onWake:wake,onComplete(){audio.currentTime=0;void resume().catch(error=>sequenceEvent('error',{message:error.message}));}});
  let previousFrame=performance.now();
+ // Each new line rises in like the Bloodbound subtitles: English above, its Chinese beneath.
+ const showCaption=(text,translation,speaker)=>{caption.hidden=!text;if(!text||$('#story-line').textContent===text)return;$('#story-line').textContent=text;$('#story-line-zh').textContent=translation||'';$('#story-speaker').textContent=speaker;caption.style.animation='none';void caption.offsetWidth;caption.style.animation='';};
  const notice=text=>{$('#story-notice').textContent=text;$('#story-notice').hidden=!text;};
  const sync=()=>{
   if(!active)return;
@@ -37,7 +39,7 @@ export function mountSunflowerPlayer(world,{onEnter,onExit}){
   if(openingStory.active){
    const opening=openingSceneState(openingStory.state),shot=openingFrame(opening);world.updateStory(0,openingStory.running,opening);
    $('#story-chapter').textContent=storyChapters[0];$('#story-number').textContent='01 / 04';
-   caption.hidden=!shot.text;$('#story-line').textContent=shot.text;$('#story-speaker').textContent='';
+   showCaption(shot.text,shot.translation,'');
    $('.story-fade').style.opacity=shot.fade;$('.story-transition').textContent=shot.transition;$('.story-transition').style.opacity=shot.fade;
    $('.story-daydream').hidden=true;panel.classList.remove('story-ending','story-reading','story-idle');panel.classList.add('story-chapter-quiet');
    pause.textContent=openingStory.running?'Pause':'Resume';pause.setAttribute('aria-label',openingStory.running?'Pause story':'Resume story');progress.disabled=true;progress.min='0';progress.value=String(openingProgress(openingStory.state));$('#story-time').textContent=`${formatTime(openingProgress(openingStory.state))} / ${formatTime(STORY_DURATION)}`;return;
@@ -46,7 +48,7 @@ export function mountSunflowerPlayer(world,{onEnter,onExit}){
   f.fade=Math.max(f.fade,schoolEndingFade(audioTime));
   world.updateStory(time,playing);$('#story-chapter').textContent=storyChapters[f.chapter];$('#story-number').textContent=`0${f.chapter+1} / 04`;
   const speaking=voice.lines.find(line=>time>=line.start&&time<line.end);
-  const text=f.text;caption.hidden=!started||!text;$('#story-line').textContent=text;$('#story-speaker').textContent=f.text?f.speaker:speaking?'Fumiriya':'';
+  showCaption(started?f.text:'',f.translation,f.text?f.speaker:speaking?'Fumiriya':'');
   panel.classList.toggle('story-ending',f.ending);$('.story-fade').style.opacity=f.fade;
   panel.classList.toggle('story-reading',f.letter);
   panel.classList.toggle('story-idle',playing&&performance.now()-lastInteraction>2500&&!$('.story-controls').contains(document.activeElement));

@@ -1,25 +1,27 @@
 // Keep the original sixty-second dialogue and give the final response a quiet coda.
+// Each spoken or on-screen line carries its Chinese subtitle after the English one.
 export const STORY_DURATION=68;
 export const storyChapters=['A promise in the sunlight','A letter, just for you','The little things you remember','Always toward you'];
 export const letterFront=['Today is day N of liking you.','','After all, what I’m best at','is always liking you.'];
 export const letterBack=['Remember saying yesterday','that you love sunflowers?','','They always turn toward the sun.','','And me?','I only want to turn toward you.'];
 export const finalThought='The sweetest love letter is knowing you remembered even the things I said in passing.';
+export const finalThoughtZh='最甜的情书，是知道你连我随口说过的话都记得。';
 const messages=[
- [0,3.3,'You','If we went to the same school, how would you win me over?'],
- [3.3,8.65,'Fumiriya','I’d write you a love letter every day, until you said yes to being my girlfriend.'],
- [9.3,12,'You','Then the first one has to be super sweet! No half-hearted effort!'],
- [12,14.7,'Fumiriya','Deal. You’ll have it tomorrow.'],
- [15.3,18.6,'','The next morning… A sealed love letter, waiting on your desk.'],
- [18.6,20,'','To my favorite girl.'],
- [39,43,'You · yesterday','I love sunflowers. Just seeing them makes me happy.'],
- [43,44.35,'','He remembered. Even that little thing.'],
- [45,47.1,'You','Got your letter. I love it.'],
- [47.1,49.6,'Fumiriya','Then, may I ask you something a little early?'],
- [49.6,51,'You','What?'],
- [51,54,'Fumiriya','Will today’s leading lady be my girlfriend?'],
- [54,56.3,'You','Yes. But I still want a letter tomorrow.'],
- [56.8,58.6,'Fumiriya','As you wish, my girlfriend.'],
- [63,68.01,'',finalThought],
+ [0,3.3,'You','If we went to the same school, how would you win me over?','如果我们在同一所学校，你会怎么追我？'],
+ [3.3,8.65,'Fumiriya','I’d write you a love letter every day, until you said yes to being my girlfriend.','我会每天给你写一封情书，直到你答应做我女朋友。'],
+ [9.3,12,'You','Then the first one has to be super sweet! No half-hearted effort!','那第一封可要超级甜！不许敷衍！'],
+ [12,14.7,'Fumiriya','Deal. You’ll have it tomorrow.','一言为定，明天就给你。'],
+ [15.3,18.6,'','The next morning… A sealed love letter, waiting on your desk.','第二天早上……一封封好的情书，正静静躺在你的课桌上。'],
+ [18.6,20,'','To my favorite girl.','致我最喜欢的女孩。'],
+ [39,43,'You · yesterday','I love sunflowers. Just seeing them makes me happy.','我好喜欢向日葵，光是看着就很开心。'],
+ [43,44.35,'','He remembered. Even that little thing.','他记得。连这样的小事也记得。'],
+ [45,47.1,'You','Got your letter. I love it.','收到你的信了，好喜欢。'],
+ [47.1,49.6,'Fumiriya','Then, may I ask you something a little early?','那……我可以提前问你一件事吗？'],
+ [49.6,51,'You','What?','什么？'],
+ [51,54,'Fumiriya','Will today’s leading lady be my girlfriend?','今天的女主角，愿意做我的女朋友吗？'],
+ [54,56.3,'You','Yes. But I still want a letter tomorrow.','愿意。不过明天我还要一封信。'],
+ [56.8,58.6,'Fumiriya','As you wish, my girlfriend.','遵命，我的女朋友。'],
+ [63,68.01,'',finalThought,finalThoughtZh],
 ];
 // Walk along Room 101’s clear window aisle, then look at its existing right-wall painting.
 export const cameraKeys=[
@@ -62,11 +64,11 @@ export function storyPerformance(t){
   nod:pulse(t,56.75,57.05,57.2,57.6)*.032};
 }
 export const voiceCaptions=[
- [19.2,21.2,'Today is day N of liking you.'],
- [24.2,28.5,"What I’m best at is always liking you."],
- [31,33.4,'Remember saying you love sunflowers?'],
- [33.4,35.4,'They always turn toward the sun.'],
- [35.4,39,'And me? I only want to turn toward you.'],
+ [19.2,21.2,'Today is day N of liking you.','今天，是喜欢你的第 N 天。'],
+ [24.2,28.5,"What I’m best at is always liking you.",'我最擅长的，就是一直喜欢你。'],
+ [31,33.4,'Remember saying you love sunflowers?','还记得你说过喜欢向日葵吗？'],
+ [33.4,35.4,'They always turn toward the sun.','它们总是朝着太阳。'],
+ [35.4,39,'And me? I only want to turn toward you.','而我呢？我只想朝着你。'],
 ];
 export function storyFrame(value){
  const t=Math.max(0,Math.min(STORY_DURATION,Number.isFinite(value)?value:0));
@@ -79,7 +81,7 @@ export function storyFrame(value){
  const position=mix(a[1],b[1]);
  const envelopeFocus=Math.hypot(position[0]+33.89,position[1]-1.315,position[2]+25.12);
  return {time:t,chapter:Math.min(3,Math.floor(t/15)),position,target:mix(a[2],b[2]),
-  speaker:message?.[2]||(spoken?'Fumiriya':''),text:spoken?.[2]||message?.[3]||'',phone:t<14.5||(t>=45&&t<47.8),
+  speaker:message?.[2]||(spoken?'Fumiriya':''),text:spoken?.[2]||message?.[3]||'',translation:spoken?.[3]||message?.[4]||'',phone:t<14.5||(t>=45&&t<47.8),
   phoneLift:pulse(t,-1,0,13.7,14.5)+pulse(t,44.7,45.4,47.1,47.8),
   focus:letter?.66:t>=15&&t<18.6?envelopeFocus:t>=46.7&&t<59.35?1.85:t>=3.1&&t<14.6?2.05:t>=63?9:5,
   dreamHint:(t>=3.7&&t<6.7)||(t>=47.2&&t<49.1),
