@@ -1,15 +1,18 @@
 // Only the same-origin journey opts into cinematic playback. Standalone pages keep their controls.
 export const inSequence = new URLSearchParams(location.search).get('sequence') === '1' && parent !== window;
+// The playable journey: the memories still run in order, but the visitor walks, looks and touches in them.
+export const playMode = inSequence && new URLSearchParams(location.search).get('play') === '1';
 if (inSequence) {
   document.documentElement.classList.add('sequence-mode');
+  if (playMode) document.documentElement.classList.add('play-mode');
   const style = document.createElement('style');
   style.textContent = `
     .sequence-mode body { margin:0; overflow:hidden; }
-    .sequence-mode #app { pointer-events:none; }
+    ${playMode ? '' : '.sequence-mode #app { pointer-events:none; }'}
     .sequence-mode .sea-heading,.sequence-mode .sea-number,.sequence-mode .sea-controls,.sequence-mode .sea-caption,
     .sequence-mode .story-entry,.sequence-mode .story-header,.sequence-mode .story-start,.sequence-mode .story-controls,.sequence-mode #story-notice,
     .sequence-mode .narrative-title,.sequence-mode .narrative-controls,.sequence-mode .narrative-ending,
-    .sequence-mode .memory-stage > :not(canvas):not(.subtitle):not(.film-shade):not(.grain):not(.cinema-matte):not(.flash):not(.fade) { display:none!important; }
+    .sequence-mode .memory-stage > :not(canvas)${playMode ? ':not(.reticle):not(.use-prompt):not(.use-button):not(.hint):not(.controls-tip):not(.stick)' : ''}:not(.subtitle):not(.film-shade):not(.grain):not(.cinema-matte):not(.flash):not(.fade) { display:none!important; }
     .sequence-mode #app > :not(canvas):not(.story-player):not(.narrative-player):not(.memory-stage):not(.sea-vignette):not(.sea-dialogue):not(.annual):not(.cc-stage):not(.cc-labels):not(.cc-title):not(.cc-subtitles):not(.cc-end) { visibility:hidden!important; }
     .sequence-mode .cc-replay-big { display:none!important; }
   `;

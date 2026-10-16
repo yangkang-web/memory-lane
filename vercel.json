@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/(school|journey|bloodbound|seaside|apocalypse|stage|annual-memory|blank|white-room)/?", "destination": "/index.html" }
+  ]
+}

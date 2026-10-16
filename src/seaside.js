@@ -1,4 +1,4 @@
-import {inSequence,installSequence,sequenceEvent,snapshot} from './sequence-bridge.js';
+import {inSequence,playMode,installSequence,sequenceEvent,snapshot} from './sequence-bridge.js';
 import * as T from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
@@ -40,7 +40,7 @@ try{
   RectAreaLightUniformsLib.init();const windowLight=new T.RectAreaLight('#d5e9ed',3.5,6.7,2.2);windowLight.position.set(0,1.8,-3.95);windowLight.lookAt(0,1.3,2);scene.add(windowLight);
   const world=createSeasideWorld(scene);
   const composer=new EffectComposer(renderer),ao=new SSAOPass(scene,camera,innerWidth,innerHeight,16);ao.kernelRadius=.13;ao.minDistance=.0002;ao.maxDistance=.025;composer.addPass(new RenderPass(scene,camera));composer.addPass(ao);composer.addPass(new OutputPass());const fxaa=new ShaderPass(FXAAShader);composer.addPass(fxaa);
-  let assetReady=false,assetFailed=false,sequencePlaying=false,sequenceDone=false;
+  let assetReady=false,assetFailed=false,sequencePlaying=false,sequenceDone=false,sequenceClock=0;
   let elapsed=0,previous=performance.now(),automatic=true,drag=null,refocus=null,yaw=0,pitch=0,frame=0,disposed=false;
   status.textContent='正在摆放藏品…';
   world.ready.then(()=>{assetReady=true;previous=performance.now();}).catch(error=>{assetFailed=true;status.textContent='藏品模型未能载入，请刷新重试。';console.error('Seaside collectible could not load',error);});
@@ -59,6 +59,7 @@ try{
   on(window,'resize',resize);resize();
   let sequencePrevious=performance.now();
   function tick(now){if(disposed)return;const dt=Math.min(.05,(now-previous)/1000);previous=now;if(!document.hidden){
+    if(sequencePlaying&&assetReady)sequenceClock+=Math.max(0,(now-sequencePrevious)/1000);
     if(automatic){if(assetReady&&(!inSequence||sequencePlaying))elapsed=Math.min(GAZE_DURATION,elapsed+(inSequence?Math.max(0,(now-sequencePrevious)/1000):dt));const pose=seasidePose(elapsed,reduce.matches);camera.position.fromArray(pose.position);camera.lookAt(new T.Vector3(...pose.look));camera.fov=pose.fov;
       if(refocus){refocus.time+=dt;const u=reduce.matches?1:Math.min(1,refocus.time/2.8),blend=u*u*(3-2*u),endPosition=camera.position.clone(),endRotation=camera.quaternion.clone();camera.position.copy(refocus.position).lerp(endPosition,blend);camera.quaternion.copy(refocus.quaternion).slerp(endRotation,blend);camera.fov=T.MathUtils.lerp(refocus.fov,pose.fov,blend);if(u===1)refocus=null;}
       camera.updateProjectionMatrix();ao.ssaoMaterial.uniforms.cameraProjectionMatrix.value.copy(camera.projectionMatrix);ao.ssaoMaterial.uniforms.cameraInverseProjectionMatrix.value.copy(camera.projectionMatrixInverse);const caption=assetFailed?'藏品模型未能载入，请刷新重试。':!assetReady?'正在摆放藏品…':pose.done?'07 / 爱心项链':pose.stage==='inspect'?'在柜前，慢慢看。':pose.stage==='focus'?'目光停在这条项链上。':'走近海边小屋的藏品柜。';if(status.textContent!==caption)status.textContent=caption;}
@@ -66,10 +67,11 @@ try{
     const subtitleOpacity=automatic&&assetReady&&!refocus?Math.min(T.MathUtils.smoothstep(elapsed,INSPECT_END,INSPECT_END+.35),1-T.MathUtils.smoothstep(elapsed,GAZE_DURATION-.5,GAZE_DURATION-.08)):0;
     dialogue.hidden=subtitleOpacity<=0;dialogue.style.opacity=subtitleOpacity;
     world.update(reduce.matches?0:now/1000);composer.render();
-    if(inSequence&&elapsed>=GAZE_DURATION&&!sequenceDone){sequenceDone=true;sequencePlaying=false;sequenceEvent('done');}
+    // In the playable journey the visitor may take the view any time; the next keepsake is offered after the same time.
+    if(inSequence&&(elapsed>=GAZE_DURATION||playMode&&sequenceClock>=GAZE_DURATION)&&!sequenceDone){sequenceDone=true;sequencePlaying=false;sequenceEvent('done');}
   }sequencePrevious=now;frame=requestAnimationFrame(tick);}
   frame=requestAnimationFrame(tick);
   dispose=()=>{disposed=true;cancelAnimationFrame(frame);listeners.forEach(fn=>fn());ao.dispose();fxaa.dispose();composer.dispose();world.dispose();environmentTarget.dispose();renderer.dispose();};
-  installSequence({ready:world.ready,start(){replay();sequenceDone=false;sequencePlaying=true;sequencePrevious=performance.now();},pause(){sequencePlaying=false;},resume(){if(!sequenceDone){sequencePlaying=true;sequencePrevious=performance.now();}},capture:()=>snapshot(canvas,()=>composer.render()),dispose:()=>dispose()});
+  installSequence({ready:world.ready,start(){replay();sequenceDone=false;sequencePlaying=true;sequenceClock=0;sequencePrevious=performance.now();},pause(){sequencePlaying=false;},resume(){if(!sequenceDone){sequencePlaying=true;sequencePrevious=performance.now();}},capture:()=>snapshot(canvas,()=>composer.render()),dispose:()=>dispose()});
 }catch(error){sequenceEvent('error',{message:error.message});console.error('Seaside scene could not start',error);document.querySelector('.sea-error').hidden=false;}
 if(import.meta.hot)import.meta.hot.dispose(()=>dispose());

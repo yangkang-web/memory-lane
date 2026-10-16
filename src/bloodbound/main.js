@@ -1,4 +1,6 @@
-import {inSequence,installSequence,sequenceEvent,snapshot} from '../sequence-bridge.js';
+import {inSequence,playMode,installSequence,sequenceEvent,snapshot} from '../sequence-bridge.js';
+// The filmed journey plays the memory itself; the playable one hands the body to the visitor.
+const filmed = inSequence && !playMode;
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -250,7 +252,7 @@ async function init() {
       ui.shake(.45);
     }
     if (s > 3.95 && arms.pose === 'push') arms.set('rest', { speed: 2.2 });
-    if (s >= 4.8 && !o.sent) { o.sent = true; sequenceEvent('done'); }
+    if (s >= 4.8 && !o.sent) { o.sent = true; player.releaseLock(); sequenceEvent('done'); }
   }
   let completionSent = false;
   let accepted = false;
@@ -313,18 +315,19 @@ async function init() {
     },
   });
   const director = createDirector({
-    player, flow, interact, lucien, hunter, arms, chapel, pendant, sound, ui, brisk: inSequence,
+    player, flow, interact, lucien, hunter, arms, chapel, pendant, sound, ui, brisk: filmed,
     onAccept: () => { accepted = true; event('accept', { keepsakeId: 'blood-heart-pendant' }); },
-    onComplete: () => (outro ? null : autopilot.active ? leaveOnOwn() : setState('complete')),
+    onComplete: () => (outro ? null : playMode ? beginOutro() : autopilot.active ? leaveOnOwn() : setState('complete')),
   });
   autopilot = createAutopilot({ player, flow, interact, director, lucien, hunter, pendant, arms });
-  // Inside the journey it always plays itself.
-  let autoplay = inSequence || readAutoplay(storage);
+  // Inside the filmed journey it always plays itself, in the playable one never.
+  let autoplay = playMode ? false : inSequence || readAutoplay(storage);
   // The same switch on the title and in the menu; it takes the body over (or hands it back) when the memory plays on.
   function showAutoplay() {
     document.querySelectorAll('[data-autoplay]').forEach(button => button.setAttribute('aria-pressed', String(autoplay)));
     $('.menu-help').textContent = autoplay ? autoHelp : controlsHelp;
-    $('.controls-tip').textContent = autoplay ? autoHelp : controlsHelp;
+    // Inside the journey the mouse is only caught by a click in the memory itself.
+    $('.controls-tip').textContent = autoplay ? autoHelp : (playMode && !touchDevice ? '点击画面接管视线 · ' : '') + controlsHelp;
   }
   showAutoplay();
   document.querySelectorAll('[data-autoplay]').forEach(button => button.addEventListener('click', () => {
@@ -396,7 +399,7 @@ async function init() {
     jumping = true;
     flow.go(segment);
     if (state !== 'playing') return;
-    if(!inSequence)player.requestLock();
+    if(!filmed)player.requestLock();
     $('.controls-tip').hidden = false;
     tipUntil = runTime + 9;
     renderer.shadowMap.needsUpdate = true;
@@ -415,7 +418,8 @@ async function init() {
     await sound.unlock();
     takeOver();
     setState('playing');
-    if(!inSequence)player.requestLock();
+    if(!filmed)player.requestLock();
+    if (playMode) { $('.controls-tip').hidden = false; tipUntil = runTime + 6; }
   }
   async function jump(segment) {
     await sound.unlock();
@@ -429,7 +433,7 @@ async function init() {
     setState('playing');
     jumping = true;
     flow.go(segment);
-    if(!inSequence)player.requestLock();
+    if(!filmed)player.requestLock();
   }
   // Auto-play's way on from the end, in place of the ending card: a moment with him, then the nave doors open and the
   // walk east down the passage to the door at its end.
@@ -456,7 +460,7 @@ async function init() {
     const turn = Math.atan2(Math.sin(Math.atan2(-(dx - x), -(dz - z)) - yaw), Math.cos(Math.atan2(-(dx - x), -(dz - z)) - yaw));
     const where = Math.abs(turn) < Math.PI / 4 ? '就在前方' : Math.abs(turn) > Math.PI * 3 / 4 ? '在你身后' : turn > 0 ? '在你左手边' : '在你右手边';
     ui.hint(`东侧的门开了 · 门${where} · 走廊尽头有光`, 8);
-    if(!inSequence)player.requestLock();
+    if(!filmed)player.requestLock();
   }
   async function exit() {
     if (state !== 'complete' && !(state === 'playing' && walkingOut)) return;
@@ -512,19 +516,21 @@ async function init() {
     notice(sound.muted ? '声音已关闭 · M 恢复' : '声音已开启');
   });
   // Clicking the scene takes the mouse back for looking around.
-  renderer.domElement.addEventListener('click', () => { if (state === 'playing'&&!inSequence)player.requestLock(); }, { signal: lifetime.signal });
+  renderer.domElement.addEventListener('click', () => { if (state === 'playing'&&!filmed)player.requestLock(); }, { signal: lifetime.signal });
+  // In the playable journey the journey's own pause screen stands in for the menu.
+  const askPause = () => (playMode ? sequenceEvent('pause') : safe(pause)());
   // Leaving pointer lock (Esc, switching windows) opens the menu, as games do.
   let lockedOnce = false;
   let lockLostAt = 0;
   document.addEventListener('pointerlockchange', () => {
     if (player.locked) { lockedOnce = true; return; }
-    if (lockedOnce && state === 'playing') { lockLostAt = performance.now(); pause(); }
+    if (lockedOnce && state === 'playing' && !outro?.sent) { lockLostAt = performance.now(); askPause(); }
   }, { signal: lifetime.signal });
   addEventListener('keydown', event => {
     if (event.repeat || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
     if (event.code === 'KeyM') $('#sound-toggle').click();
     if ((event.code === 'Space' && event.target.tagName !== 'BUTTON') || event.key === 'Escape') {
-      if (state === 'playing') { event.preventDefault(); safe(pause)(); }
+      if (state === 'playing') { event.preventDefault(); askPause(); }
       // The Esc that just released the pointer must not also close the menu it opened.
       else if (state === 'paused' && performance.now() - lockLostAt > 400) { event.preventDefault(); safe(resume)(); }
     }
@@ -652,7 +658,7 @@ async function init() {
           flow.update(step);
           director.update(step, runTime);
           autopilot.update(step);
-          if (inSequence && !outro && flow.segment === 'wear' && director.rite?.release < Infinity) beginOutro();
+          if (filmed && !outro && flow.segment === 'wear' && director.rite?.release < Infinity) beginOutro();
           if (outro) steerOutro(step);
           if (player.travelled > 1.5 && runTime > tipUntil - 6) tipUntil = Math.min(tipUntil, runTime + 1);
           if (walkingOut && player.pose.x > PASSAGE.maxX - PLAYER_RADIUS - .25) exit();

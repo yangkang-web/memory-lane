@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {createAnnualHouse} from './annual-house.js';
-import {inSequence,installSequence,sequenceEvent} from './sequence-bridge.js';
+import {inSequence,playMode,installSequence,sequenceEvent} from './sequence-bridge.js';
 import './journey-annual.css';
 const app=document.querySelector('#app');
 app.innerHTML='<main class="annual" data-phase="home"><img class="annual-home" src="/assets/journey/emochi-home.jpg" alt="Emochi 首页截图"><div class="annual-veil"></div><section class="annual-modal" role="dialog" aria-label="让属于你们的 刻骨铭心的瞬间"><div class="annual-border"></div><span class="annual-eyebrow">AFTERTALE · STORY COLLECTIBLES</span><div class="annual-year">2026</div><h1>让属于你们的 刻骨铭心的瞬间</h1><p>每一件典藏物，都藏着一段只属于你们的故事。轻触它，进入这个 沉浸式的3D记忆之境。</p><button class="annual-enter" aria-label="走进我的典藏小屋">走进我的典藏小屋 <span>↗</span></button><span class="annual-caption">YOUR MOMENTS. YOUR CHARACTERS. YOUR STORY.</span></section><canvas class="annual-canvas"></canvas><div class="annual-hand" aria-hidden="true"><svg viewBox="0 0 100 130"><defs><linearGradient id="hand" x2="1" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#b3b0d9"/></linearGradient></defs><path d="M35 125C34 106 16 88 15 79C14 69 24 66 30 74L39 86L39 24C39 12 53 12 53 24L53 58C56 49 68 49 68 60C72 53 83 56 82 67C88 62 97 67 95 78L91 104L82 125Z" fill="url(#hand)" stroke="#66617f" stroke-width="2"/><path d="M53 60V84M68 64V87M82 71V91" fill="none" stroke="#8782a0" stroke-width="2"/></svg></div><div class="annual-click-ring"></div><div class="annual-flash"></div></main>';
@@ -17,12 +17,14 @@ const pm=new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.Addi
 const stars=new T.Points(pg,pm);scene.add(stars);
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let elapsed=0,playing=false,last=0,frame,disposed=false;
+// The playable journey waits on the invitation for the visitor's own click; the filmed one shows a hand making it.
+const WAIT_AT=4.6;let clicked=!playMode;
 const smooth=(a,b,t)=>T.MathUtils.smoothstep(t,a,b);
 function render(){
  const t=elapsed,appear=smooth(.6,1.7,t),enter=smooth(7.4,10.8,t),align=smooth(6.6,8.4,t),push=smooth(8.4,10.8,t);
  root.dataset.phase=t<.6?'home':t<6.6?'invitation':t<7.4?'click':'enter';
  root.style.setProperty('--appear',appear);root.style.setProperty('--enter',enter);root.style.setProperty('--flash',smooth(9.8,10.9,t));
- const handMove=smooth(4.8,6.35,t),handAlpha=smooth(4.6,5,t)*(1-smooth(6.95,7.35,t));
+ const handMove=smooth(4.8,6.35,t),handAlpha=playMode?0:smooth(4.6,5,t)*(1-smooth(6.95,7.35,t));
  root.style.setProperty('--hand-opacity',handAlpha);root.style.setProperty('--hand-x',(1-handMove)*180+'px');root.style.setProperty('--hand-y',((1-handMove)*170+Math.sin(smooth(6.4,6.7,t)*Math.PI)*9)+'px');
  root.style.setProperty('--ring-opacity',Math.sin(smooth(6.5,7.3,t)*Math.PI));root.style.setProperty('--ring-scale',1+smooth(6.5,7.3,t)*2);
  const angle=reduced?.25:.22+Math.min(t,6.6)*.18;house.root.rotation.y=angle*(1-align);
@@ -36,9 +38,9 @@ function render(){
  camera.aspect=targetW/targetH;camera.updateProjectionMatrix();
  canvas.style.opacity=appear;pm.uniforms.time.value=t;stars.rotation.y=reduced?0:t*.04;halos.forEach((r,i)=>r.rotation.z=reduced?0:t*.1*(i%2?1:-1));renderer.render(scene,camera);
 }
-function tick(now){if(disposed)return;if(playing&&!document.hidden){elapsed+=Math.max(0,(now-last)/1000);if(elapsed>=11){elapsed=11;playing=false;sequenceEvent('done');}}last=now;render();frame=requestAnimationFrame(tick);}
+function tick(now){if(disposed)return;if(playing&&!document.hidden){elapsed+=Math.max(0,(now-last)/1000);if(!clicked&&elapsed>WAIT_AT)elapsed=WAIT_AT;if(elapsed>=11){elapsed=11;playing=false;sequenceEvent('done');}}last=now;render();frame=requestAnimationFrame(tick);}
 function dispose(){disposed=true;cancelAnimationFrame(frame);const materials=new Set();scene.traverse(o=>{o.geometry?.dispose();if(o.material)materials.add(o.material);});materials.forEach(m=>m.dispose());renderer.dispose();renderer.forceContextLoss();}
 const ready=Promise.all([...root.querySelectorAll('img')].map(img=>img.decode()));
 installSequence({ready,start(){elapsed=0;playing=true;last=performance.now();},pause(){playing=false;},resume(){if(elapsed<11){playing=true;last=performance.now();}},capture(){const c=document.createElement('canvas');c.width=innerWidth;c.height=innerHeight;const ctx=c.getContext('2d');ctx.fillStyle='#fff3df';ctx.fillRect(0,0,c.width,c.height);return c;},dispose});
-button.onclick=()=>{if(playing&&elapsed<6.6)elapsed=6.6;};canvas.onclick=button.onclick;
+button.onclick=()=>{if(playing&&elapsed<6.6){elapsed=Math.max(elapsed,6.5);clicked=true;}};canvas.onclick=button.onclick;
 frame=requestAnimationFrame(tick);if(!inSequence){playing=true;last=performance.now();}
