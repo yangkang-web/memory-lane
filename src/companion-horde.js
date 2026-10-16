@@ -3,6 +3,23 @@ import { createInfectedCrowdAssets } from './infected-crowd-assets.js';
 import { streetSurface } from './companion-street-response.js';
 import { smooth } from './last-companion-timeline.js';
 
+export const FINALE_HORDE_COUNT = 180;
+
+// Two deep streams pass either side of the fountain, inside the plaza walls.
+// Use playback seconds so edits/seeking cannot teleport the pursuit forward.
+export function finaleCrowdPosition(index, time) {
+  const side = index % 12 < 6 ? 1 : -1;
+  const lane = index % 6, row = Math.floor(index / 12);
+  const speed = 3.35 + (index % 5) * .045;
+  const distance = Math.max(0, time - 49) * speed;
+  return {
+    x: side * (5.8 + lane * 1.04) + Math.sin(index * 17.1) * .14,
+    y: .23,
+    z: 178 + row * 1.55 + Math.cos(index * 7.31) * .45 - distance,
+    distance, speed,
+  };
+}
+
 // East-side pursuers stay on the station side of the maintenance-room wall.
 // Their old route at z124 put background extras inside the escape room.
 export function metroCrowdPosition(index, time) {
@@ -19,9 +36,25 @@ export function metroCrowdPosition(index, time) {
 // Mid-distance crowd shares geometry; close encounters use fully articulated actors.
 export function createCompanionHorde(scene) {
   const root = new T.Group(); root.name = 'Infected crowd / textured pose atlas'; scene.add(root);
-  const count=56, assets=createInfectedCrowdAssets(root,count);
+  const count=56, assets=createInfectedCrowdAssets(root,FINALE_HORDE_COUNT);
   const actor=new T.Object3D(), target=new T.Vector3();
   function update(s, camera) {
+    if (s.compact && s.playbackTime >= 49) {
+      root.visible = s.playbackTime < 58.2;
+      if (!root.visible) return;
+      assets.begin();
+      for (let i = 0; i < FINALE_HORDE_COUNT; i++) {
+        const path = finaleCrowdPosition(i, s.playbackTime);
+        const size = .91 + (i % 7) * .023;
+        actor.position.set(path.x, path.y, path.z);
+        actor.rotation.set(0, 0, 0);
+        actor.scale.set(size * (.94 + (i % 3) * .06), size, size);
+        actor.updateMatrix();
+        assets.write(i, s.playbackTime, true, true, actor.matrix, path.distance / size);
+      }
+      assets.end();
+      return;
+    }
     if(s.compact&&(s.playbackTime<18||s.playbackTime>=52)){root.visible=false;return;}
     const t = s.t, shop = t >= 147 && t < 184, street = t >= 234 && t < 289, metro = t >= 311 && t < 402, plaza = t >= 433 && t < 474;
     root.visible = shop || street || metro || plaza; if (!root.visible) return;
