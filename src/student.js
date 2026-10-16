@@ -7,6 +7,7 @@ import { applySummerUniform } from './student-outfit.js';
 import { applyNaturalComplexion } from './student-appearance.js';
 import { createOfferBook } from './student-props.js';
 import { applyCombedBackHair } from './student-hair.js';
+import { createStudentStability } from './student-stability.js';
 
 // Campus characters, VRoid Project / pixiv, CC0. See ASSET-LICENSES.md.
 // Retain the original rig and expressions; adapt clothing to campus lighting.
@@ -16,7 +17,7 @@ export function createStudent(scene, { character, reducedMotion = false } = {}) 
   root.position.fromArray(character.position);
   root.rotation.y=character.yaw||0;
   scene.add(root);
-  let vrm, motion, updateContactShadows, updateOutfit, status='loading', pending;
+  let vrm, motion, stability, updateContactShadows, updateOutfit, status='loading', pending;
   const listeners=new Set();
   const updateBook=createOfferBook(scene);
   let previousLabel='';
@@ -52,6 +53,7 @@ export function createStudent(scene, { character, reducedMotion = false } = {}) 
         if(!Number.isFinite(height)||height<=0)throw new Error('Invalid character dimensions.');
         const scale=character.height/height;
         const display=new T.Group();
+        display.visible=false;
         display.scale.setScalar(scale);
         display.position.y=-bounds.min.y*scale;
         display.add(model.scene);
@@ -63,10 +65,13 @@ export function createStudent(scene, { character, reducedMotion = false } = {}) 
         }
         vrm=model;
         root.add(display);
+        stability=createStudentStability(model,root,{reducedMotion});
         motion=createStudentMotion(root,model,{reducedMotion,chair:character.chair,waypoints:character.waypoints});
-        vrm.update(0);
+        stability.update(0);
+        updateOutfit?.(motion.inspect().seat);
         updateContactShadows=createStudentContactShadows(scene,model,root.position.y);
         updateContactShadows();
+        display.visible=true;
         status='ready';
         return true;
       } catch(error) {
@@ -81,13 +86,13 @@ export function createStudent(scene, { character, reducedMotion = false } = {}) 
   function update(dt) {
     if(!vrm)return;
     motion.update(dt);
-    vrm.update(reducedMotion?0:Math.max(0,Math.min(Number.isFinite(dt)?dt:0,.05)));
+    stability.update(dt);
     updateOutfit?.(motion.inspect().seat);
     updateBook(vrm.humanoid.getNormalizedBoneNode('rightHand'),motion.inspect().giveMix);
     updateContactShadows();
     if(previousLabel!==motion.label){previousLabel=motion.label;listeners.forEach(fn=>fn());}
   }
   const ready=load();
-  return {character,root,update,setAction,load,ready,setSpeechFrame(value){motion?.setSpeechFrame(value);},setSpeaking(value){motion?.setSpeaking(value);listeners.forEach(fn=>fn());},get speaking(){return motion?.speaking??false;},subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},
+  return {character,root,update,setAction,load,ready,resetSecondaryMotion(){stability?.reset();},relocate(position){if(root.position.distanceToSquared(new T.Vector3(...position))>1e-8)stability?.reset();motion?.relocate(position);},setStoryPose(value){motion?.setStoryPose(value);},setSpeechFrame(value){motion?.setSpeechFrame(value);},setSpeaking(value){motion?.setSpeaking(value);listeners.forEach(fn=>fn());},get speaking(){return motion?.speaking??false;},subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},
     get action(){return motion?.action??'idle';},get label(){return motion?.label??'Loading…';},get status(){return status;}};
 }

@@ -1,0 +1,13 @@
+[
+  {"from":19.2,"to":21.12,"seconds":1.92},
+  {"from":24.43,"to":27.5,"seconds":3.07},
+  {"from":30.8,"to":38.8,"seconds":8},
+  {"from":38.8,"to":47.1,"seconds":2.8},
+  {"from":47.1,"to":49.5,"seconds":2.4},
+  {"from":49.5,"to":51,"seconds":0.75},
+  {"from":51,"to":53.6,"seconds":2.6},
+  {"from":53.6,"to":56.8,"seconds":1.6},
+  {"from":56.8,"to":58.6,"seconds":1.8},
+  {"from":58.6,"to":59.25,"seconds":0.65},
+  {"from":64,"to":68,"seconds":4}
+]
