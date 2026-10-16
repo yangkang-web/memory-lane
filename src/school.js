@@ -240,7 +240,7 @@ export function createCampus(canvas,labelRoot,onZone=()=>{}) {
       for(const material of materials){for(const value of Object.values(material))if(value?.isTexture)textures.add(value);material.dispose();}
       geometries.forEach(g=>g.dispose());textures.forEach(t=>t.dispose());renderer.dispose();renderer.forceContextLoss();
     },
-    captureStory(){return snapshot(renderer.domElement,()=>{cinemaFrame=story?.update(storyTime,0,false,storyOpening);if(cinemaFrame){cinematography??=createStoryCinematography(renderer,scene,camera);cinematography.render(cinemaFrame);}else renderer.render(scene,camera);});},
+    captureStory(){if(!story?.active)return snapshot(renderer.domElement,()=>renderer.render(scene,camera));return snapshot(renderer.domElement,()=>{cinemaFrame=story?.update(storyTime,0,false,storyOpening);if(cinemaFrame){cinematography??=createStoryCinematography(renderer,scene,camera);cinematography.render(cinemaFrame);}else renderer.render(scene,camera);});},
     prepareStory(){if(!story)story=createSunflowerScene(scene,camera,{sequence:inSequence});return story.ready;},
     startStory(){if(!story)return;walking=false;viewingStudent=false;transition=null;keys.clear();drag=null;controls.enabled=false;storyTime=0;storyPlaying=false;storyOpening=null;students.forEach(p=>{storyVisibility.set(p,p.root.visible);p.root.visible=false;});interior.setStoryLight(true);story.start();const warmed=warmStory().then(()=>{if(story.active){story.update(0,0,false);interior.update(1,camera.position,true);}});story.update(0,0,false);return warmed;},
     updateStory(time,playing,opening=null){storyTime=time;storyPlaying=playing;storyOpening=opening;},
@@ -248,6 +248,10 @@ export function createCampus(canvas,labelRoot,onZone=()=>{}) {
     overview(){viewingStudent=false;controls.minDistance=15;controls.maxDistance=450;const h=home();tween(h.position,h.target);},
     focus(id){viewingStudent=false;controls.minDistance=15;controls.maxDistance=450;const p=locations.find(p=>p.id===id);if(p){const target=v(...p.point);const offset=v(...p.view).multiplyScalar(width<700?1.55:1);tween(target.clone().add(offset),target);}},
     setWalking(value){viewingStudent=false;controls.minDistance=15;controls.maxDistance=450;if(walking===value)return;walking=value;transition=null;controls.enabled=!value;camera.fov=value?68:39;camera.updateProjectionMatrix();keys.clear();drag=null;if(value){camera.position.set(-5.5,2.15,38);yaw=0;pitch=0;}else{camera.rotation.set(0,0,0);const h=home();camera.position.copy(h.position);controls.target.copy(h.target);controls.update();}},
+    // Where the walker stands, and a stop that leaves them standing (for a pause).
+    get viewPosition(){return camera.position;},
+    halt(){keys.clear();drag=null;},
+    turn(value){yaw=value;pitch=0;},
     visit(id){const stop=interiorStops.find(s=>s.id===id);if(!stop)return;camera.position.set(...(width<700&&stop.compactPosition?stop.compactPosition:stop.position));yaw=width<700&&stop.compactYaw!==undefined?stop.compactYaw:stop.yaw;pitch=stop.pitch||0;camera.fov=stop.fov?(width<700?68:stop.fov):68;camera.updateProjectionMatrix();keys.clear();drag=null;interior.update(1,camera.position,true);},
     focusStudent(closeup=false){studentCloseup=closeup;viewingStudent=true;controls.minDistance=closeup?.38:1.15;controls.maxDistance=18;camera.fov=39;camera.updateProjectionMatrix();const f=studentFrame();tween(f.position,f.target);},
     selectStudent(id){const selected=students.find(person=>person.character.id===id);if(!selected)return false;student=selected;return true;},

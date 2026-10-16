@@ -1,4 +1,4 @@
-import {inSequence,installSequence,sequenceEvent,snapshot} from './sequence-bridge.js';
+import {inSequence,playMode,installSequence,sequenceEvent,snapshot} from './sequence-bridge.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createDowntown } from './downtown.js';
@@ -103,9 +103,10 @@ if(world) {
     $('#art-credit').hidden=!room;
     routeButton.textContent=following?'停止行走':inside?'走到街上 ↗':'沿路回屋 ↙';
   }
+  const STORY_DOOR=4.6,WANDER=40;let wandering=false,wandered=0,storyBegun=false,wanderTick=0;
   const walker=createWalkController(camera,canvas,{
     obstacles:world.obstacles,render,
-    onLocation(value){inside=value;updatePlace();},
+    onLocation(value){inside=value;updatePlace();if(!value)leftHome();},
     onRouteState(value,message=''){following=value;$('#walk-status').textContent=message||(value?'沿门口走过去，WASD 可接管':'');updatePlace();},
   });
   narrative=createLastCompanion({world,camera,render,onComplete:()=>sequenceEvent('done'),
@@ -141,7 +142,17 @@ if(world) {
   const sceneReady=Promise.all([world.assetsReady,narrative.ready]);
   sceneReady.then(()=>{if(!disposed){assetsLoaded=true;routeButton.disabled=false;storyButton.disabled=false;$('#walk-status').textContent='';render();rain.capture(renderer);render();}}).catch(error=>{if(!disposed){assetsLoaded=true;routeButton.disabled=false;storyButton.disabled=false;render();rain.capture(renderer);console.error('Scene textures failed to load',error);$('#walk-status').textContent='部分场景贴图未加载，请刷新页面重试';}});
   // Rain also remains visible outside the windows while the camera is indoors.
-  if(inSequence)installSequence({ready:sceneReady.then(async()=>{assetsLoaded=true;await narrative.start(0,true);render();}),start:()=>narrative.resume(),pause:()=>narrative.pause(),resume:()=>narrative.resume(),capture:()=>{const image=snapshot(canvas,render),ctx=image.getContext('2d');ctx.globalAlpha=narrative.state.blackout||0;ctx.fillStyle='#000';ctx.fillRect(0,0,image.width,image.height);return image;},dispose:disposeMap});
+  // In the playable journey the visitor walks the room first. Stepping out of the door picks the story up where its own
+  // camera leaves the room; lingering starts it from the beginning.
+  function beginStory(at){if(storyBegun)return;storyBegun=true;wandering=false;clearInterval(wanderTick);narrative.start(at).catch(error=>sequenceEvent('error',{message:String(error.message||error)}));}
+  function leftHome(){if(wandering)beginStory(STORY_DOOR);}
+  if(inSequence&&playMode)installSequence({ready:sceneReady.then(()=>{assetsLoaded=true;render();}),
+    start(){wandering=true;camera.position.z=40.9;camera.rotation.set(0,-Math.PI/2,0);render();canvas.focus();wanderTick=setInterval(()=>{if(wandering&&(wandered+=.25)>WANDER)beginStory(0);},250);},
+    pause(){if(storyBegun)narrative.pause();else{wandering=false;walker.stop();}},
+    resume(){if(storyBegun)return narrative.resume();wandering=true;canvas.focus();},
+    capture:()=>{const image=snapshot(canvas,render);if(narrative.active){const ctx=image.getContext('2d');ctx.globalAlpha=narrative.state.blackout||0;ctx.fillStyle='#000';ctx.fillRect(0,0,image.width,image.height);}return image;},
+    dispose(){clearInterval(wanderTick);disposeMap();}});
+  else if(inSequence)installSequence({ready:sceneReady.then(async()=>{assetsLoaded=true;await narrative.start(0,true);render();}),start:()=>narrative.resume(),pause:()=>narrative.pause(),resume:()=>narrative.resume(),capture:()=>{const image=snapshot(canvas,render),ctx=image.getContext('2d');ctx.globalAlpha=narrative.state.blackout||0;ctx.fillStyle='#000';ctx.fillRect(0,0,image.width,image.height);return image;},dispose:disposeMap});
   const weatherTick=setInterval(()=>{
     if(document.hidden){lastWeatherFrame=performance.now();return;}
     if(assetsLoaded&&!disposed&&!narrative.active&&(WEATHER.rain>.005||((activeView!=='walk'||!inside)&&world.water.visibleFrom(camera))))render();

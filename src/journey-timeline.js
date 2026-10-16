@@ -12,10 +12,10 @@ export const JOURNEY = Object.freeze([
   {id:'bloodbound', path:'/bloodbound', seconds:68, transition:'door', transitionSeconds:4.4,
     touch:{name:'一封情书', action:'触碰情书，打开下一段回忆'},
     card:{at:1.2, until:5.6, en:['You touched the love letter.','A new story unfolds.'], zh:['你触碰了那封情书。','一段新的故事，就此展开。']}},
-  {id:'school', path:'/school', seconds:SCHOOL_SEQUENCE_SECONDS, transition:'fracture', transitionSeconds:5.1,
+  {id:'school', path:'/school', seconds:SCHOOL_SEQUENCE_SECONDS, transition:'fracture', transitionSeconds:5.1, hint:'WASD 走路 · 拖动环顾 · 走进 101 教室',
     touch:{name:'一枚烟头', action:'触碰烟头，打开下一段回忆'},
     card:{at:0.9, until:4.7, en:['You touched the cigarette butt.','A forgotten story unfolds.'], zh:['你触碰了那枚烟头。','一段被遗忘的故事，就此展开。']}},
-  {id:'apocalypse', path:'/apocalypse', seconds:60, transition:'ash', transitionSeconds:3},
+  {id:'apocalypse', path:'/apocalypse', seconds:60, transition:'ash', transitionSeconds:3, hint:'WASD 走路 · 拖动环顾 · 走出家门'},
   {id:'stage', path:'/stage', seconds:30},
 ]);
 export const JOURNEY_SECONDS = JOURNEY.reduce((sum, stage) => sum + stage.seconds + (stage.transitionSeconds || 0), 0);

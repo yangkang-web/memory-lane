@@ -1,4 +1,4 @@
-import {inSequence,installSequence,sequenceEvent} from './sequence-bridge.js';
+import {inSequence,playMode,installSequence,sequenceEvent} from './sequence-bridge.js';
 import {storyFrame,storyChapters} from './sunflower-timeline.js';
 import voice from './data/sunflower-voice.json';
 import {SCHOOL_STORY_SECONDS as STORY_DURATION,SCHOOL_AUDIO_SECONDS,schoolSourceTime,openingProgress,openingSceneState,schoolEndingFade} from './school-short-edit.js';
@@ -86,11 +86,19 @@ export function mountSunflowerPlayer(world,{onEnter,onExit}){
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&active){playAttempt++;audio.pause();openingStory.pause();sync();}});
  window.addEventListener('pagehide',()=>{audio.pause();openingStory.pause();});
  addEventListener('keydown',e=>{if(!active)return;if(inSequence)return;if(e.key==='Escape'){e.stopImmediatePropagation();close();}else if(e.code==='Space'&&e.target===document.body){e.preventDefault();pause.click();}},true);
- let disposed=false,frameId;function frame(){if(disposed)return;const now=performance.now();openingStory.update((now-previousFrame)/1000);previousFrame=now;sync();frameId=requestAnimationFrame(frame);}frameId=requestAnimationFrame(frame);
+ // In the playable journey the visitor first walks the hallway; the story opens as they step into Room 101, or on its own
+ // if they linger.
+ const ROOM={x:-31.4,z:-23.55,reach:4.5},WANDER=45;let wandering=false,wandered=0,storyOpened=false;
+ async function openStory(){if(storyOpened)return;storyOpened=true;wandering=false;try{await open();begin();}catch(error){sequenceEvent('error',{message:String(error.message||error)});}}
+ let disposed=false,frameId;function frame(){if(disposed)return;const now=performance.now(),dt=(now-previousFrame)/1000;openingStory.update(dt);previousFrame=now;
+  if(wandering){wandered+=Math.min(dt,.1);const p=world.viewPosition;if(Math.hypot(p.x-ROOM.x,p.z-ROOM.z)<ROOM.reach||wandered>WANDER)void openStory();}
+  sync();frameId=requestAnimationFrame(frame);}frameId=requestAnimationFrame(frame);
  if(inSequence){
-  const prepared=open();
-  installSequence({ready:prepared,start:begin,
-   pause(){audio.pause();openingStory.pause();sync();},resume,
+  const prepared=playMode?Promise.all([world.prepareStory(),prepareAudio()]).then(([loaded])=>{if(!loaded)throw new Error('校园人物资源未加载');world.setWalking(true);world.visit('corridor');world.turn(Math.PI/2);}):open();
+  installSequence({ready:prepared,
+   start:playMode?()=>{wandering=true;}:begin,
+   pause(){if(playMode&&!storyOpened){wandering=false;world.halt();return;}audio.pause();openingStory.pause();sync();},
+   resume:()=>{if(playMode&&!storyOpened){wandering=true;return;}return resume();},
    capture:()=>world.captureStory(),
    dispose(){disposed=true;active=false;openingStory.stop();cancelAnimationFrame(frameId);audio.pause();world.dispose();if(audio.src.startsWith('blob:'))URL.revokeObjectURL(audio.src);},
   });
