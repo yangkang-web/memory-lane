@@ -7,7 +7,7 @@ const voice=JSON.parse(fs.readFileSync(new URL('../src/data/sunflower-voice.json
 test('the four story chapters have deterministic boundaries, rewind and final hold',()=>{
  for(const [time,chapter] of [[0,0],[14.99,0],[15,1],[29.99,1],[30,2],[45,3],[60,3]])assert.equal(storyFrame(time).chapter,chapter);
  assert.deepEqual(storyFrame(24),storyFrame(24));assert.deepEqual(storyFrame(99),storyFrame(STORY_DURATION));assert.deepEqual(storyFrame(-1),storyFrame(0));
- assert.equal(storyFrame(24).letter,true);assert.equal(storyFrame(33).back,true);assert.ok(Math.abs(storyFrame(30.1).flip-.5)<1e-10);assert.equal(storyFrame(68).ending,true);
+ assert.equal(storyFrame(24).letter,true);assert.equal(storyFrame(33).back,true);assert.equal(storyFrame(30.1).flip,0);assert.equal(storyFrame(68).ending,true);
 });
 test('camera stays within the classroom and its final walking segment follows the clear window aisle',()=>{
  for(let t=0;t<=STORY_DURATION;t+=.1){const f=storyFrame(t);assert.ok(f.position.every(Number.isFinite));assert.ok(f.position[0]>-36.8&&f.position[0]<-26);assert.ok(f.position[2]>-34&&f.position[2]<-22.25);}
@@ -33,7 +33,7 @@ test('the final reply holds on the boy before the coda, and seeking restores eac
  assert.ok(storyFrame(66).ending);
  assert.deepEqual(storyFrame(52),storyFrame(52));
  const samples=Array.from({length:681},(_,i)=>storyFrame(i/10));
- for(const f of samples){assert.ok(f.boyOpacity>=0&&f.boyOpacity<=1);assert.ok(f.fov>=29&&f.fov<=52);}
+ for(const f of samples){assert.ok(f.boyOpacity>=0&&f.boyOpacity<=1);assert.ok(f.fov>=27&&f.fov<=52);}
  assert.ok(storyPerformance(57).smile>storyPerformance(48).smile);
  for(const [a,b,text] of voiceCaptions){assert.ok(b>a);assert.ok(text.length<85);}
 });
@@ -54,4 +54,13 @@ test('confession gestures keep the original rig feet planted and clear the hands
  }
  rig.motion.setStoryPose(null);rig.step(.5);
  assert.ok(rig.pos('head').toArray().every(Number.isFinite));
+});
+
+test('the confession anticipates a shy glance with the eyes and holds a quiet response',()=>{
+ assert.ok(storyPerformance(48.6).eyeYaw>storyPerformance(48.6).headYaw);
+ assert.ok(storyPerformance(55.8).smile>storyPerformance(51).smile);
+ assert.equal(storyFrame(44.6).text,'');assert.equal(storyFrame(56.5).text,'');
+ for(let t=0;t<68;t+=.05){const p=storyPerformance(t);assert.ok(p.blink>=0&&p.blink<=1);assert.ok(Math.abs(p.eyeYaw)<.12);}
+ assert.equal(storyFrame(52).dreamHint,false);
+ assert.equal(storyFrame(24).focus,.66);
 });

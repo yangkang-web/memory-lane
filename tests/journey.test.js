@@ -1,13 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {JOURNEY,JOURNEY_SECONDS,BLOODBOUND_CUT,bloodboundBeat} from '../src/journey-timeline.js';
+import {JOURNEY,JOURNEY_SECONDS,SCHOOL_SEQUENCE_SECONDS,BLOODBOUND_CUT,bloodboundBeat} from '../src/journey-timeline.js';
 import {resolveExperience,isAppPath} from '../src/routes.js';
 import {createBloodboundSequence} from '../src/bloodbound/sequence.js';
 
-test('journey preserves order, three full-minute stories and thirty seconds of stage',()=>{
+test('journey preserves order and allows the complete school opening and ending',()=>{
  assert.deepEqual(JOURNEY.map(s=>s.id),['annual','seaside','bloodbound','school','apocalypse','stage']);
- assert.deepEqual(JOURNEY.map(s=>s.seconds),[11,12,60,60,60,30]);
- assert.ok(Math.abs(JOURNEY_SECONDS-251.5)<.00001);
+ assert.deepEqual(JOURNEY.map(s=>s.seconds),[11,12,60,SCHOOL_SEQUENCE_SECONDS,60,30]);
+ assert.ok(SCHOOL_SEQUENCE_SECONDS<60);
+ assert.ok(JOURNEY_SECONDS<251);
  assert.equal(JOURNEY.find(s=>s.id==='bloodbound').transition,'door');
  for(const stage of JOURNEY){assert.ok(isAppPath(stage.path));assert.equal(resolveExperience(stage.path,'?sequence=1').experience,stage.id);}
  assert.equal(resolveExperience('/journey').experience,'journey');

@@ -3,6 +3,7 @@ import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUnifo
 import { addFloorReflections } from './classroom-floor-reflection.js';
 import { furnishClassroom } from './classroom.js';
 import { interiorWallFinishes } from './wall-materials.js';
+import { springWindowCenters } from './window-petals.js';
 
 export const interiorStops = [
   { id: 'gate', title: 'Main gate', subtitle: 'Your campus starts here', position: [-5.5, 2.15, 38], yaw: 0 },
@@ -87,12 +88,17 @@ export function buildSchoolInterior({ scene, box, cyl, material, textSign, block
     box(.3,.45,11.75,wall,x,4.575,-28.125);
     for(const [a,b] of [[-34,-33.45],[-30.35,-29.85],[-26.75,-26.25],[-23.15,-22.25]])
       box(.3,3.05,b-a,wall,x,2.825,(a+b)/2);
-    for(const z of [-31.9,-28.3,-24.7]) {
+    for(const z of springWindowCenters) {
       for(const dz of [-1.58,1.58])box(.5,3.13,.1,frame,x,2.825,z+dz);
       for(const y of [1.28,4.37])box(.5,.1,3.24,frame,x,y,z);
       box(.15,.065,3.1,frame,x,2.85,z);
       box(.15,3.05,.055,frame,x,2.825,z);
-      const pane=glass(scene,3.07,3.02,x,2.825,z);pane.rotation.y=Math.PI/2;
+      // Slide the right sash behind the left, leaving a real opening for petals.
+      const fixed=glass(scene,1.48,2.94,x,2.825,z-.78);fixed.rotation.y=Math.PI/2;
+      const sashX=x+(x<0?.09:-.09),sashZ=z-.6;
+      const sliding=glass(scene,1.48,2.94,sashX,2.825,sashZ);sliding.rotation.y=Math.PI/2;
+      for(const dz of [-.77,.77])box(.08,3.02,.055,frame,sashX,2.825,sashZ+dz);
+      for(const y of [1.34,2.85,4.31])box(.08,.05,1.54,frame,sashX,y,sashZ);
       block(x,z,.3,3.2);
     }
   }
@@ -213,20 +219,21 @@ export function buildSchoolInterior({ scene, box, cyl, material, textSign, block
   Object.assign(sideSun.shadow.camera,{left:-10,right:10,top:9,bottom:-9,near:.5,far:38});
   sideSun.shadow.normalBias=.018;sideSun.shadow.bias=-.00008;sideSun.shadow.radius=2;
   scene.add(sideSun,sideSun.target);
-  let warmLight=false;
+  let warmLight=false,storyLight=false;
 
   return {
     setSunset(value){warmLight=value;},
+    setStoryLight(value){storyLight=value;},
     update(dt,position,walking){
       const active=walking&&position.z<-22.3&&position.z>-34
         ? rooms.find(r=>position.x>r.left&&position.x<r.right):null;
       floorReflections.update(active);
       for(const {room,windows}of animatedWindows)windows.update(dt,active===room,motionPreference.matches,position);
-      sideSun.intensity=T.MathUtils.damp(sideSun.intensity,active?.sideWindows?(warmLight?3.4:3.7):0,7,dt);
+      sideSun.intensity=T.MathUtils.damp(sideSun.intensity,active?.sideWindows?(storyLight?4.4:warmLight?3.4:3.7):0,7,dt);
       sideSun.color.set(warmLight?'#ffc28b':'#ffdda6');
       sideSun.castShadow=!!active?.sideWindows;
       windowFill.forEach((light,i)=>{
-        light.intensity=T.MathUtils.damp(light.intensity,active?.sideWindows?(warmLight?.85:1.25):0,7,dt);
+        light.intensity=T.MathUtils.damp(light.intensity,active?.sideWindows?(storyLight?1.4:warmLight?.85:1.25):0,7,dt);
         if(active?.sideWindows){
           const side=active.sideWindows,wall=side<0?active.left:active.right;
           light.position.set(wall-side*.18,2.83,[-31.9,-28.3,-24.7][i]);

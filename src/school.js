@@ -1,5 +1,6 @@
 import {inSequence,snapshot} from './sequence-bridge.js';
 import * as T from 'three';
+import {createStoryCinematography} from './story-cinematography.js';
 import { createSunflowerScene } from './sunflower-scene.js';
 import { createStudent } from './student.js';
 import { characters } from './characters.js';
@@ -25,6 +26,7 @@ export function createCampus(canvas,labelRoot,onZone=()=>{}) {
   const scene=new T.Scene(),daySky=springSky(),duskSky=springSky(true);
   scene.background=daySky;scene.fog=new T.Fog('#cbe9f5',220,450);
   const renderer=new T.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
+  renderer.localClippingEnabled=true;
   renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
   renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;
@@ -173,7 +175,7 @@ export function createCampus(canvas,labelRoot,onZone=()=>{}) {
   characters.forEach(({chair})=>block(chair.x,chair.z,.46,.45));
   const studentDelta=new T.Vector3();
   let viewingStudent=false,studentCloseup=false;
-  let story=null,storyTime=0,storyPlaying=false;
+  let story=null,storyTime=0,storyPlaying=false,storyOpening=null,cinematography=null,cinemaFrame=null;
   const storyVisibility=new Map();
   const labelNodes=locations.map(p=>{const el=document.createElement('div');el.className='map-label';el.textContent=p.title;labelRoot.append(el);return{el,pos:v(...p.label)};});
   let width=0,height=0,walking=false,labels=true,transition=null,yaw=0,pitch=0,drag=null,sunset=false;
@@ -200,34 +202,34 @@ export function createCampus(canvas,labelRoot,onZone=()=>{}) {
   addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));addEventListener('blur',()=>{keys.clear();drag=null;});
   const valid=(x,z)=>Math.abs(x)<44.5&&Math.abs(z)<39.5&&interior.canOccupy(x,z)&&!colliders.some(c=>Math.abs(x-c.x)<c.w&&Math.abs(z-c.z)<c.d);
   let disposed=false,animationFrame;
-  function animate(){if(disposed)return;animationFrame=requestAnimationFrame(animate);const now=performance.now(),dt=Math.min((now-previousTime)/1000,.05);previousTime=now;if(story?.active)story.update(storyTime,dt,storyPlaying);interior.update(dt,camera.position,walking||story?.active);campusCherries.update(dt,camera.position,blossomMotion.matches);
+  function animate(){if(disposed)return;animationFrame=requestAnimationFrame(animate);const now=performance.now(),dt=Math.min((now-previousTime)/1000,.05);previousTime=now;if(story?.active)cinemaFrame=story.update(storyTime,dt,storyPlaying,storyOpening);interior.update(dt,camera.position,walking||story?.active);campusCherries.update(dt,camera.position,blossomMotion.matches);
     studentDelta.copy(student.root.position);students.forEach(person=>person.update(story?.active?0:dt));studentDelta.subVectors(student.root.position,studentDelta);
     if(viewingStudent&&!walking){
       if(transition){transition.target.add(studentDelta);transition.to.add(studentDelta);}
       else{camera.position.add(studentDelta);controls.target.add(studentDelta);}
     }
     const indoors=(walking||story?.active)&&camera.position.z< -19&&camera.position.z> -34&&camera.position.x> -37&&camera.position.x<9;
-    hemi.intensity=T.MathUtils.damp(hemi.intensity,indoors?(sunset?.85:1.02):(sunset?1.55:2.1),5,dt);
-    renderer.toneMappingExposure=T.MathUtils.damp(renderer.toneMappingExposure,indoors?1.1:1.18,5,dt);
+    hemi.intensity=T.MathUtils.damp(hemi.intensity,indoors?(story?.active ? .94 : sunset ? .85 : 1.02):(sunset?1.55:2.1),5,dt);
+    renderer.toneMappingExposure=T.MathUtils.damp(renderer.toneMappingExposure,story?.active?1.16:indoors?1.1:1.18,5,dt);
     sun.shadow.camera.far=story?.active?70:viewingStudent?80:walking?120:350;
     if(story?.active){/* The cinematic owns the first-person camera. */}
     else if(walking){let dx=Number(keys.has('d')||keys.has('arrowright'))-Number(keys.has('a')||keys.has('arrowleft'));let dz=Number(keys.has('s')||keys.has('arrowdown'))-Number(keys.has('w')||keys.has('arrowup'));const len=Math.hypot(dx,dz)||1;const speed=camera.position.z< -16?2.8:5;dx=dx/len*dt*speed;dz=dz/len*dt*speed;const mx=dx*Math.cos(yaw)+dz*Math.sin(yaw),mz=-dx*Math.sin(yaw)+dz*Math.cos(yaw);if(valid(camera.position.x+mx,camera.position.z))camera.position.x+=mx;if(valid(camera.position.x,camera.position.z+mz))camera.position.z+=mz;camera.rotation.set(pitch,yaw,0,'YXZ');onZone(interior.zone(camera.position));}
     else if(transition){let t=Math.min(1,(performance.now()-transition.start)/1100);t=t*t*(3-2*t);camera.position.lerpVectors(transition.from,transition.to,t);controls.target.lerpVectors(transition.fromTarget,transition.target,t);controls.update();if(t>=1)transition=null;}else controls.update();
-    labelNodes.forEach(({el,pos})=>{const p=pos.clone().project(camera);el.style.display=!story?.active&&labels&&!walking&&!viewingStudent&&p.z<1&&Math.abs(p.x)<1&&Math.abs(p.y)<1?'block':'none';el.style.transform=`translate(${(p.x*.5+.5)*width}px,${(-p.y*.5+.5)*height}px) translate(-50%,-100%)`;});scene.fog.near=(walking||story?.active)?150:camera.position.distanceTo(controls.target)+90;scene.fog.far=scene.fog.near+200;renderer.render(scene,camera);
+    labelNodes.forEach(({el,pos})=>{const p=pos.clone().project(camera);el.style.display=!story?.active&&labels&&!walking&&!viewingStudent&&p.z<1&&Math.abs(p.x)<1&&Math.abs(p.y)<1?'block':'none';el.style.transform=`translate(${(p.x*.5+.5)*width}px,${(-p.y*.5+.5)*height}px) translate(-50%,-100%)`;});scene.fog.near=(walking||story?.active)?150:camera.position.distanceTo(controls.target)+90;scene.fog.far=scene.fog.near+200;if(story?.active&&cinemaFrame){cinematography??=createStoryCinematography(renderer,scene,camera);cinematography.render(cinemaFrame);}else renderer.render(scene,camera);
   }animate();
   return {
     dispose(){
-      if(disposed)return;disposed=true;cancelAnimationFrame(animationFrame);controls.dispose();
+      if(disposed)return;disposed=true;cancelAnimationFrame(animationFrame);controls.dispose();cinematography?.dispose();
       const geometries=new Set(),materials=new Set(),textures=new Set();
       scene.traverse(object=>{if(object.geometry)geometries.add(object.geometry);for(const material of [object.material||[]].flat())materials.add(material);});
       for(const material of materials){for(const value of Object.values(material))if(value?.isTexture)textures.add(value);material.dispose();}
       geometries.forEach(g=>g.dispose());textures.forEach(t=>t.dispose());renderer.dispose();renderer.forceContextLoss();
     },
-    captureStory(){return snapshot(renderer.domElement,()=>{story?.update(storyTime,0,false);renderer.render(scene,camera);});},
+    captureStory(){return snapshot(renderer.domElement,()=>{cinemaFrame=story?.update(storyTime,0,false,storyOpening);if(cinemaFrame){cinematography??=createStoryCinematography(renderer,scene,camera);cinematography.render(cinemaFrame);}else renderer.render(scene,camera);});},
     prepareStory(){if(!story)story=createSunflowerScene(scene,camera,{sequence:inSequence});return story.ready;},
-    startStory(){if(!story)return;walking=false;viewingStudent=false;transition=null;keys.clear();drag=null;controls.enabled=false;storyTime=0;storyPlaying=false;students.forEach(p=>{storyVisibility.set(p,p.root.visible);p.root.visible=false;});story.start();story.update(0,0,false);interior.update(1,camera.position,true);},
-    updateStory(time,playing){storyTime=time;storyPlaying=playing;},
-    stopStory(){story?.stop();storyPlaying=false;students.forEach(p=>{if(storyVisibility.has(p))p.root.visible=storyVisibility.get(p);});storyVisibility.clear();controls.enabled=true;camera.fov=39;camera.updateProjectionMatrix();const h=home();camera.position.copy(h.position);controls.target.copy(h.target);controls.update();},
+    startStory(){if(!story)return;walking=false;viewingStudent=false;transition=null;keys.clear();drag=null;controls.enabled=false;storyTime=0;storyPlaying=false;storyOpening=null;students.forEach(p=>{storyVisibility.set(p,p.root.visible);p.root.visible=false;});interior.setStoryLight(true);story.start();story.update(0,0,false);interior.update(1,camera.position,true);},
+    updateStory(time,playing,opening=null){storyTime=time;storyPlaying=playing;storyOpening=opening;},
+    stopStory(){story?.stop();interior.setStoryLight(false);storyPlaying=false;students.forEach(p=>{if(storyVisibility.has(p))p.root.visible=storyVisibility.get(p);});storyVisibility.clear();controls.enabled=true;camera.fov=39;camera.updateProjectionMatrix();const h=home();camera.position.copy(h.position);controls.target.copy(h.target);controls.update();},
     overview(){viewingStudent=false;controls.minDistance=15;controls.maxDistance=450;const h=home();tween(h.position,h.target);},
     focus(id){viewingStudent=false;controls.minDistance=15;controls.maxDistance=450;const p=locations.find(p=>p.id===id);if(p){const target=v(...p.point);const offset=v(...p.view).multiplyScalar(width<700?1.55:1);tween(target.clone().add(offset),target);}},
     setWalking(value){viewingStudent=false;controls.minDistance=15;controls.maxDistance=450;if(walking===value)return;walking=value;transition=null;controls.enabled=!value;camera.fov=value?68:39;camera.updateProjectionMatrix();keys.clear();drag=null;if(value){camera.position.set(-5.5,2.15,38);yaw=0;pitch=0;}else{camera.rotation.set(0,0,0);const h=home();camera.position.copy(h.position);controls.target.copy(h.target);controls.update();}},

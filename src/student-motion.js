@@ -370,6 +370,11 @@ export function createStudentMotion(root,model,{reducedMotion=false,chair:chairC
       joints.head.rotation.y+=storyPose.headYaw;
       joints.head.rotation.z+=storyPose.headTilt;
       joints.chest.rotation.z+=storyPose.headTilt*.18;
+      joints.chest.rotation.x+=(storyPose.breath??0)-(storyPose.relax??0);
+      joints.spine.rotation.x-=(storyPose.deliveryLean??0)*.4;
+      joints.chest.rotation.x-=(storyPose.deliveryLean??0)*.25;
+      for(const side of sides){const eye=joints[side+'Eye'];if(eye){eye.rotation.y+=storyPose.eyeYaw??0;eye.rotation.x+=storyPose.eyePitch??0;}}
+
     }
     const hipTarget=hipsRest.clone();
     hipTarget.x+=storyPose?.pelvisShift??0;
@@ -378,6 +383,8 @@ export function createStudentMotion(root,model,{reducedMotion=false,chair:chairC
     hipTarget.y+=(authored.pelvis.y-.895)*T.MathUtils.lerp(.45,.7,runMix)*active;
     hipTarget.y=T.MathUtils.lerp(hipTarget.y,chairConfig.seatHeight+.125,seat);
     hipTarget.z-=seat*.35;
+    hipTarget.y-=(storyPose?.deliveryLean??0)*.18;
+    hipTarget.z+=(storyPose?.deliveryLean??0)*.12;
     hipTarget.x+=(.012+Math.sin(time*.65)*.003)*idleWeight*(1-seat);
     const preparation=Math.sin(Math.PI*clamp(startTime/.34,0,1))*(1-seat);
     hipTarget.x+=preparation*.014;
@@ -465,6 +472,12 @@ export function createStudentMotion(root,model,{reducedMotion=false,chair:chairC
       elbow.lerp(liveShoulder.clone().add(V(sign*.6,-.25,-.35)),waving);
       target.lerp(liveShoulder.clone().add(V(sign*.035,-length*.48,length*.78)),giving);
       elbow.lerp(liveShoulder.clone().add(V(sign*.16,-length*.42,length*.22)),giving);
+      const placement=side==='right'&&storyPose?.rightHandTarget;
+      if(placement){
+        const weight=storyPose.rightHandWeight??1;
+        target.lerp(root.worldToLocal(V(...placement)),weight);
+        elbow.lerp(liveShoulder.clone().add(V(sign*.25,-.28,.22)),weight);
+      }
       solveLimb(joints[`${side}UpperArm`],joints[`${side}LowerArm`],joints[`${side}Hand`],world(target),world(elbow));
       const upperArm=joints[`${side}UpperArm`],lowerArm=joints[`${side}LowerArm`];
       if(!arm.upperRotation){arm.upperRotation=upperArm.quaternion.clone();arm.lowerRotation=lowerArm.quaternion.clone();}
@@ -473,6 +486,7 @@ export function createStudentMotion(root,model,{reducedMotion=false,chair:chairC
       const smoothLower=arm.lowerRotation.clone().slerp(lowerArm.quaternion,1-Math.exp(-dt*12));
       arm.upperRotation.rotateTowards(upperArm.quaternion,dt*7).slerp(smoothUpper,relaxedSwing);
       arm.lowerRotation.rotateTowards(lowerArm.quaternion,dt*7).slerp(smoothLower,relaxedSwing);
+      if(placement){arm.upperRotation.copy(upperArm.quaternion);arm.lowerRotation.copy(lowerArm.quaternion);}
       upperArm.quaternion.copy(arm.upperRotation);lowerArm.quaternion.copy(arm.lowerRotation);
       upperArm.updateWorldMatrix(false,true);
       const hand=joints[`${side}Hand`];
@@ -512,7 +526,7 @@ export function createStudentMotion(root,model,{reducedMotion=false,chair:chairC
       const thumb=joints[`${side}ThumbMetacarpal`];if(thumb)thumb.rotation.y=sign*(.12+runMix*.25)*(1-waving);
     });
     const blink=time%4.6;
-    model.expressionManager?.setValue('blink',!reducedMotion&&blink>4.35?Math.sin((blink-4.35)/.25*Math.PI):0);
+    model.expressionManager?.setValue('blink',storyPose?.blink??(!reducedMotion&&blink>4.35?Math.sin((blink-4.35)/.25*Math.PI):0));
     model.expressionManager?.setValue('happy',storyPose?.smile??waveMix*.16);
     if(speaking&&!reducedMotion)speechTime+=dt;
     const syllable=speaking&&!reducedMotion?(speechFrame??speechPose(speechTime)):{};
@@ -531,7 +545,7 @@ export function createStudentMotion(root,model,{reducedMotion=false,chair:chairC
     lastPose=dt;
   }
   update(0);
-  return {update,setAction,setStoryPose(value){storyPose=value;},setSpeechFrame(value){speechFrame=value;},setSpeaking(value){if(Boolean(value)!==speaking)speechTime=0;speaking=Boolean(value);},get speaking(){return speaking;},get action(){return action;},get label(){return state;},
+  return {update,setAction,relocate(position){const delta=V(...position).sub(root.position);root.position.add(delta);for(const f of feet){for(const key of ['anchor','from','to','solvedTarget'])f[key].add(delta);}root.updateWorldMatrix(true,true);},setStoryPose(value){storyPose=value;},setSpeechFrame(value){speechFrame=value;},setSpeaking(value){if(Boolean(value)!==speaking)speechTime=0;speaking=Boolean(value);},get speaking(){return speaking;},get action(){return action;},get label(){return state;},
     // Read-only diagnostics also support tests against the original VRM rig.
     inspect(){return {stage,speed,seat,heading,cycle,giveMix,speaking,mouth:{...mouth},dt:lastPose,feet:feet.map(f=>({side:f.side,swing:f.swing,pitch:f.pitch,swingU:f.swingU,target:f.solvedTarget.clone(),contact:f.anchor.clone()}))};}};
 }

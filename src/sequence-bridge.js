@@ -7,7 +7,7 @@ if (inSequence) {
     .sequence-mode body { margin:0; overflow:hidden; }
     .sequence-mode #app { pointer-events:none; }
     .sequence-mode .sea-heading,.sequence-mode .sea-number,.sequence-mode .sea-controls,.sequence-mode .sea-caption,
-    .sequence-mode .story-entry,.sequence-mode .story-header,.sequence-mode .story-start,.sequence-mode .story-caption,.sequence-mode .story-controls,.sequence-mode #story-notice,
+    .sequence-mode .story-entry,.sequence-mode .story-header,.sequence-mode .story-start,.sequence-mode .story-controls,.sequence-mode #story-notice,
     .sequence-mode .narrative-title,.sequence-mode .narrative-controls,.sequence-mode .narrative-ending,
     .sequence-mode .memory-stage > :not(canvas):not(.film-shade):not(.grain):not(.cinema-matte):not(.flash):not(.fade) { display:none!important; }
     .sequence-mode #app > :not(canvas):not(.story-player):not(.narrative-player):not(.memory-stage):not(.sea-vignette):not(.sea-dialogue):not(.annual) { visibility:hidden!important; }

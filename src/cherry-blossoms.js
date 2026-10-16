@@ -21,8 +21,8 @@ function petalPath(ctx,variant=0) {
 function paintPetal(ctx,variant=0) {
   const rand=random(471+variant*337);
   petalPath(ctx,variant);const g=ctx.createRadialGradient(-.035,-.04,.025,0,-.1,.91);
-  g.addColorStop(0,'#cf8d9f');g.addColorStop(.18,'#e7b0c0');g.addColorStop(.43,'#f5d0da');
-  g.addColorStop(.78,'#fff0ee');g.addColorStop(1,'#fbe6e9');
+  g.addColorStop(0,'#d976a1');g.addColorStop(.18,'#eea3c4');g.addColorStop(.43,'#ffc9e0');
+  g.addColorStop(.78,'#ffe8f1');g.addColorStop(1,'#ffdaea');
   ctx.fillStyle=g;ctx.fill();
   ctx.save();ctx.clip();
   // Uneven pigment and fine branching veins, without a hard outline around the petal.
@@ -81,9 +81,9 @@ function getAssets() {
     // slender connecting stems, buds and separated five-petal blossoms.
     const blossom=texture((ctx,s)=>{
       ctx.translate(s/2,s*.52);ctx.scale(s*.94,s*.94);
-      const blooms=Array.from({length:17+variant*2},(_,i)=>{
+      const blooms=Array.from({length:25+variant*3},(_,i)=>{
         const angle=i*2.399+rand()*.3,r=.12+Math.sqrt(rand())*.29;
-        return {x:Math.cos(angle)*r,y:Math.sin(angle)*r*.88,r:.064+rand()*.027};
+        return {x:Math.cos(angle)*r,y:Math.sin(angle)*r*.88,r:.073+rand()*.03};
       });
       ctx.lineCap='round';ctx.strokeStyle='rgba(124,101,92,.78)';ctx.lineWidth=.004;
       for(const b of blooms){ctx.beginPath();ctx.moveTo(0,.39);ctx.quadraticCurveTo(b.x*.18,b.y*.48,b.x,b.y);ctx.stroke();}
@@ -105,12 +105,12 @@ function getAssets() {
       }
     },512);
     return new T.MeshStandardMaterial({map:blossom,side:T.DoubleSide,alphaTest:.24,alphaToCoverage:true,
-      roughness:.93,emissive:'#f4d9df',emissiveIntensity:.035});
+      roughness:.93,emissive:'#fff1f7',emissiveMap:blossom,emissiveIntensity:.42});
   });
   const petal=texture((ctx,s)=>{ctx.translate(s*.5,s*.94);ctx.scale(s*.91,s*.91);paintPetal(ctx,2);},256);
   const [bark,bump,roughness]=makeBarkMaps();
   const petalMat=new T.MeshStandardMaterial({map:petal,side:T.DoubleSide,alphaTest:.18,
-    roughness:.94,emissive:'#f4d9df',emissiveIntensity:.035});
+    roughness:.9,emissive:'#fff0f6',emissiveMap:petal,emissiveIntensity:.36});
   const flowerGeo=new T.PlaneGeometry(1,1,2,2),petalGeo=new T.PlaneGeometry(1,1,4,5);
   for(const geometry of [flowerGeo,petalGeo]) {
     const p=geometry.attributes.position;
@@ -124,6 +124,11 @@ function getAssets() {
     barkMat:new T.MeshStandardMaterial({map:bark,bumpMap:bump,bumpScale:.012,roughnessMap:roughness,roughness:1,emissive:'#76554e',emissiveIntensity:.035}),
     budMat:new T.MeshStandardMaterial({color:'#bf8494',roughness:.9}),budGeo:new T.SphereGeometry(1,6,5)};
   return assets;
+}
+
+export function cherryPetalAssets() {
+  const {petalGeo,petalMat}=getAssets();
+  return {geometry:petalGeo,material:petalMat};
 }
 
 export function addCherryTrees(scene,origins) {
@@ -170,18 +175,18 @@ export function addCherryTrees(scene,origins) {
       const middle=start.clone().lerp(tip,.55);middle.y+=.055;
       const curve=limb([start,middle,tip],radius,.0018,7);
       buds.push(tip.clone());
-      const count=5+Math.floor(rand()*3);
+      const count=7+Math.floor(rand()*3);
       for(let k=0;k<count;k++) {
         const t=.19+(k+.2+rand()*.5)/count*.8,position=curve.getPointAt(Math.min(1,t));
         position.add(new T.Vector3((rand()-.5)*.085,(rand()-.5)*.06,(rand()-.5)*.085));
         const normal=new T.Vector3(position.x*.35+(rand()-.5)*.8,.45+rand()*.65,position.z*.35+(rand()-.5)*.8);
-        const size=.32+rand()*.13;
+        const size=.38+rand()*.14;
         spray(position,size,normal,rand()*Math.PI*2);
         if(k%2===0) spray(position.clone().add(new T.Vector3(.025,-.035,.02)),size*.88,
           new T.Vector3(normal.z,-.12+rand()*.4,-normal.x),rand()*Math.PI*2);
       }
     }
-    // Asymmetric, spreading boughs: seven uneven fans leave sky between them.
+    // Dense flowering fans retain an asymmetric silhouette and small gaps for sky.
     // Every flower spray follows a twig; no blossoms are scattered inside balls.
     const phase=rand()*Math.PI*2;
     for(let b=0;b<7;b++) {
@@ -193,7 +198,7 @@ export function addCherryTrees(scene,origins) {
       const elbow=start.clone().addScaledVector(direction,reach*.48);elbow.y=height-.3;
       const end=direction.clone().multiplyScalar(reach);end.y=height;
       const main=limb([start,elbow,end],.083-b*.006,.009,18);
-      const fans=6+Math.floor(rand()*3);
+      const fans=8+Math.floor(rand()*3);
       for(let t=0;t<fans;t++) {
         const fraction=.42+(t+.3)/fans*.55,anchor=main.getPointAt(fraction);
         const lateral=(t%2?1:-1)*(.24+rand()*.38);
@@ -201,9 +206,9 @@ export function addCherryTrees(scene,origins) {
         tip.y+=.14+rand()*.37-(fraction>.85?.12:0);
         const bend=anchor.clone().lerp(tip,.5);bend.y+=.075;
         const branch=limb([anchor,bend,tip],.018,.004,9);
-        for(let j=0;j<3;j++) {
-          const base=branch.getPointAt(.42+j*.24);
-          const end=base.clone().addScaledVector(direction,.13+rand()*.19).addScaledVector(across,(j-1)*.19);
+        for(let j=0;j<4;j++) {
+          const base=branch.getPointAt(.4+j*.18);
+          const end=base.clone().addScaledVector(direction,.13+rand()*.19).addScaledVector(across,(j-1.5)*.16);
           end.y+=.06+rand()*.23-(j===2?.19:0);
           floweringTwig(base,end);
         }
@@ -227,34 +232,35 @@ export function addCherryTrees(scene,origins) {
       const bloom=new T.InstancedMesh(a.flowerGeo,a.flowerMats[variant],selected.length);
       selected.forEach((f,i)=>{
         dummy.position.copy(f.position);dummy.rotation.set(f.rx,f.ry,f.rz);dummy.scale.set(f.size,f.size*(.9+f.tint*.18),f.size);dummy.updateMatrix();bloom.setMatrixAt(i,dummy.matrix);
-        color.set(f.tint<.18?'#e8c6cf':f.tint<.65?'#f5e3e5':'#fff6ef');bloom.setColorAt(i,color);
+        color.set(f.tint<.18?'#ffd3e6':f.tint<.65?'#ffe7f1':'#fff8fb');bloom.setColorAt(i,color);
       });
-      bloom.castShadow=bloom.receiveShadow=true;bloom.computeBoundingSphere();root.add(bloom);
+      // Thin petals transmit sky light; avoid opaque self-shadow blotches in the crown.
+      bloom.castShadow=true;bloom.receiveShadow=false;bloom.computeBoundingSphere();root.add(bloom);
     }
     const budMesh=new T.InstancedMesh(a.budGeo,a.budMat,buds.length);
     buds.forEach((p,i)=>{dummy.position.copy(p);dummy.rotation.set(0,0,0);dummy.scale.set(.013,.022,.013);dummy.updateMatrix();budMesh.setMatrixAt(i,dummy.matrix);});root.add(budMesh);
-    const carpet=new T.InstancedMesh(a.petalGeo,a.petalMat,150);
+    const carpet=new T.InstancedMesh(a.petalGeo,a.petalMat,240);
     for(let i=0;i<carpet.count;i++) {
       const angle=rand()*Math.PI*2,r=Math.sqrt(rand())*2.45;
       dummy.position.set(Math.cos(angle)*r,.015+rand()*.009,Math.sin(angle)*r);
-      dummy.rotation.set(-Math.PI/2,0,rand()*Math.PI*2);dummy.scale.setScalar(.022+rand()*.025);dummy.updateMatrix();carpet.setMatrixAt(i,dummy.matrix);
+      dummy.rotation.set(-Math.PI/2,0,rand()*Math.PI*2);dummy.scale.setScalar(.035+rand()*.035);dummy.updateMatrix();carpet.setMatrixAt(i,dummy.matrix);
     }
     carpet.receiveShadow=true;root.add(carpet);
-    const fall=new T.InstancedMesh(a.petalGeo,a.petalMat,42),particles=[];
+    const fall=new T.InstancedMesh(a.petalGeo,a.petalMat,168),particles=[];
     fall.instanceMatrix.setUsage(T.DynamicDrawUsage);
     // Bounds include the complete flight, so frustum culling does not use the first frame alone.
-    fall.boundingSphere=new T.Sphere(new T.Vector3(0,2.5,0),4.5);root.add(fall);
+    fall.boundingSphere=new T.Sphere(new T.Vector3(0,2.5,0),5);root.add(fall);
     for(let i=0;i<fall.count;i++) {
       const f=flowers[Math.floor(rand()*flowers.length)];
-      particles.push({x:f.position.x,z:f.position.z,top:f.position.y,phase:rand(),speed:.12+rand()*.14,
-        size:.025+rand()*.025,spin:rand()*Math.PI*2,sway:.12+rand()*.2});
+      particles.push({x:f.position.x,z:f.position.z,top:f.position.y,phase:rand(),speed:.17+rand()*.16,
+        size:.055+rand()*.055,spin:rand()*Math.PI*2,sway:.18+rand()*.2});
     }
     let elapsed=0;
     function pose() {
       particles.forEach((p,i)=>{
         const progress=(p.phase+elapsed*p.speed/p.top)%1,age=progress*p.top/p.speed;
         // Drift remains close to the tree, outside the classroom wall; reset occurs inside the crown.
-        dummy.position.set(p.x+Math.sin(age*.65+p.spin)*p.sway, p.top*(1-progress),p.z+Math.sin(age*.43+p.spin)*.24);
+        dummy.position.set(p.x+Math.sin(age*.65+p.spin)*p.sway, p.top*(1-progress),p.z+Math.sin(age*.43+p.spin)*.32);
         dummy.rotation.set(age*1.15+p.spin,Math.sin(age*.8+p.spin)*.9,age*.48+p.spin);
         const fade=T.MathUtils.smoothstep(progress,0,.06)*(1-T.MathUtils.smoothstep(progress,.94,1));
         dummy.scale.setScalar(p.size*fade);dummy.updateMatrix();fall.setMatrixAt(i,dummy.matrix);

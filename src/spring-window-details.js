@@ -2,6 +2,7 @@ import * as T from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { createCurtainSimulation } from './curtain-physics.js';
 import { addCherryTrees } from './cherry-blossoms.js';
+import { addWindowPetals, springWindowCenters } from './window-petals.js';
 
 let cloth,hem;
 export function addSpringWindowDetails({scene,room,box,material}) {
@@ -18,7 +19,7 @@ export function addSpringWindowDetails({scene,room,box,material}) {
     hem=cloth.clone();hem.opacity=.84;hem.roughness=.98;
   }
   const side=room.sideWindows,x=side<0?room.left:room.right,panels=[];
-  for(const z of [-31.9,-28.3,-24.7]) {
+  for(const z of springWindowCenters) {
     box(.64,.11,3.4,'#d9c5a6',x-side*.13,1.3,z);
     box(.07,.07,3.5,'#b6afa0',x-side*.64,4.43,z);
     // Sash tracks, rubber seals and a small latch sit inside the existing frame.
@@ -76,6 +77,7 @@ export function addSpringWindowDetails({scene,room,box,material}) {
     box(.27,.018,.38,'#e8dfc9',sillX,1.398+i*.045,-28.5,i*.07);
   }
   const cherries=addCherryTrees(scene,[-31.6,-24.9].map((z,i)=>({x:x+side*(4.1+i*.55),z,scale:i?.94:1,seed:137+i*93+(side>0?321:0)})));
+  const indoorPetals=addWindowPetals(scene,room);
   for(const [color,parts] of batches) {
     const mesh=new T.Mesh(mergeGeometries(parts,false),material(color));mesh.castShadow=mesh.receiveShadow=true;
     scene.add(mesh);parts.forEach(g=>g.dispose());
@@ -84,6 +86,7 @@ export function addSpringWindowDetails({scene,room,box,material}) {
   return {
     update(dt,active,reducedMotion,position) {
       cherries.update(dt,position,reducedMotion);
+      indoorPetals.update(dt,position,reducedMotion);
       if(!active)return;
       for(const {simulation,g}of panels) {
         let changed=false;
