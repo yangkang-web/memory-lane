@@ -71,7 +71,7 @@ export function mountSunflowerPlayer(world,{onEnter,onExit}){
   if(active)return;const token=++opening;active=true;started=false;ready=false;onEnter();app.classList.add('story-mode');panel.hidden=false;intro.hidden=false;notice('');play.disabled=true;play.textContent='Preparing your story…';pause.disabled=progress.disabled=$('#story-replay').disabled=true;
   let loaded;try{[loaded]=await Promise.all([world.prepareStory(),prepareAudio()]);}catch(error){if(inSequence)throw error;if(token===opening&&active){notice('Voice could not load. Exit and reopen the story to try again.');play.textContent='Voice unavailable';}return;}if(token!==opening||!active)return;
   if(!loaded){if(inSequence)throw new Error('校园人物资源未加载');notice('The character could not load. Exit and reopen the story to try again.');play.textContent='Character unavailable';return;}
-  world.startStory();ready=true;play.disabled=false;play.textContent='Begin story';play.focus();sync();
+  await world.startStory();if(token!==opening||!active)return;ready=true;play.disabled=false;play.textContent='Begin story';play.focus();sync();
  };
  entry.onclick=open;
  play.onclick=begin;pause.onclick=()=>{if(openingStory.active){openingStory.running?openingStory.pause():openingStory.resume();sync();return;}if(audio.paused||audio.ended)void resume();else{playAttempt++;audio.pause();sync();}};

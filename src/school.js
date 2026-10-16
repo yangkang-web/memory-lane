@@ -2,6 +2,9 @@ import {inSequence,snapshot} from './sequence-bridge.js';
 import * as T from 'three';
 import {createStoryCinematography} from './story-cinematography.js';
 import { createSunflowerScene } from './sunflower-scene.js';
+import { OPENING_STAGES } from './story-opening.js';
+import { STORY_DURATION } from './sunflower-timeline.js';
+import { openingSceneState } from './school-short-edit.js';
 import { createStudent } from './student.js';
 import { characters } from './characters.js';
 import { addCampusArchitecture } from './campus-architecture.js';
@@ -217,6 +220,18 @@ export function createCampus(canvas,labelRoot,onZone=()=>{}) {
     else if(transition){let t=Math.min(1,(performance.now()-transition.start)/1100);t=t*t*(3-2*t);camera.position.lerpVectors(transition.from,transition.to,t);controls.target.lerpVectors(transition.fromTarget,transition.target,t);controls.update();if(t>=1)transition=null;}else controls.update();
     labelNodes.forEach(({el,pos})=>{const p=pos.clone().project(camera);el.style.display=!story?.active&&labels&&!walking&&!viewingStudent&&p.z<1&&Math.abs(p.x)<1&&Math.abs(p.y)<1?'block':'none';el.style.transform=`translate(${(p.x*.5+.5)*width}px,${(-p.y*.5+.5)*height}px) translate(-50%,-100%)`;});scene.fog.near=(walking||story?.active)?150:camera.position.distanceTo(controls.target)+90;scene.fog.far=scene.fog.near+200;if(story?.active&&cinemaFrame){cinematography??=createStoryCinematography(renderer,scene,camera);cinematography.render(cinemaFrame);}else renderer.render(scene,camera);
   }animate();
+  // The boy and the letter are first drawn mid-story, and each first draw compiles their shaders (both his fade and
+  // opaque variants) and uploads his textures, freezing playback for up to a second and a half. Draw every beat once
+  // while the story loads instead, one draw per task so the scenes loading beside it keep moving; the story is
+  // restored to its first frame before anything is shown.
+  async function warmStory(){
+    const beats=[];
+    for(const [stage,seconds] of OPENING_STAGES)for(let elapsed=0;elapsed<seconds;elapsed+=stage==='leaving'?.4:1)beats.push([0,openingSceneState({stage,elapsed})]);
+    for(let time=0;time<=STORY_DURATION;time+=1.5)beats.push([time,null]);
+    beats.push([3.5,null],[47.2,null],[59,null]);
+    cinematography??=createStoryCinematography(renderer,scene,camera);
+    for(const [time,opening] of beats){if(disposed||!story.active)return;const frame=story.update(time,0,false,opening);interior.update(1,camera.position,true);cinematography.render(frame);await new Promise(resolve=>setTimeout(resolve));}
+  }
   return {
     dispose(){
       if(disposed)return;disposed=true;cancelAnimationFrame(animationFrame);controls.dispose();cinematography?.dispose();
@@ -227,7 +242,7 @@ export function createCampus(canvas,labelRoot,onZone=()=>{}) {
     },
     captureStory(){return snapshot(renderer.domElement,()=>{cinemaFrame=story?.update(storyTime,0,false,storyOpening);if(cinemaFrame){cinematography??=createStoryCinematography(renderer,scene,camera);cinematography.render(cinemaFrame);}else renderer.render(scene,camera);});},
     prepareStory(){if(!story)story=createSunflowerScene(scene,camera,{sequence:inSequence});return story.ready;},
-    startStory(){if(!story)return;walking=false;viewingStudent=false;transition=null;keys.clear();drag=null;controls.enabled=false;storyTime=0;storyPlaying=false;storyOpening=null;students.forEach(p=>{storyVisibility.set(p,p.root.visible);p.root.visible=false;});interior.setStoryLight(true);story.start();story.update(0,0,false);interior.update(1,camera.position,true);},
+    startStory(){if(!story)return;walking=false;viewingStudent=false;transition=null;keys.clear();drag=null;controls.enabled=false;storyTime=0;storyPlaying=false;storyOpening=null;students.forEach(p=>{storyVisibility.set(p,p.root.visible);p.root.visible=false;});interior.setStoryLight(true);story.start();const warmed=warmStory().then(()=>{if(story.active){story.update(0,0,false);interior.update(1,camera.position,true);}});story.update(0,0,false);return warmed;},
     updateStory(time,playing,opening=null){storyTime=time;storyPlaying=playing;storyOpening=opening;},
     stopStory(){story?.stop();interior.setStoryLight(false);storyPlaying=false;students.forEach(p=>{if(storyVisibility.has(p))p.root.visible=storyVisibility.get(p);});storyVisibility.clear();controls.enabled=true;camera.fov=39;camera.updateProjectionMatrix();const h=home();camera.position.copy(h.position);controls.target.copy(h.target);controls.update();},
     overview(){viewingStudent=false;controls.minDistance=15;controls.maxDistance=450;const h=home();tween(h.position,h.target);},
