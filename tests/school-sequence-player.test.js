@@ -25,7 +25,7 @@ async function playerFixture({failPlayback=false,frameSeconds=.05}={}){
  // The DOM-only opening module uses the same lightweight document as the player.
  const previous=globalThis.document;globalThis.document=document;
  const world={prepareStory:async()=>true,startStory(){},stopStory(){},updateStory(...args){updates.push(args);},captureStory(){return 'frame';},dispose(){disposed=true;}};
- const context={document,world,onEnter(){},onExit(){},inSequence:true,installSequence(value){adapter=value;},sequenceEvent(type,detail){events.push({type,detail});},
+ const context={document,world,onEnter(){},onExit(){},inSequence:true,playMode:false,installSequence(value){adapter=value;},sequenceEvent(type,detail){events.push({type,detail});},
   storyFrame,storyChapters,STORY_DURATION,SCHOOL_AUDIO_SECONDS,schoolSourceTime,openingProgress,openingSceneState,schoolEndingFade,OPENING_DURATION,mountStoryOpening,openingFrame,voice:{lines:[]},
   performance:{now:()=>now},requestAnimationFrame(fn){frames.set(++nextFrame,fn);return nextFrame;},cancelAnimationFrame(id){frames.delete(id);},
   fetch:async()=>({ok:true,blob:async()=>({})}),URL:{createObjectURL:()=> 'blob:voice',revokeObjectURL(){}},URLSearchParams,
